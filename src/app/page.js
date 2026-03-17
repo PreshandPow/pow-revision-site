@@ -1,21 +1,36 @@
 'use client';
 
 import { useState, useEffect, useRef } from "react";
-import { ChevronDown, Search, ArrowUp } from "lucide-react";
-import { motion, useScroll, useTransform } from "framer-motion";
-import Navbar from "@/components/Navbar";
-import Sidebar from '@/components/Sidebar';
-import Footer from '@/components/Footer';
+import {AnimatePresence, motion, useScroll, useTransform} from "framer-motion";
+import Navbar from "../components/Navbar";
+import Sidebar from "../components/Sidebar";
+import Footer from "../components/Footer";
+import AuthPage from "../components/AuthPage";
+import { supabase } from "../lib/supabase-client";
 
 export default function Home() {
     const [searchInput, setSearchInput] = useState("");
     const [isNavOpen, setIsNavOpen] = useState(false);
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
     const [theme, setTheme] = useState('');
+    const [authMode, setAuthMode] = useState('');
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [session, setSession] = useState(null);
+
+    const fetchSession = async () => {
+        const currentSession = await supabase.auth.getSession();
+        console.log(currentSession);
+        setSession(currentSession);
+    }
+    useEffect(() => {
+        fetchSession();
+    }, []);
 
     useEffect(() => {
         const saved = localStorage.getItem("theme");
         const system = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setTheme(saved || system);
     }, []);
     useEffect(() => {
@@ -30,30 +45,25 @@ export default function Home() {
     };
 
     const targetRef = useRef(null);
+    const scrollRef = useRef(null);
+    const [xOffset, setXOffset] = useState(0);
     const { scrollYProgress } = useScroll({
         target: targetRef,
     });
-
-    const [range, setRange] = useState("-80%"); // Default
-
     useEffect(() => {
-        // This function runs every time the window is resized
-        const handleResize = () => {
-            if (window.innerWidth <= 768) {
-                setRange("-292%");
-            } else if (window.innerWidth <= 1500) {
-                setRange("-150%"); // Standard Desktop
-            } else {
-                setRange("-80%");  // Ultrawide
+        const updateScrollRange = () => {
+            if (scrollRef.current) {
+                const totalWidth = scrollRef.current.scrollWidth;
+                const viewportWidth = window.innerWidth;
+                const paddingAdjustment = viewportWidth * 0.075;
+                setXOffset(totalWidth - viewportWidth + paddingAdjustment);
             }
         };
-
-        handleResize(); // Run once on load
-        window.addEventListener("resize", handleResize);
-        return () => window.removeEventListener("resize", handleResize);
+        updateScrollRange();
+        window.addEventListener("resize", updateScrollRange);
+        return () => window.removeEventListener("resize", updateScrollRange);
     }, []);
-    const currentRange = typeof window !== 'undefined' ? range : "-150%";
-    const x = useTransform(scrollYProgress, [0, 1], ["0%", currentRange]);
+    const x = useTransform(scrollYProgress, [0, 1], [0, -xOffset]);
 
     useEffect(() => {
         if (isNavOpen) {
@@ -75,6 +85,7 @@ export default function Home() {
                 handleThemeChange={handleThemeChange}
                 isNavOpen={isNavOpen}
                 setIsNavOpen={setIsNavOpen}
+                setAuthMode={setAuthMode}
             />
             <header className="relative z-10 bg-[var(--layer2)] py-20 px-6">
                 <div className="max-w-4xl mx-auto text-center">
@@ -85,10 +96,14 @@ export default function Home() {
                         Ace all your tests by creating interactive flashcards and notes with your own personal assistant.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <button className="cursor-pointer bg-[var(--nice-blue)] text-white px-10 py-4 rounded-2xl font-bold text-lg hover:scale-105 transition-transform shadow-xl">
+                        <button className="cursor-pointer bg-[var(--nice-blue)] text-white px-10 py-4 rounded-2xl
+                                        font-bold text-lg hover:scale-105 transition-transform shadow-xl"
+                                onClick={() => setAuthMode('login')}>
                             Get started for free
                         </button>
-                        <button className="cursor-pointer bg-[var(--layer2)] text-[var(--text)] border border-[var(--layer3)] px-10 py-4 rounded-2xl font-bold text-lg hover:bg-[var(--layer3)] transition-colors">
+                        <button className="cursor-pointer bg-[var(--layer2)] text-[var(--text)] border
+                                        border-[var(--layer3)] px-10 py-4 rounded-2xl font-bold text-lg hover:bg-[var(--layer3)] transition-colors"
+                                onClick={() => setAuthMode('login')}>
                             See how it works
                         </button>
                     </div>
@@ -99,14 +114,14 @@ export default function Home() {
                     <h2 className="text-4xl md:text-6xl font-bold text-center mb-12 text-[var(--text)]">
                         Explore our <span className="text-[var(--nice-blue)]">Features</span>
                     </h2>
-                    <motion.div style={{ x }} className="flex gap-8 md:gap-16 px-[7.5vw]">
-                        <div className="card-animation min-w-[85vw] md:min-w-[650px] h-[550px] md:h-[600px] rounded-[3.5rem] bg-[hsl(154,61%,81%)] shadow-2xl flex flex-col overflow-hidden snap-center">
+                    <motion.div style={{ x }} ref={scrollRef} className="flex gap-8 md:gap-16 px-[7.5vw]">
+                        <div className="card-animation min-w-[85vw] md:min-w-[900px] h-[550px] md:h-[600px] rounded-[3.5rem] bg-[hsl(154,61%,81%)] shadow-2xl flex flex-col overflow-hidden snap-center">
                             <div className="p-8 text-center">
                                 <h3 className="text-2xl font-bold text-gray-800">Create Organised Notes</h3>
                             </div>
                             <div className="mx-6 flex-grow bg-white dark:bg-[var(--layer1)] rounded-t-[2.5rem] p-6 shadow-sm flex flex-col gap-4">
                                 <div className="flex gap-4 items-center">
-                                    <div className="w-16 h-20 md:w-20 md:h-28 bg-blue-900 rounded-md shadow-md flex items-center justify-center text-[10px] md:text-[12px] text-[var(--layer1)] p-2">
+                                    <div className="w-20 h-20 md:w-40 md:h-28 font-semibold bg-[var(--nice-blue)] rounded-md shadow-md flex items-center justify-center text-[12px] md:text-[18px] text-[var(--text)] p-2">
                                         Plant Cells
                                     </div>
                                     <div className="flex-grow space-y-2">
@@ -132,7 +147,7 @@ export default function Home() {
                                 </div>
                             </div>
                         </div>
-                        <div className="card-animation min-w-[85vw] md:min-w-[650px] h-[550px] md:h-[600px] rounded-[3.5rem] bg-[hsl(245,67%,49%)] shadow-2xl flex flex-col overflow-hidden snap-center">
+                        <div className="card-animation min-w-[85vw] md:min-w-[900px] h-[550px] md:h-[600px] rounded-[3.5rem] bg-[hsl(245,67%,49%)] shadow-2xl flex flex-col overflow-hidden snap-center">
                             <div className="p-10 text-center">
                                 <h3 className="text-3xl md:text-4xl font-black text-white">Flashcards</h3>
                             </div>
@@ -143,7 +158,7 @@ export default function Home() {
                                 </div>
                             </div>
                         </div>
-                        <div className="card-animation min-w-[85vw] md:min-w-[650px] h-[550px] md:h-[600px] rounded-[3.5rem] bg-[hsl(32,95%,86%)] shadow-2xl flex flex-col overflow-hidden snap-center">
+                        <div className="card-animation min-w-[85vw] md:min-w-[900px] h-[550px] md:h-[600px] rounded-[3.5rem] bg-[hsl(32,95%,86%)] shadow-2xl flex flex-col overflow-hidden snap-center">
                             <div className="p-6 md:p-8 text-center shrink-0">
                                 <h3 className="text-2xl md:text-3xl font-bold text-gray-900">POWER bot AI</h3>
                             </div>
@@ -152,7 +167,7 @@ export default function Home() {
                                     <div className="flex items-end gap-2 self-start max-w-[90%]">
                                         <div className="w-8 h-8 rounded-full bg-[var(--nice-blue)] flex items-center justify-center text-sm shrink-0">🤖</div>
                                         <div className="bg-gray-100 dark:bg-[var(--layer2)] p-3 rounded-2xl rounded-bl-none text-[1rem] text-[var(--text-muted)] shadow-inner">
-                                            <p>Hey there! I'm ready to help you POWER up your learning. Ask me anything about your notes!</p>
+                                            <p>`Hey there! I'm ready to help you POWER up your learning. Ask me anything about your notes!`</p>
                                         </div>
                                     </div>
                                     <div className="flex items-end gap-2 self-end max-w-[90%]">
@@ -166,16 +181,14 @@ export default function Home() {
                                 </div>
                             </div>
                         </div>
-                        <div className="card-animation min-w-[85vw] md:min-w-[650px] h-[550px] md:h-[600px] rounded-[3.5rem] bg-[hsl(32,95%,86%)] shadow-2xl flex flex-col overflow-hidden snap-center">
+                        <div className="card-animation min-w-[85vw] md:min-w-[900px] h-[550px] md:h-[600px] rounded-[3.5rem] bg-[var(--layer3)] shadow-2xl flex flex-col overflow-hidden snap-center">
                             <div className="p-10 text-center">
                                 <h3 className="text-3xl md:text-4xl font-black text-gray-800">Visual Organization</h3>
                             </div>
 
                             <div className="mx-6 flex-grow bg-white dark:bg-[var(--layer1)] rounded-t-[3rem] p-8 flex flex-col gap-8">
-                                {/* Folder Grid */}
                                 <div className="grid grid-cols-2 gap-4">
-                                    {/* Folder 1: Biology */}
-                                    <div className="p-4 rounded-2xl bg-emerald-50 border-2 border-emerald-100 flex flex-col gap-3 hover:scale-105 transition-transform">
+                                    <div className="p-4 rounded-2xl bg-emerald-50 border-2 border-emerald-100 flex flex-col gap-3 md:gap-8 hover:scale-105 transition-transform">
                                         <div className="w-10 h-8 bg-emerald-400 rounded-md shadow-sm relative overflow-hidden">
                                             <div className="absolute top-0 left-0 w-4 h-2 bg-emerald-600 rounded-br-sm" />
                                         </div>
@@ -185,9 +198,7 @@ export default function Home() {
                                             <span className="w-2 h-2 rounded-full bg-emerald-400 opacity-30" />
                                         </div>
                                     </div>
-
-                                    {/* Folder 2: Math */}
-                                    <div className="p-4 rounded-2xl bg-amber-50 border-2 border-amber-100 flex flex-col gap-3 hover:scale-105 transition-transform">
+                                    <div className="p-4 rounded-2xl bg-amber-50 border-2 border-amber-100 flex flex-col gap-3 md:gap-8 hover:scale-105 transition-transform">
                                         <div className="w-10 h-8 bg-amber-400 rounded-md shadow-sm relative overflow-hidden">
                                             <div className="absolute top-0 left-0 w-4 h-2 bg-amber-600 rounded-br-sm" />
                                         </div>
@@ -199,7 +210,7 @@ export default function Home() {
                                     </div>
 
                                     {/* Folder 3: Physics */}
-                                    <div className="p-4 rounded-2xl bg-blue-50 border-2 border-blue-100 flex flex-col gap-3 hover:scale-105 transition-transform">
+                                    <div className="p-4 rounded-2xl bg-blue-50 border-2 border-blue-100 flex flex-col gap-3 md:gap-8 hover:scale-105 transition-transform">
                                         <div className="w-10 h-8 bg-blue-400 rounded-md shadow-sm relative overflow-hidden">
                                             <div className="absolute top-0 left-0 w-4 h-2 bg-blue-600 rounded-br-sm" />
                                         </div>
@@ -208,7 +219,7 @@ export default function Home() {
                                             <span className="w-2 h-2 rounded-full bg-blue-400" />
                                         </div>
                                     </div>
-                                    <div className="p-4 rounded-2xl bg-purple-50 border-2 border-purple-100 flex flex-col gap-3 hover:scale-105 transition-transform">
+                                    <div className="p-4 rounded-2xl bg-purple-50 border-2 border-purple-100 flex flex-col gap-3 md:gap-8 hover:scale-105 transition-transform">
                                         <div className="w-10 h-8 bg-purple-400 rounded-md shadow-sm relative overflow-hidden">
                                             <div className="absolute top-0 left-0 w-4 h-2 bg-purple-600 rounded-br-sm" />
                                         </div>
@@ -225,7 +236,7 @@ export default function Home() {
                 </div>
             </section>
             {isNavOpen && (
-                <div className="fixed inset-0 bg-black/60 z-[60] backdrop-blur-sm transition-opacity" onClick={() => setIsNavOpen(false)} />
+                <div className="fixed inset-0 bg-black/60 z-[60] backdrop-blur-sm transition-opacity" onClick={() => setIsNavOpen(!isNavOpen)} />
             )}
             <Sidebar
                 isNavOpen={isNavOpen}
@@ -236,6 +247,18 @@ export default function Home() {
                 handleThemeChange={handleThemeChange}
             />
             <Footer />
+            <AnimatePresence>
+            {authMode !== null && (
+                <AuthPage
+                    authMode={authMode}
+                    setAuthMode={setAuthMode}
+                    email={email}
+                    setEmail={setEmail}
+                    password={password}
+                    setPassword={setPassword}
+                />
+            )}
+            </AnimatePresence>
         </main>
     );
 }

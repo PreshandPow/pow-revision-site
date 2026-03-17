@@ -1,11 +1,11 @@
 import {Search} from "lucide-react";
 
-export default function Navbar({ setSearchInput, theme, handleThemeChange, isNavOpen, setIsNavOpen}) {
+export default function Navbar({ setSearchInput, theme, handleThemeChange, isNavOpen, setIsNavOpen, setAuthMode }) {
     return (
         <nav className="sticky top-0 z-50 flex flex-col gap-6 w-full bg-[var(--layer1)] p-4 md:p-6 shadow-sm border-b border-[var(--layer3)]">
             <div className="flex items-center justify-between w-full max-w-7xl mx-auto">
                 <button
-                    className=" cursor-pointer md:hidden p-3 hover:bg-[var(--layer2)] rounded-full transition-colors cursor-pointer"
+                    className="cursor-pointer md:hidden p-3 hover:bg-[var(--layer2)] rounded-full transition-colors"
                     onClick={() => setIsNavOpen(!isNavOpen)}
                 >
                     <div className="flex flex-col gap-1.5">
@@ -25,8 +25,14 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                 </div>
 
                 <div className="flex gap-2 md:gap-4">
-                    <button className="cursor-pointer text-[var(--text)] font-bold px-4 py-2 hover:bg-[var(--layer2)] rounded-xl transition-colors text-sm">Log in</button>
-                    <button className="cursor-pointer bg-[var(--nice-blue)] text-white px-5 py-2 rounded-xl font-bold text-sm shadow-lg shadow-blue-500/20 hover:scale-105">Sign up</button>
+                    <button
+                        className="cursor-pointer text-[var(--text)] font-bold px-4 py-2 hover:bg-[var(--layer2)] rounded-xl transition-colors text-sm"
+                        onClick={() => setAuthMode('login')}>
+                        Log in</button>
+                    <button className="cursor-pointer bg-[var(--nice-blue)] text-white px-5 py-2 rounded-xl font-bold text-sm shadow-lg shadow-blue-500/20 hover:scale-105"
+                            onClick={() => setAuthMode('signup')}
+                    >
+                        Sign up</button>
                 </div>
             </div>
             <div className="relative w-full max-w-4xl mx-auto">
