@@ -73,7 +73,7 @@ export default function Home() {
     const x = useTransform(scrollYProgress, [0, 1], [0, -xOffset]);
 
     useEffect(() => {
-        if (isNavOpen) {
+        if (isNavOpen || authMode === 'signup' || authMode === 'login') {
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = 'unset';
@@ -81,7 +81,7 @@ export default function Home() {
         return () => {
             document.body.style.overflow = 'unset';
         }
-    }, [isNavOpen]);
+    }, [isNavOpen, authMode]);
 
     return (
         <main className="bg-[var(--layer1)] min-h-screen transition-colors duration-300">
