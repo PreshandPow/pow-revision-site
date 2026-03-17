@@ -21,10 +21,17 @@ export default function Home() {
     const fetchSession = async () => {
         const currentSession = await supabase.auth.getSession();
         console.log(currentSession);
-        setSession(currentSession);
+        setSession(currentSession.data.session);
     }
     useEffect(() => {
         fetchSession();
+
+        const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+            setSession(session);
+        })
+        return () => {
+            authListener.subscription.unsubscribe();
+        }
     }, []);
 
     useEffect(() => {
@@ -248,7 +255,7 @@ export default function Home() {
             />
             <Footer />
             <AnimatePresence>
-            {authMode !== null && (
+            {authMode && (
                 <AuthPage
                     authMode={authMode}
                     setAuthMode={setAuthMode}
@@ -256,6 +263,7 @@ export default function Home() {
                     setEmail={setEmail}
                     password={password}
                     setPassword={setPassword}
+                    session={session}
                 />
             )}
             </AnimatePresence>

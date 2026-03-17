@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Squiggle } from "../components/squiggle";
 import { supabase } from "../lib/supabase-client";
 
-export default function AuthPage( { authMode, setAuthMode, email, setEmail, password, setPassword }) {
+export default function AuthPage( { authMode, setAuthMode, email, setEmail, password, setPassword, session }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -11,18 +11,24 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
             if (signUpError) {
                 console.error('Error signing up:', signUpError)
             } else {
-                const {error: signInError} = await supabase.auth.signInWithPassword({email, password})
-                if (signInError) {
-                    console.error('Error signing up:', signInError)
-                }
+                window.alert('log in with details provided')
+            }
+        } else {
+            const {error: signInError} = await supabase.auth.signInWithPassword({email, password})
+            if (signInError) {
+                console.error('Error signing up:', signInError)
             }
         }
-    }
+    };
+
+    const handleLogOut = async (e) => {
+        e.preventDefault();
+        await supabase.auth.signOut();
+    };
 
     return (
         <motion.div
-            className="fixed inset-0 bg-[var(--layer1)]/90 z-[60] backdrop-blur-sm transition-opacity"
-            initial={{ opacity: 0, y: 20}}
+            className="fixed inset-0 bg-[var(--layer1)]/95 z-[60] backdrop-blur-sm transition-opacity" initial={{ opacity: 0, y: 20}}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
@@ -32,8 +38,8 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                 className={'grid-cols-3 gap-20 grid w-full'}
                 onClick={(e) => e.stopPropagation()}>
                 <button
-                    className={'relative font-bold text-[var(--text)] text-2xl md:text-2xl mt-8 mb-12 max-w-2xl mx-auto' +
-                        ' cursor-pointer transition-colors md:ml-8'}
+                    className={'whitespace-nowrap relative font-bold text-[var(--text)] text-2xl mt-8 mb-12 max-w-2xl mx-auto' +
+                        ' cursor-pointer transition-colors ml-8'}
                     onClick={() => setAuthMode('signup')}
                 >
                     Sign up
@@ -49,7 +55,7 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                     )}
                 </button>
                 <button
-                    className={'relative font-bold text-[var(--text)] text-2xl md:text-2xl mt-8 mb-12 max-w-2xl mx-auto ' +
+                    className={'whitespace-nowrap relative font-bold text-[var(--text)] text-2xl mt-8 mb-12 max-w-2xl mx-auto ' +
                         'cursor-pointer transition-colors -ml-1 md:-ml-40 '}
                     onClick={() => setAuthMode('login')}
                 >
@@ -74,7 +80,7 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
             </div>
             {authMode === "login" && (
                 <form
-                    className={'w-[80%] min-h-[80vh] flex flex-col items-center justify-center bg-[var(--layer3)] mx-auto'}
+                    className={'w-[80%] min-h-[80vh] flex flex-col items-center justify-center mx-auto'}
                 >
                     <input
                         type="email"
@@ -95,11 +101,20 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                     >
                         Log in
                     </button>
+                    {session && (
+                        <button
+                            type="submit"
+                            className={'cursor-pointer p-4 font-semibold border rounded-xl'}
+                            onClick={handleLogOut}
+                        >
+                            Sign Out
+                        </button>
+                    )}
                 </form>
             )}
             {authMode === "signup" && (
                 <form
-                    className={'w-[80%] min-h-[80vh] flex flex-col items-center justify-center bg-[var(--layer3)] mx-auto'}
+                    className={'w-[80%] min-h-[80vh] flex flex-col items-center justify-center mx-auto'}
                 >
                     <input
                         type="email"
