@@ -24,6 +24,7 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
     const handleLogOut = async (e) => {
         e.preventDefault();
         await supabase.auth.signOut();
+        window.alert('log out successfully');
     };
 
     return (
