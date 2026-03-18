@@ -64,7 +64,7 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                     fill
                     className="object-cover opacity-100"
                 />
-                <h1 className="relative z-10 text-8xl font-bold text-[var(--vanilla-cream)] leading-tight">
+                <h1 className="relative z-10 text-6xl font-black text-[var(--layer1)] leading-tight">
                     {authMode === 'resetpassword' ? 'Seems like you forgot something.' : (authMode === 'signup' ? `The best way to study. Sign up for free.` : `Pow bot has been waiting to see you again.`)}
                 </h1>
                 <h2 className="absolute bottom-10 left-10 z-20 text-5xl font-black text-[var(--nice-blue)]"><a href="http://localhost:3000">POW</a></h2>
