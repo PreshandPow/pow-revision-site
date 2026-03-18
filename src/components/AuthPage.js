@@ -7,7 +7,7 @@ import {useState} from "react";
 export default function AuthPage( { authMode, setAuthMode, email, setEmail, password, setPassword, session }) {
 
     const [showPassword, setShowPassword] = useState(false);
-    const [resettingPassword, setResettingPassword] = useState(false);
+    const [sendingRecovery, setSendingRecovery] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -21,14 +21,13 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
         } else {
             const {error: signInError} = await supabase.auth.signInWithPassword({email, password})
             if (signInError) {
-                console.error('Error signing up:', signInError)
+                console.error('Error signing in:', signInError)
             }
         }
     };
 
-    const handleForgottenPassword = async e => {
-        e.preventDefault();
-        setResettingPassword(true);
+    const sendRecovery = async (e) => {
+        if (e) e.preventDefault();
         if (!email) {
             window.alert("Please enter your email address first.");
             return;
@@ -71,47 +70,49 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                 <h2 className="absolute bottom-10 left-10 z-20 text-5xl font-black text-[var(--nice-blue)]"><a href="#">POW</a></h2>
             </div>
             <div className="flex-1 flex flex-col w-full min-h-screen overflow-y-auto p-4 md:p-12">
-                <div className="w-full flex justify-between items-center mb-8">
-                    <div className="flex gap-4 md:gap-8" onClick={(e) => e.stopPropagation()}>
-                        <button
-                            className="whitespace-nowrap relative font-bold text-[var(--text)] text-2xl cursor-pointer transition-colors"
-                            onClick={() => setAuthMode('signup')}
-                        >
-                            Sign up
-                            {authMode === 'signup' && (
-                                <motion.div
-                                    layoutId="squiggle"
-                                    className="absolute -bottom-2 left-0 w-full h-2 pointer-events-none"
-                                    initial={false}
-                                    transition={{ type: "spring", bounce: 0.2, duration: 0.3 }}
-                                >
-                                    <Squiggle />
-                                </motion.div>
-                            )}
-                        </button>
-                        <button
-                            className="whitespace-nowrap relative font-bold text-[var(--text)] text-2xl cursor-pointer transition-colors"
-                            onClick={() => setAuthMode('login')}
-                        >
-                            Log in
-                            {authMode === 'login' && (
-                                <motion.div
-                                    layoutId="squiggle"
-                                    className="absolute -bottom-2 left-0 w-full h-2 pointer-events-none"
-                                    initial={false}
-                                    transition={{ type: "spring", bounce: 0.2, duration: 0.3 }}
-                                >
-                                    <Squiggle />
-                                </motion.div>
-                            )}
-                        </button>
-                    </div>
-                    <button
-                        className="text-[var(--text)] text-2xl font-bold cursor-pointer hover:text-[var(--text-muted)] p-2"
-                        onClick={() => setAuthMode(null)}
-                    >
-                        ✕
-                    </button>
+                <div className={`w-full flex ${authMode === 'resetpassword' ? 'justify-end' : 'justify-between'} items-center mb-8`}>
+                    {authMode !== 'resetpassword' && (
+                        <div className="flex gap-4 md:gap-8" onClick={(e) => e.stopPropagation()}>
+                            <button
+                                className="whitespace-nowrap relative font-bold text-[var(--text)] text-2xl cursor-pointer transition-colors"
+                                onClick={() => setAuthMode('signup')}
+                            >
+                                Sign up
+                                {authMode === 'signup' && (
+                                    <motion.div
+                                        layoutId="squiggle"
+                                        className="absolute -bottom-2 left-0 w-full h-2 pointer-events-none"
+                                        initial={false}
+                                        transition={{ type: "spring", bounce: 0.2, duration: 0.3 }}
+                                    >
+                                        <Squiggle />
+                                    </motion.div>
+                                )}
+                            </button>
+                            <button
+                                className="whitespace-nowrap relative font-bold text-[var(--text)] text-2xl cursor-pointer transition-colors"
+                                onClick={() => setAuthMode('login')}
+                            >
+                                Log in
+                                {authMode === 'login' && (
+                                    <motion.div
+                                        layoutId="squiggle"
+                                        className="absolute -bottom-2 left-0 w-full h-2 pointer-events-none"
+                                        initial={false}
+                                        transition={{ type: "spring", bounce: 0.2, duration: 0.3 }}
+                                    >
+                                        <Squiggle />
+                                    </motion.div>
+                                )}
+                            </button>
+                            <button
+                                className="text-[var(--text)] text-2xl font-bold absolute right-8 cursor-pointer hover:text-[var(--text-muted)] p-2"
+                                onClick={() => setAuthMode(null)}
+                            >
+                                ✕
+                            </button>
+                        </div>
+                    )}
                 </div>
                 <div className="flex-1 flex items-center justify-center w-full">
                     <div className="w-full max-w-md mx-auto">
@@ -135,7 +136,7 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                                         <button
                                             type="button"
                                             className="text-[var(--nice-blue)] font-bold text-sm hover:underline cursor-pointer"
-                                            onClick={() => {handleForgottenPassword}}
+                                            onClick={() => setAuthMode('resetpassword')}
                                         >
                                             Forgot password
                                         </button>
@@ -167,10 +168,7 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                                     </div>
                                 </div>
                                 <p className={'md:whitespace-nowrap mb-8 text-sm font-semibold text-[var(--nice-blue)]'}>
-                                    By clicking Log in, you accept Pow's
-                                    Terms of Service
-                                    and
-                                    Privacy Policy
+                                    By clicking Log in, you accept Pow's Terms of Service and Privacy Policy
                                 </p>
                                 <button
                                     type="submit"
@@ -189,7 +187,6 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                                 )}
                             </form>
                         )}
-
                         {authMode === "signup" && (
                             <form className="w-full flex flex-col items-center justify-center" onSubmit={handleSubmit}>
                                 <label htmlFor="email" className="font-bold text-[var(--text-muted)] w-full text-left text-[1rem] mb-2">
@@ -202,15 +199,12 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                                     onChange={(e) => setEmail(e.target.value)}
                                 />
                                 <div className="w-full mb-8">
-                                    <div className="flex justify-between items-center mb-2">
-                                        <label htmlFor="password" title="password" className="font-bold text-[var(--text-muted)] text-[1rem]">
-                                            Password
-                                        </label>
-                                    </div>
+                                    <label htmlFor="password" title="password" className="font-bold text-[var(--text-muted)] text-[1rem] block mb-2">
+                                        Password
+                                    </label>
                                     <div className="relative">
                                         <input
                                             type={showPassword ? "text" : "password"}
-                                            id="password"
                                             placeholder="password"
                                             className="p-4.5 pr-12 font-semibold border rounded-xl w-full bg-[var(--layer2)] text-[var(--text-muted)] border-none focus:ring-2 focus:ring-[var(--nice-blue)] outline-none"
                                             onChange={(e) => setPassword(e.target.value)}
@@ -248,12 +242,43 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                                 </button>
                             </form>
                         )}
+                        {authMode === "resetpassword" && (
+                            <div className="w-full min-h-screen">
+                                <form>
+                                    <button
+                                        className="text-[var(--text)] text-2xl font-bold cursor-pointer absolute right-8 top-2 hover:text-[var(--text-muted)] p-2"
+                                        onClick={() => setAuthMode('login')}
+                                    >
+                                        ✕
+                                    </button>
+                                    <h1 className={'text-5xl font-bold text-[var(--text)] mb-8'}>
+                                        Reset your password
+                                    </h1>
+                                    <p className={'text-xxl text-[var(--text-muted)] mb-8'}>
+                                        Enter the email you signed up with. We'll send you a link to log in and reset your password. If you signed up with a parent’s email, we’ll send them the link.
+                                    </p>
+                                    <label htmlFor="email" className="font-bold text-[var(--text-muted)] w-full text-left text-[1rem] mb-2">
+                                        Email
+                                    </label>
+                                    <input
+                                        type="email"
+                                        placeholder="user@email.co.uk"
+                                        className="p-4.5 font-semibold border rounded-xl w-full bg-[var(--layer2)] text-[var(--text-muted)] border-none focus:ring-2 focus:ring-[var(--nice-blue)] outline-none mb-8"
+                                        onChange={(e) => setEmail(e.target.value)}
+                                    />
+                                    <button
+                                        type="submit"
+                                        className="cursor-pointer p-4 font-semibold border rounded-full w-full bg-[var(--nice-blue)] border-none shadow-lg shadow-blue-500/20 hover:scale-95 transition-transform mb-8"
+                                    >
+                                        Send link
+                                    </button>
+                                </form>
+                            </div>
+                        )}
+
                     </div>
                 </div>
             </div>
-            {resettingPassword && (
-                <div>YOOOOO</div>
-            )}
         </motion.div>
     )
 };
