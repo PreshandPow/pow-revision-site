@@ -82,10 +82,6 @@ export default function Home() {
         }
     }, [isNavOpen, authMode]);
 
-    useEffect(() => {
-        if (session) window.alert('logged in');
-    })
-
     return (
         <main className="bg-[var(--layer1)] min-h-screen transition-colors duration-300">
             <Navbar
