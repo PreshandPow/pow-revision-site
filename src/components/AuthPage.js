@@ -244,7 +244,7 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                         )}
                         {authMode === "resetpassword" && (
                             <div className="w-full min-h-screen">
-                                <form>
+                                <form onSubmit={sendRecovery}>
                                     <button
                                         className="text-[var(--text)] text-2xl font-bold cursor-pointer absolute right-8 top-2 hover:text-[var(--text-muted)] p-2"
                                         onClick={() => setAuthMode('login')}
