@@ -1,3 +1,5 @@
+'use client';
+
 import { motion } from "framer-motion";
 import Image from 'next/image';
 
@@ -19,10 +21,10 @@ export default function ResetPasswordPage() {
                     priority
                 />
                 <h1 className="relative z-10 text-6xl font-bold text-[var(--vanilla-cream)] leading-tight">
-                    The best way to study. <br /> Reset your password.
+                    Try to retrace your steps.
                 </h1>
-                <h2 className="absolute bottom-10 left-10 z-20 text-5xl font-black text-[var(--layer1)] tracking-tighter">
-                    <a href="/public">POW</a>
+                <h2 className="absolute bottom-10 left-10 z-20 text-5xl font-black text-[var(--nice-blue)] tracking-tighter">
+                    <a href="http://localhost:3000">POW</a>
                 </h2>
             </div>
             <div className="flex-1 flex flex-col w-full min-h-screen overflow-y-auto p-8 md:p-12 lg:p-20 bg-[var(--layer1)]">
@@ -41,16 +43,21 @@ export default function ResetPasswordPage() {
                                 Reset Password
                             </h3>
                             <p className="text-[var(--text-muted)] mb-8">
-                                Design your recovery flow here...
+                                Make sure you remember this one
                             </p>
                             <input
-                                type="email"
-                                placeholder="Enter your email"
+                                type="password"
+                                placeholder="Enter your new password"
+                                className="p-4.5 font-semibold rounded-xl bg-[var(--layer2)] text-[var(--text-muted)] border-none outline-none focus:ring-2 focus:ring-[var(--nice-blue)] mb-6"
+                            />
+                            <input
+                                type="password"
+                                placeholder="Confirm password"
                                 className="p-4.5 font-semibold rounded-xl bg-[var(--layer2)] text-[var(--text-muted)] border-none outline-none focus:ring-2 focus:ring-[var(--nice-blue)] mb-6"
                             />
 
                             <button className="p-4 font-bold rounded-full bg-[var(--nice-blue)] text-white shadow-lg hover:scale-95 transition-transform">
-                                Send Reset Link
+                                Set new password
                             </button>
                         </div>
                     </div>

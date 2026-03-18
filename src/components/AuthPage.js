@@ -64,10 +64,10 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                     fill
                     className="object-cover opacity-100"
                 />
-                <h1 className="relative z-10 text-6xl font-bold text-[var(--vanilla-cream)] leading-tight">
-                    {authMode === 'signup' ? `The best way to study. Sign up for free.` : `Pow bot has been waiting to see you again.`}
+                <h1 className="relative z-10 text-8xl font-bold text-[var(--vanilla-cream)] leading-tight">
+                    {authMode === 'resetpassword' ? 'Seems like you forgot something.' : (authMode === 'signup' ? `The best way to study. Sign up for free.` : `Pow bot has been waiting to see you again.`)}
                 </h1>
-                <h2 className="absolute bottom-10 left-10 z-20 text-5xl font-black text-[var(--nice-blue)]"><a href="#">POW</a></h2>
+                <h2 className="absolute bottom-10 left-10 z-20 text-5xl font-black text-[var(--nice-blue)]"><a href="http://localhost:3000">POW</a></h2>
             </div>
             <div className="flex-1 flex flex-col w-full min-h-screen overflow-y-auto p-4 md:p-12">
                 <div className={`w-full flex ${authMode === 'resetpassword' ? 'justify-end' : 'justify-between'} items-center mb-8`}>

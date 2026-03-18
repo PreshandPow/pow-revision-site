@@ -14,7 +14,7 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                         <span className="w-6 h-0.5 bg-[var(--text)] rounded-full"></span>
                     </div>
                 </button>
-                <p className="text-2xl font-black text-[var(--nice-blue)] tracking-tighter"><a href="#">POW</a></p>
+                <p className="text-2xl font-black text-[var(--nice-blue)] tracking-tighter"><a href="http://localhost:3000">POW</a></p>
                 <div className="hidden md:flex items-center gap-8 font-semibold">
                     <button className="cursor-pointer text-[var(--text-muted)] hover:text-[var(--nice-blue)] transition-colors">
                         <p><span>❔</span>Support</p>
