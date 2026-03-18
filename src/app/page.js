@@ -19,9 +19,8 @@ export default function Home() {
     const [session, setSession] = useState(null);
 
     const fetchSession = async () => {
-        const currentSession = await supabase.auth.getSession();
-        console.log(currentSession);
-        setSession(currentSession.data.session);
+        const { data: { session } } = await supabase.auth.getSession();
+        setSession(session);
     }
     useEffect(() => {
         fetchSession();
@@ -82,6 +81,10 @@ export default function Home() {
             document.body.style.overflow = 'unset';
         }
     }, [isNavOpen, authMode]);
+
+    useEffect(() => {
+        if (session) window.alert('logged in');
+    })
 
     return (
         <main className="bg-[var(--layer1)] min-h-screen transition-colors duration-300">
