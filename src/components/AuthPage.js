@@ -8,9 +8,15 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
 
     const [showPassword, setShowPassword] = useState(false);
     const [sendingRecovery, setSendingRecovery] = useState(false);
+    const [popup, setPopup] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if(!email || !password) {
+            setPopup(true);
+        }   else (
+            setPopup(false)
+        )
         if (authMode === 'signup') {
             const {error: signUpError} = await supabase.auth.signUp({email, password})
             if (signUpError) {
@@ -33,7 +39,7 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
             return;
         }
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: 'http://localhost:3000/ResetPassword',
+            redirectTo: 'http://localhost:3000/resetPassword',
         });
         if (error) {
             console.error("Error sending reset email:", error.message);
@@ -170,6 +176,14 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                                 <p className={'md:whitespace-nowrap mb-8 text-sm font-semibold text-[var(--nice-blue)]'}>
                                     By clicking Log in, you accept Pow's Terms of Service and Privacy Policy
                                 </p>
+                                {popup && (
+                                    <button
+                                        type="submit"
+                                        className="cursor-pointer p-4 font-semibold border-none rounded-2xl w-full bg-[var(--vanilla-cream)] text-red-400 mb-8"
+                                    >
+                                        {!email ? 'Your email address cannot be left blank' : 'Your password cannot be left blank'}
+                                    </button>
+                                )}
                                 <button
                                     type="submit"
                                     className="cursor-pointer p-4 font-semibold border rounded-full w-full bg-[var(--nice-blue)] border-none shadow-lg shadow-blue-500/20 hover:scale-95 transition-transform"
