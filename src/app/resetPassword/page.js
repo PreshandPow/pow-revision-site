@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Image from 'next/image';
 import { supabase } from "../../lib/supabase-client";
 import {useState} from "react";
+import toast from 'react-hot-toast';
 
 export default function ResetPasswordPage() {
 
@@ -13,12 +14,49 @@ export default function ResetPasswordPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!password || !confirmPassword) toast.error('Password cannot be left blank!', {
+            style: {
+                border: '1px solid var(--nice-blue)',
+                padding: '16px',
+                color: 'var(--text)',
+                background: 'var(--layer2)',
+                zIndex: '9999',
+            },
+            iconTheme: {
+                primary: 'var(--nice-blue)',
+                secondary: '#FFFAEE',
+            },
+        });
         if (password !== confirmPassword) {
-            alert("Passwords don't match");
+            toast.error('Passwords do not match!', {
+                style: {
+                    border: '1px solid var(--nice-blue)',
+                    padding: '16px',
+                    color: 'var(--text)',
+                    background: 'var(--layer2)',
+                    zIndex: '9999',
+                },
+                iconTheme: {
+                    primary: 'var(--nice-blue)',
+                    secondary: '#FFFAEE',
+                },
+            });
         }
 
         if (password.length < 8) {
-            alert('Password must be at least 8 characters');
+            toast.success('Password must be at least 8 characters!', {
+                style: {
+                    border: '1px solid var(--nice-blue)',
+                    padding: '16px',
+                    color: 'var(--text)',
+                    background: 'var(--layer2)',
+                    zIndex: '9999',
+                },
+                iconTheme: {
+                    primary: 'var(--nice-blue)',
+                    secondary: '#FFFAEE',
+                },
+            });;
         }
 
         const { error } = await supabase.auth.updateUser( { password: password } );

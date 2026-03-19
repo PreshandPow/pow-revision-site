@@ -36,7 +36,6 @@ export default function Home() {
     useEffect(() => {
         const saved = localStorage.getItem("theme");
         const system = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setTheme(saved || system);
     }, []);
     useEffect(() => {

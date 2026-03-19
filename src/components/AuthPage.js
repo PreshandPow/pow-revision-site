@@ -1,33 +1,97 @@
+'use client';
+
 import { motion } from "framer-motion";
 import { Squiggle } from "../components/squiggle";
 import { supabase } from "../lib/supabase-client";
 import Image from 'next/image';
 import {useState} from "react";
+import toast from 'react-hot-toast';
 
 export default function AuthPage( { authMode, setAuthMode, email, setEmail, password, setPassword, session }) {
 
     const [showPassword, setShowPassword] = useState(false);
     const [sendingRecovery, setSendingRecovery] = useState(false);
-    const [popup, setPopup] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if(!email || !password) {
-            setPopup(true);
-        }   else (
-            setPopup(false)
-        )
+
+        if (!email) toast.error('Email cannot be left blank!', {
+            style: {
+                border: '1px solid var(--nice-blue)',
+                padding: '16px',
+                color: 'var(--text)',
+                background: 'var(--layer2)',
+                zIndex: '9999',
+            },
+            iconTheme: {
+                primary: 'var(--nice-blue)',
+                secondary: '#FFFAEE',
+            },
+        });
+
+        if (!password) toast.error('Password cannot be left blank!', {
+            style: {
+                border: '1px solid var(--nice-blue)',
+                padding: '16px',
+                color: 'var(--text)',
+                background: 'var(--layer2)',
+                zIndex: '9999',
+            },
+            iconTheme: {
+                primary: 'var(--nice-blue)',
+                secondary: '#FFFAEE',
+            },
+        });
+        if (password && password.length < 8) toast.success('Password must be at least 8 characters!', {
+            style: {
+                border: '1px solid var(--nice-blue)',
+                padding: '16px',
+                color: 'var(--text)',
+                background: 'var(--layer2)',
+                zIndex: '9999',
+            },
+            iconTheme: {
+                primary: 'var(--nice-blue)',
+                secondary: '#FFFAEE',
+            },
+        });
+
         if (authMode === 'signup') {
             const {error: signUpError} = await supabase.auth.signUp({email, password})
             if (signUpError) {
                 console.error('Error signing up:', signUpError)
             } else {
-                window.alert('log in with details provided')
+                toast.success('Please check your email to verify!', {
+                    style: {
+                        border: '1px solid var(--nice-blue)',
+                        padding: '16px',
+                        color: 'var(--text)',
+                        background: 'var(--layer2)',
+                    },
+                    iconTheme: {
+                        primary: 'var(--nice-blue)',
+                        secondary: '#FFFAEE',
+                    },
+                });
             }
         } else {
             const {error: signInError} = await supabase.auth.signInWithPassword({email, password})
             if (signInError) {
                 console.error('Error signing in:', signInError)
+            }   else {
+                toast.success('Success!', {
+                    style: {
+                        border: '1px solid var(--nice-blue)',
+                        padding: '16px',
+                        color: 'var(--text)',
+                        background: 'var(--layer2)',
+                        zIndex: '9999',
+                    },
+                    iconTheme: {
+                        primary: 'var(--nice-blue)',
+                        secondary: '#FFFAEE',
+                    },
+                });
             }
         }
     };
@@ -35,7 +99,6 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
     const sendRecovery = async (e) => {
         if (e) e.preventDefault();
         if (!email) {
-            window.alert("Please enter your email address first.");
             return;
         }
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -43,16 +106,13 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
         });
         if (error) {
             console.error("Error sending reset email:", error.message);
-            window.alert(error.message);
         } else {
-            window.alert("Password reset email sent! Check your inbox.");
         }
     };
 
     const handleLogOut = async (e) => {
         e.preventDefault();
         await supabase.auth.signOut();
-        window.alert('log out successfully');
     };
 
     return (
@@ -176,14 +236,6 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                                 <p className={'md:whitespace-nowrap mb-8 text-sm font-semibold text-[var(--nice-blue)]'}>
                                     By clicking Log in, you accept Pow's Terms of Service and Privacy Policy
                                 </p>
-                                {popup && (
-                                    <button
-                                        type="submit"
-                                        className="cursor-pointer p-4 font-semibold border-none rounded-2xl w-full bg-[var(--vanilla-cream)] text-red-400 mb-8"
-                                    >
-                                        {!email ? 'Your email address cannot be left blank' : 'Your password cannot be left blank'}
-                                    </button>
-                                )}
                                 <button
                                     type="submit"
                                     className="cursor-pointer p-4 font-semibold border rounded-full w-full bg-[var(--nice-blue)] border-none shadow-lg shadow-blue-500/20 hover:scale-95 transition-transform"
