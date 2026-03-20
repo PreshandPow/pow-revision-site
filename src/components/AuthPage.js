@@ -74,6 +74,9 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                     },
                 });
             }   else {
+                setTimeout(() => {
+                    router.push('/dashboard');
+                }, 1200);
                 toast.success('Successfully logged in!', {
                     style: {
                         border: '1px solid var(--nice-blue)',
@@ -87,7 +90,6 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                         secondary: '#FFFAEE',
                     },
                 });
-                router.push('/dashboard');
             }
         }
     };
