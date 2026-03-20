@@ -69,6 +69,7 @@ export default function ResetPasswordPage() {
         }
     }
 
+
     return (
         <motion.div
             className="fixed inset-0 flex flex-col lg:flex-row w-full min-h-screen bg-[var(--layer1)]/95 z-[60] backdrop-blur-sm"
