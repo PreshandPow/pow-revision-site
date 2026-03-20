@@ -4,8 +4,11 @@ import {useEffect, useState} from "react";
 import Navbar from "../../components/Navbar";
 import Sidebar from "../../components/Sidebar";
 import {supabase} from "../../lib/supabase-client";
+import { useRouter } from 'next/navigation';
 
 export default function DashboardLayout({ children }) {
+
+    const router = useRouter();
     const [loggedIn, setLoggedIn] = useState(true);
     const [isNavOpen, setIsNavOpen] = useState(false);
     const [theme, setTheme] = useState('light');
@@ -55,6 +58,7 @@ export default function DashboardLayout({ children }) {
                 setSearchInput={setSearchInput}
                 loggedIn={loggedIn}
                 session={session}
+                router={router}
             />
             <Sidebar
                 isNavOpen={isNavOpen}
