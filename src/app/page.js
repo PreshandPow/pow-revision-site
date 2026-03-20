@@ -71,7 +71,7 @@ export default function Home() {
     const x = useTransform(scrollYProgress, [0, 1], [0, -xOffset]);
 
     useEffect(() => {
-        if (isNavOpen || authMode === 'signup' || authMode === 'login') {
+        if (isNavOpen || authMode === 'signup' || authMode === 'login' || authMode ===  'resetpassword') {
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = 'unset';
