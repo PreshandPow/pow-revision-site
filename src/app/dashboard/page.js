@@ -1,6 +1,7 @@
 'use client';
 import {supabase} from "../../lib/supabase-client";
 import { useRouter } from 'next/navigation';
+import Navbar from '../../components/Navbar';
 
 export default function Dashboard () {
 
@@ -13,6 +14,9 @@ export default function Dashboard () {
     };
 
     return (
+        <Navbar
+
+        />
         <button
             type="button"
             className="mt-4 cursor-pointer p-4 font-semibold border rounded-xl w-full text-[var(--text)]"

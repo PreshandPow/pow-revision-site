@@ -91,6 +91,7 @@ export default function Home() {
                 isNavOpen={isNavOpen}
                 setIsNavOpen={setIsNavOpen}
                 setAuthMode={setAuthMode}
+                session={session}
             />
             <header className="relative z-10 bg-[var(--layer2)] py-20 px-6">
                 <div className="max-w-4xl mx-auto text-center">
