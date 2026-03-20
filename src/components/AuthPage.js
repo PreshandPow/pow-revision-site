@@ -6,9 +6,11 @@ import { supabase } from "../lib/supabase-client";
 import Image from 'next/image';
 import {useState} from "react";
 import toast from 'react-hot-toast';
+import { useRouter } from 'next/navigation'; // Add this at the top
 
 export default function AuthPage( { authMode, setAuthMode, email, setEmail, password, setPassword, session }) {
 
+    const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
     const [sendingRecovery, setSendingRecovery] = useState(false);
     const [popup, setPopup] = useState(false);
@@ -85,6 +87,7 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                         secondary: '#FFFAEE',
                     },
                 });
+                router.push('/dashboard');
             }
         }
     };
@@ -131,16 +134,11 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
         }
     };
 
-    const handleLogOut = async (e) => {
-        e.preventDefault();
-        await supabase.auth.signOut();
-    };
-
     const handleGoogleLogin = async () => {
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: 'http://localhost:3000', // Where they land after logging in
+                redirectTo: 'http://localhost:3000/dashboard',
                 queryParams: {
                     access_type: 'offline',
                     prompt: 'select_account',
@@ -325,15 +323,6 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                                 >
                                     New to Pow? Create an account.
                                 </button>
-                                {session && (
-                                    <button
-                                        type="button"
-                                        className="mt-4 cursor-pointer p-4 font-semibold border rounded-xl w-full text-[var(--text)]"
-                                        onClick={handleLogOut}
-                                    >
-                                        Sign Out
-                                    </button>
-                                )}
                             </form>
                         )}
                         {authMode === "signup" && (
