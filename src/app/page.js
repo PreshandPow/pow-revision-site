@@ -7,8 +7,11 @@ import Sidebar from "../components/Sidebar";
 import Footer from "../components/Footer";
 import AuthPage from "../components/AuthPage";
 import { supabase } from "../lib/supabase-client";
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
+
+    const router = useRouter();
     const [searchInput, setSearchInput] = useState("");
     const [isNavOpen, setIsNavOpen] = useState(false);
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
@@ -104,12 +107,12 @@ export default function Home() {
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <button className="cursor-pointer bg-[var(--nice-blue)] text-white px-10 py-4 rounded-2xl
                                         font-bold text-lg hover:scale-105 transition-transform shadow-xl"
-                                onClick={() => setAuthMode('login')}>
+                                onClick={() => session ? router.push('/dashboard') : setAuthMode('login')}>
                             Get started for free
                         </button>
                         <button className="cursor-pointer bg-[var(--layer2)] text-[var(--text)] border
                                         border-[var(--layer3)] px-10 py-4 rounded-2xl font-bold text-lg hover:bg-[var(--layer3)] transition-colors"
-                                onClick={() => setAuthMode('login')}>
+                                onClick={() => session ? router.push('/dashboard') : setAuthMode('login')}>
                             See how it works
                         </button>
                     </div>
@@ -254,17 +257,16 @@ export default function Home() {
             />
             <Footer />
             <AnimatePresence>
-            {authMode && (
-                <AuthPage
-                    authMode={authMode}
-                    setAuthMode={setAuthMode}
-                    email={email}
-                    setEmail={setEmail}
-                    password={password}
-                    setPassword={setPassword}
-                    session={session}
-                />
-            )}
+                {authMode && (
+                    <AuthPage
+                        authMode={authMode}
+                        setAuthMode={setAuthMode}
+                        email={email}
+                        setEmail={setEmail}
+                        password={password}
+                        setPassword={setPassword}
+                    />
+                )}
             </AnimatePresence>
         </main>
     );

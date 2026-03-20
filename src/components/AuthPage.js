@@ -4,16 +4,27 @@ import { motion } from "framer-motion";
 import { Squiggle } from "../components/squiggle";
 import { supabase } from "../lib/supabase-client";
 import Image from 'next/image';
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import toast from 'react-hot-toast';
-import { useRouter } from 'next/navigation'; // Add this at the top
+import { useRouter } from 'next/navigation';
 
-export default function AuthPage( { authMode, setAuthMode, email, setEmail, password, setPassword, session }) {
+export default function AuthPage( { authMode, setAuthMode, email, setEmail, password, setPassword }) {
 
     const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
     const [sendingRecovery, setSendingRecovery] = useState(false);
     const [popup, setPopup] = useState(false);
+
+    useEffect(() => {
+        if (authMode === 'signup' || authMode === 'login' || authMode ===  'resetpassword') {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        }
+    }, [authMode]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -24,9 +35,10 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
             setPopup(false)
         )
 
-
         if (authMode === 'signup') {
-            const {error: signUpError} = await supabase.auth.signUp({email, password})
+            const {error: signUpError} = await supabase.auth.signUp({email, password, options: {
+                emailRedirectTo: 'http://localhost:3000/dashboard',
+                }})
             if (signUpError || !email || !password) {
                 console.error('Error signing up:', signUpError)
                 toast.error(signUpError.message, {
@@ -76,6 +88,7 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
             }   else {
                 setTimeout(() => {
                     router.push('/dashboard');
+                    router.refresh
                 }, 1200);
                 toast.success('Successfully logged in!', {
                     style: {

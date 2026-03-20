@@ -23,18 +23,24 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                         {theme === 'light' ? '☀️' : '🌙'}
                     </button>
                 </div>
-                {!session && (
-                <div className="flex gap-2 md:gap-4">
+                {session ? (
                     <button
-                        className="cursor-pointer text-[var(--text)] font-bold px-4 py-2 hover:bg-[var(--layer2)] rounded-xl transition-colors text-sm"
-                        onClick={() => setAuthMode('login')}>
-                        Log in</button>
-                    <button className="cursor-pointer bg-[var(--nice-blue)] text-white px-5 py-2 rounded-xl font-bold text-sm shadow-lg shadow-blue-500/20 hover:scale-105"
-                            onClick={() => setAuthMode('signup')}
-                    >
-                        Sign up</button>
-                </div>
-                    )}
+                        className="font-bold text-[var(--nice-blue)]"
+                        onClick={() => router.push('/dashboard')}>
+                        My Dashboard
+                    </button>
+                ) : (
+                    <div className="flex gap-2 md:gap-4">
+                        <button
+                            className="cursor-pointer text-[var(--text)] font-bold px-4 py-2 hover:bg-[var(--layer2)] rounded-xl transition-colors text-sm"
+                            onClick={() => setAuthMode('login')}>
+                            Log in</button>
+                        <button className="cursor-pointer bg-[var(--nice-blue)] text-white px-5 py-2 rounded-xl font-bold text-sm shadow-lg shadow-blue-500/20 hover:scale-105"
+                                onClick={() => setAuthMode('signup')}
+                        >
+                            Sign up</button>
+                    </div>
+                )}
             </div>
             <div className="relative w-full max-w-4xl mx-auto">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] w-5 h-5" />

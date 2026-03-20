@@ -1,7 +1,6 @@
 'use client';
 import {supabase} from "../../lib/supabase-client";
 import { useRouter } from 'next/navigation';
-import Navbar from '../../components/Navbar';
 
 export default function Dashboard () {
 
@@ -11,12 +10,10 @@ export default function Dashboard () {
         e.preventDefault();
         await supabase.auth.signOut();
         router.replace('/')
+
     };
 
     return (
-        <Navbar
-
-        />
         <button
             type="button"
             className="mt-4 cursor-pointer p-4 font-semibold border rounded-xl w-full text-[var(--text)]"
