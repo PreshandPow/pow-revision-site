@@ -258,12 +258,11 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                                     By clicking Log in, you accept Pow's Terms of Service and Privacy Policy
                                 </p>
                                 {popup && (
-                                    <button
-                                        type="submit"
+                                    <div
                                         className="cursor-pointer p-4 font-semibold border-none rounded-2xl w-full bg-[var(--vanilla-cream)] text-red-400 mb-8"
                                     >
                                         {!email ? 'Your email address cannot be left blank' : 'Your password cannot be left blank'}
-                                    </button>
+                                    </div>
                                 )}
                                 <button
                                     type="submit"
@@ -369,12 +368,11 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                                         onChange={(e) => setEmail(e.target.value)}
                                     />
                                     {popup && (
-                                        <button
-                                            type="submit"
+                                        <div
                                             className="cursor-pointer p-4 font-semibold border-none rounded-2xl w-full bg-[var(--vanilla-cream)] text-red-400 mb-8"
                                         >
                                             {!email ? 'Your email address cannot be left blank' : 'Your password cannot be left blank'}
-                                        </button>
+                                        </div>
                                     )}
                                     <button
                                         type="submit"
