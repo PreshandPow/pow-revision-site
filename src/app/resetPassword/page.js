@@ -86,7 +86,7 @@ export default function ResetPasswordPage() {
                     priority
                 />
                 <h1 className="relative z-10 text-6xl font-black text-[var(--layer1)] leading-tight">
-                    Try to retrace your steps.
+                    Seems like you forgot something.
                 </h1>
                 <h2 className="absolute bottom-10 left-10 z-20 text-5xl font-black text-[var(--nice-blue)] tracking-tighter">
                     <a href="http://localhost:3000">POW</a>

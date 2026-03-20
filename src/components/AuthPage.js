@@ -27,7 +27,7 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
             const {error: signUpError} = await supabase.auth.signUp({email, password})
             if (signUpError || !email || !password) {
                 console.error('Error signing up:', signUpError)
-                toast.error('Error creating account! 😔', {
+                toast.error(signUpError.message, {
                     style: {
                         border: '1px solid var(--nice-blue)',
                         padding: '16px',
@@ -58,7 +58,7 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
             const {error: signInError} = await supabase.auth.signInWithPassword({email, password})
             if (signInError) {
                 console.error('Error signing in:', signInError)
-                toast.error('Incorrect email or password!', {
+                toast.error(signInError.message, {
                     style: {
                         border: '1px solid var(--nice-blue)',
                         padding: '16px',
@@ -92,6 +92,7 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
     const sendRecovery = async (e) => {
         if (e) e.preventDefault();
         if (!email) {
+            setPopup(true);
             return;
         }
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -99,7 +100,34 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
         });
         if (error) {
             console.error("Error sending reset email:", error.message);
+            toast.error(error.message, {
+                style: {
+                    border: '1px solid var(--nice-blue)',
+                    padding: '16px',
+                    color: 'var(--text)',
+                    background: 'var(--layer2)',
+                    zIndex: '9999',
+                },
+                iconTheme: {
+                    primary: 'var(--nice-blue)',
+                    secondary: '#FFFAEE',
+                },
+            });
         } else {
+            toast.success('Password reset link sent to email!', {
+                style: {
+                    border: '1px solid var(--nice-blue)',
+                    padding: '16px',
+                    color: 'var(--text)',
+                    background: 'var(--layer2)',
+                    zIndex: '9999',
+                },
+                iconTheme: {
+                    primary: 'var(--nice-blue)',
+                    secondary: '#FFFAEE',
+                },
+            });
+            setAuthMode('login');
         }
     };
 
@@ -124,7 +152,7 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                     className="object-cover opacity-100"
                 />
                 <h1 className="relative z-10 text-6xl font-black text-[var(--layer1)] leading-tight">
-                    {authMode === 'resetpassword' ? 'Seems like you forgot something.' : (authMode === 'signup' ? `The best way to study. Sign up for free.` : `Pow bot has been waiting to see you again.`)}
+                    {authMode === 'resetpassword' ? 'Try to retrace your steps.' : (authMode === 'signup' ? `The best way to study. Sign up for free.` : `Pow bot has been waiting to see you again.`)}
                 </h1>
                 <h2 className="absolute bottom-10 left-10 z-20 text-5xl font-black text-[var(--nice-blue)]"><a href="http://localhost:3000">POW</a></h2>
             </div>
@@ -234,7 +262,7 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                                         type="submit"
                                         className="cursor-pointer p-4 font-semibold border-none rounded-2xl w-full bg-[var(--vanilla-cream)] text-red-400 mb-8"
                                     >
-                                        {!email ? 'Your email address cannot be left blank' : (!password ? 'Your password cannot be left blank' :'Password must contain at least 8 characters')}
+                                        {!email ? 'Your email address cannot be left blank' : 'Your password cannot be left blank'}
                                     </button>
                                 )}
                                 <button
@@ -340,6 +368,14 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                                         className="p-4.5 font-semibold border rounded-xl w-full bg-[var(--layer2)] text-[var(--text-muted)] border-none focus:ring-2 focus:ring-[var(--nice-blue)] outline-none mb-8"
                                         onChange={(e) => setEmail(e.target.value)}
                                     />
+                                    {popup && (
+                                        <button
+                                            type="submit"
+                                            className="cursor-pointer p-4 font-semibold border-none rounded-2xl w-full bg-[var(--vanilla-cream)] text-red-400 mb-8"
+                                        >
+                                            {!email ? 'Your email address cannot be left blank' : 'Your password cannot be left blank'}
+                                        </button>
+                                    )}
                                     <button
                                         type="submit"
                                         className="cursor-pointer p-4 font-semibold border rounded-full w-full bg-[var(--nice-blue)] border-none shadow-lg shadow-blue-500/20 hover:scale-95 transition-transform mb-8"
