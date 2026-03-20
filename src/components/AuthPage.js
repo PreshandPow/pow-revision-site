@@ -11,55 +11,35 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
 
     const [showPassword, setShowPassword] = useState(false);
     const [sendingRecovery, setSendingRecovery] = useState(false);
+    const [popup, setPopup] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!email) toast.error('Email cannot be left blank!', {
-            style: {
-                border: '1px solid var(--nice-blue)',
-                padding: '16px',
-                color: 'var(--text)',
-                background: 'var(--layer2)',
-                zIndex: '9999',
-            },
-            iconTheme: {
-                primary: 'var(--nice-blue)',
-                secondary: '#FFFAEE',
-            },
-        });
+        if(!email || !password) {
+            setPopup(true);
+        }   else (
+            setPopup(false)
+        )
 
-        if (!password) toast.error('Password cannot be left blank!', {
-            style: {
-                border: '1px solid var(--nice-blue)',
-                padding: '16px',
-                color: 'var(--text)',
-                background: 'var(--layer2)',
-                zIndex: '9999',
-            },
-            iconTheme: {
-                primary: 'var(--nice-blue)',
-                secondary: '#FFFAEE',
-            },
-        });
-        if (password && password.length < 8) toast.success('Password must be at least 8 characters!', {
-            style: {
-                border: '1px solid var(--nice-blue)',
-                padding: '16px',
-                color: 'var(--text)',
-                background: 'var(--layer2)',
-                zIndex: '9999',
-            },
-            iconTheme: {
-                primary: 'var(--nice-blue)',
-                secondary: '#FFFAEE',
-            },
-        });
 
         if (authMode === 'signup') {
             const {error: signUpError} = await supabase.auth.signUp({email, password})
-            if (signUpError) {
+            if (signUpError || !email || !password) {
                 console.error('Error signing up:', signUpError)
+                toast.error('Error creating account! 😔', {
+                    style: {
+                        border: '1px solid var(--nice-blue)',
+                        padding: '16px',
+                        color: 'var(--text)',
+                        background: 'var(--layer2)',
+                        zIndex: '9999',
+                    },
+                    iconTheme: {
+                        primary: 'var(--nice-blue)',
+                        secondary: '#FFFAEE',
+                    },
+                });
             } else {
                 toast.success('Please check your email to verify!', {
                     style: {
@@ -78,8 +58,21 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
             const {error: signInError} = await supabase.auth.signInWithPassword({email, password})
             if (signInError) {
                 console.error('Error signing in:', signInError)
+                toast.error('Incorrect email or password!', {
+                    style: {
+                        border: '1px solid var(--nice-blue)',
+                        padding: '16px',
+                        color: 'var(--text)',
+                        background: 'var(--layer2)',
+                        zIndex: '9999',
+                    },
+                    iconTheme: {
+                        primary: 'var(--nice-blue)',
+                        secondary: '#FFFAEE',
+                    },
+                });
             }   else {
-                toast.success('Success!', {
+                toast.success('Successfully logged in!', {
                     style: {
                         border: '1px solid var(--nice-blue)',
                         padding: '16px',
@@ -236,11 +229,26 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                                 <p className={'md:whitespace-nowrap mb-8 text-sm font-semibold text-[var(--nice-blue)]'}>
                                     By clicking Log in, you accept Pow's Terms of Service and Privacy Policy
                                 </p>
+                                {popup && (
+                                    <button
+                                        type="submit"
+                                        className="cursor-pointer p-4 font-semibold border-none rounded-2xl w-full bg-[var(--vanilla-cream)] text-red-400 mb-8"
+                                    >
+                                        {!email ? 'Your email address cannot be left blank' : (!password ? 'Your password cannot be left blank' :'Password must contain at least 8 characters')}
+                                    </button>
+                                )}
                                 <button
                                     type="submit"
-                                    className="cursor-pointer p-4 font-semibold border rounded-full w-full bg-[var(--nice-blue)] border-none shadow-lg shadow-blue-500/20 hover:scale-95 transition-transform"
+                                    className="cursor-pointer p-4 font-semibold border rounded-full w-full bg-[var(--nice-blue)] border-none shadow-lg shadow-blue-500/20 mb-8 hover:scale-95 transition-transform"
                                 >
                                     Log in
+                                </button>
+                                <button
+                                    type="button"
+                                    className="p-4.5 font-semibold border rounded-full w-full bg-[var(--text-muted)] text-[var(--layer2)] border-none mb-8 hover:bg-[var(--text)] cursor-pointer"
+                                    onClick={() => setAuthMode('signup')}
+                                >
+                                    New to Pow? Create an account.
                                 </button>
                                 {session && (
                                     <button
