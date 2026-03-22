@@ -57,7 +57,6 @@ export default function DashboardLayout({ children }) {
                 searchInput={searchInput}
                 setSearchInput={setSearchInput}
                 loggedIn={loggedIn}
-                session={session}
                 router={router}
             />
             <Sidebar

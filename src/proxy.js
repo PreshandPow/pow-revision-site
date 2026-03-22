@@ -26,17 +26,23 @@ export async function proxy(request) {
             },
         }
     )
-
-    const { data: { session } } = await supabase.auth.getSession()
+    const { data: { user } } = await supabase.auth.getUser()
     const { pathname } = request.nextUrl
-    if (session) {
+
+    if (user && pathname === '/') {
+        console.log('sending to dashboard')
         return NextResponse.redirect(new URL('/dashboard', request.url))
     }
-    if (!session && pathname.startsWith('/dashboard')) {
-        return NextResponse.redirect(new URL('/dashboard', request.url))
+
+    if (!user && pathname.startsWith('/dashboard')) {
+        console.log('sending to home')
+        return NextResponse.redirect(new URL('/', request.url))
     }
+
+    console.log('no condition reahced', pathname, !!user)
     return response
 }
+
 export const config = {
     matcher: ['/((?!_next/static|_next/image|favicon.ico|api).*)'],
 }

@@ -26,6 +26,7 @@ export default function Home() {
         setSession(session);
     }
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchSession();
 
         const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -39,6 +40,7 @@ export default function Home() {
     useEffect(() => {
         const saved = localStorage.getItem("theme");
         const system = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setTheme(saved || system);
     }, []);
     useEffect(() => {

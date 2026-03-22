@@ -1,15 +1,26 @@
 'use client';
-import {supabase} from "../../lib/supabase-client";
+
 import { useRouter } from 'next/navigation';
+import { createBrowserClient } from '@supabase/ssr'
+
+export function createClient() {
+    return createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    )
+}
+
 
 export default function Dashboard () {
 
     const router = useRouter();
+    const supabase = createClient()
 
     const handleLogOut = async (e) => {
         e.preventDefault();
         await supabase.auth.signOut();
         router.replace('/')
+        router.refresh();
 
     };
 

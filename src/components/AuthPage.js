@@ -2,11 +2,18 @@
 
 import { motion } from "framer-motion";
 import { Squiggle } from "../components/squiggle";
-import { supabase } from "../lib/supabase-client";
 import Image from 'next/image';
 import {useEffect, useState} from "react";
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
+import { createBrowserClient } from '@supabase/ssr'
+
+export function createClient() {
+    return createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    )
+}
 
 export default function AuthPage( { authMode, setAuthMode, email, setEmail, password, setPassword }) {
 
@@ -14,6 +21,7 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
     const [showPassword, setShowPassword] = useState(false);
     const [sendingRecovery, setSendingRecovery] = useState(false);
     const [popup, setPopup] = useState(false);
+    const supabase = createClient();
 
     useEffect(() => {
         if (authMode === 'signup' || authMode === 'login' || authMode ===  'resetpassword') {
@@ -86,23 +94,25 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                     },
                 });
             }   else {
-                setTimeout(() => {
-                    router.push('/dashboard');
-                    router.refresh
-                }, 1200);
-                toast.success('Successfully logged in!', {
-                    style: {
-                        border: '1px solid var(--nice-blue)',
-                        padding: '16px',
-                        color: 'var(--text)',
-                        background: 'var(--layer2)',
-                        zIndex: '9999',
-                    },
-                    iconTheme: {
-                        primary: 'var(--nice-blue)',
-                        secondary: '#FFFAEE',
-                    },
-                });
+                    const { data: sessionData } = await supabase.auth.getSession()
+                    if (sessionData) {
+                        console.log('suuccess')
+                        router.push('/dashboard');
+                        router.refresh();
+                        toast.success('Successfully logged in!', {
+                            style: {
+                                border: '1px solid var(--nice-blue)',
+                                padding: '16px',
+                                color: 'var(--text)',
+                                background: 'var(--layer2)',
+                                zIndex: '9999',
+                            },
+                            iconTheme: {
+                                primary: 'var(--nice-blue)',
+                                secondary: '#FFFAEE',
+                            },
+                        });
+                    }
             }
         }
     };

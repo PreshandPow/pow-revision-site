@@ -1,6 +1,32 @@
-import {Search} from "lucide-react";
+"use client";
 
-export default function Navbar({ setSearchInput, theme, handleThemeChange, isNavOpen, setIsNavOpen, setAuthMode, session, router }) {
+import {Search} from "lucide-react";
+import { createBrowserClient } from '@supabase/ssr'
+import { useState, useEffect } from 'react';
+
+export function createClient() {
+    return createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    )
+}
+
+export default function Navbar({ setSearchInput, theme, handleThemeChange, isNavOpen, setIsNavOpen, setAuthMode, router }) {
+
+    const supabase = createClient();
+    const [session, setSession] = useState(null);
+
+    useEffect(() => {
+        supabase.auth.getSession().then(({ data }) => {
+            setSession(data.session);
+        });
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setSession(session);
+        });
+
+        return () => subscription.unsubscribe();
+    }, []);
+
     return (
         <nav className="sticky top-0 z-50 flex flex-col gap-6 w-full bg-[var(--layer1)] p-4 md:p-6 shadow-sm border-b border-[var(--layer3)]">
             <div className="flex items-center justify-between w-full max-w-7xl mx-auto">
