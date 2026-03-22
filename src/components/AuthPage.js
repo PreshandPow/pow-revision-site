@@ -117,6 +117,17 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
         }
     };
 
+    useEffect(() => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_IN' && session) {
+                router.push('/dashboard');
+                router.refresh();
+            }
+        });
+
+        return () => subscription.unsubscribe();
+    }, []);
+
     const sendRecovery = async (e) => {
         if (e) e.preventDefault();
         if (!email) {
@@ -163,7 +174,7 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: 'http://localhost:3000/dashboard',
+                redirectTo: 'http://localhost:3000/auth/callback',  // ✅ changed
                 queryParams: {
                     access_type: 'offline',
                     prompt: 'select_account',
