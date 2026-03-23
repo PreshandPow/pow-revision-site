@@ -135,7 +135,7 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
             return;
         }
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: 'http://localhost:3000/resetPassword',
+            redirectTo: 'http://localhost:3000/resetPassword/callback',  // ✅ updated
         });
         if (error) {
             console.error("Error sending reset email:", error.message);
@@ -174,7 +174,7 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: 'http://localhost:3000/auth/callback',  // ✅ changed
+                redirectTo: 'http://localhost:3000/auth/callback',
                 queryParams: {
                     access_type: 'offline',
                     prompt: 'select_account',

@@ -20,7 +20,7 @@ export const metadata = {
 
 const inter = Inter({
     subsets: ['latin'],
-    variable: '--font-inter', // Creates a CSS variable
+    variable: '--font-inter',
 });
 
 const outfit = Outfit({

@@ -2,44 +2,68 @@
 
 import { motion } from "framer-motion";
 import Image from 'next/image';
-import { supabase } from "../../lib/supabase-client";
-import { useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import toast from 'react-hot-toast';
+import { createBrowserClient } from '@supabase/ssr'
+
+export function createClient() {
+    return createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    )
+}
 
 export default function ResetPasswordPage() {
     const router = useRouter();
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [sessionReady, setSessionReady] = useState(false);
+
+    const supabase = createClient()
+
+    useEffect(() => {
+        // Listen for the recovery event
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'PASSWORD_RECOVERY' && session) {
+                setSessionReady(true);
+            }
+        });
+        supabase.auth.getSession().then(({ data }) => {
+            if (data.session) setSessionReady(true);
+        });
+
+        return () => subscription.unsubscribe();
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        if (!sessionReady) {
+            toast.error('Session expired. Please request a new reset link.');
+            return;
+        }
         if (!password || !confirmPassword) {
             toast.error('Please fill in both fields!');
             return;
         }
-
         if (password !== confirmPassword) {
             toast.error('Passwords do not match!');
             return;
         }
-
         if (password.length < 8) {
             toast.error('Password must be at least 8 characters!');
             return;
         }
 
-        const { error } = await supabase.auth.updateUser({ password: password });
+        const { error } = await supabase.auth.updateUser({ password });
 
         if (error) {
             toast.error(error.message);
         } else {
             toast.success('Password updated successfully! 🚀');
-            setTimeout(() => {
-                router.push('/');
-            }, 1500);
+            setTimeout(() => router.push('/'), 1500);
         }
     }
 
