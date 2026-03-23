@@ -1,5 +1,6 @@
-import { ChevronDown } from "lucide-react";
+import {ChevronDown, Menu} from "lucide-react";
 import { useEffect, useRef } from "react";
+import Link from "next/link";
 
 export default function Sidebar({ isNavOpen, setIsNavOpen, isOptionsOpen, setIsOptionsOpen, theme, handleThemeChange }) {
 
@@ -15,32 +16,35 @@ export default function Sidebar({ isNavOpen, setIsNavOpen, isOptionsOpen, setIsO
     }, [isNavOpen, setIsNavOpen]);
 
     return (
+        <>
+        <div
+            className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] transition-opacity duration-300 ${
+                isNavOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+            }`}
+            aria-hidden="true"
+        />
         <aside ref={sidebarRef}
             className={`
-                fixed top-0 left-0 h-full w-2/3 bg-[var(--layer1)] z-[70] 
+                fixed top-0 left-0 h-screen w-[280px] bg-[var(--layer1)] z-[70] 
                 transform transition-transform duration-300 ease-in-out
                 ${isNavOpen ? 'translate-x-0' : '-translate-x-full'}
-                p-6 shadow-2xl border-r border-[var(--layer3)]
+                p-6 shadow-2xl
             `}
             aria-label="Side Navigation"
             aria-hidden={!isNavOpen}
         >
             <header className="flex items-center justify-between mb-8">
-                <div className="text-[var(--nice-blue)] font-black text-2xl tracking-tighter">
-                    <a href="#">POW</a>
-                </div>
+                <Link href="/" className="text-4xl font-black text-[var(--nice-blue)] tracking-tighter">
+                    POW
+                </Link>
                 <button
                     className="cursor-pointer md:hidden p-3 hover:bg-[var(--layer2)] rounded-full transition-colors"
                     onClick={() => setIsNavOpen(!isNavOpen)}
+                    aria-label="Toggle menu"
                 >
-                    <div className="flex flex-col gap-1.5">
-                        <span className="w-6 h-0.5 bg-[var(--text)] rounded-full"></span>
-                        <span className="w-6 h-0.5 bg-[var(--text)] rounded-full"></span>
-                        <span className="w-6 h-0.5 bg-[var(--text)] rounded-full"></span>
-                    </div>
+                    <Menu className="w-6 h-6 text-[var(--text)]" />
                 </button>
             </header>
-
             <nav className="flex flex-col h-full">
                 <ul className="space-y-2">
                     <li>
@@ -91,7 +95,7 @@ export default function Sidebar({ isNavOpen, setIsNavOpen, isOptionsOpen, setIsO
                                     </li>
                                     <li>
                                         <button className="cursor-pointer flex items-center gap-2 w-full p-3 hover:bg-[var(--layer2)] rounded-lg transition-colors group text-left">
-                                            <span className="text-xl">❓</span>
+                                            <span className="text-xl grayscale group-hover:grayscale-0 transition-all">❓</span>
                                             <span className="font-semibold text-[var(--text-muted)] group-hover:text-[var(--text)] transition-colors">Support Center</span>
                                         </button>
                                     </li>
@@ -102,5 +106,6 @@ export default function Sidebar({ isNavOpen, setIsNavOpen, isOptionsOpen, setIsO
                 </ul>
             </nav>
         </aside>
+    </>
     );
 }
