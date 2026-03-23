@@ -1,10 +1,14 @@
+import Link from "next/link";
+
 export default function Footer() {
     return (
         <footer className="bg-[var(--layer1)] border-t border-[var(--layer3)] pt-16 pb-8 px-8">
             <div className="max-w-7xl mx-auto flex flex-col gap-12">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
                     <div className="flex flex-col gap-4">
-                        <p className="text-3xl font-bold text-[var(--nice-blue)]"><a href="#">POW</a></p>
+                        <Link href="/" className="font-brand font-black tracking-tighter z-20 text-5xl font-black text-[var(--nice-blue)]">
+                            POW
+                        </Link>
                         <p className="text-[var(--text-muted)] text-sm max-w-[200px]">
                             Power up your learning with AI-driven study tools.
                         </p>

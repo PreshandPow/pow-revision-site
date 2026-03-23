@@ -35,7 +35,7 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                 >
                     <Menu className="w-6 h-6 text-[var(--text)]" />
                 </button>
-                <Link href="/" className="text-4xl font-black text-[var(--nice-blue)] tracking-tighter">
+                <Link href="/" className="font-brand font-black tracking-tighter z-20 text-5xl font-black text-[var(--nice-blue)]">
                     POW
                 </Link>
                 <ul className="hidden md:flex items-center gap-4 font-semibold">

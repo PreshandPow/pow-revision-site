@@ -34,7 +34,7 @@ export default function Sidebar({ isNavOpen, setIsNavOpen, isOptionsOpen, setIsO
             aria-hidden={!isNavOpen}
         >
             <header className="flex items-center justify-between mb-8">
-                <Link href="/" className="text-4xl font-black text-[var(--nice-blue)] tracking-tighter">
+                <Link href="/" className="font-brand font-black tracking-tighter text-5xl font-black text-[var(--nice-blue)]">
                     POW
                 </Link>
                 <button

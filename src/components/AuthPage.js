@@ -7,9 +7,7 @@ import {useEffect, useState} from "react";
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr'
-import { Outfit } from 'next/font/google';
-
-const outfit = Outfit({ subsets: ['latin'] });
+import Link from 'next/link';
 
 export function createClient() {
     return createBrowserClient(
@@ -208,10 +206,12 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                     sizes="(max-width: 1024px) 100vw, 50vw"
                     className="object-cover"
                 />
-                <h1 style={outfit.style} className="relative z-10 text-6xl font-black text-[var(--layer3)] leading-tight">
+                <h1 className="font-brand relative z-10 text-6xl font-black text-[var(--layer3)] leading-tight">
                     {authMode === 'resetpassword' ? 'Try to retrace your steps.' : (authMode === 'signup' ? `The best way to study. Sign up for free.` : `Pow bot has been waiting to see you again.`)}
                 </h1>
-                <h2 className="absolute bottom-10 left-10 z-20 text-5xl font-black text-[var(--nice-blue)]"><a href="http://localhost:3000">POW</a></h2>
+                <Link href="/" className="font-brand font-black tracking-tighter absolute bottom-10 left-10 z-20 text-5xl font-black text-[var(--nice-blue)]">
+                    POW
+                </Link>
             </div>
             <div className="flex-1 flex flex-col w-full min-h-screen overflow-y-auto p-4 md:p-12">
                 <div className={`w-full flex ${authMode === 'resetpassword' ? 'justify-end' : 'justify-between'} items-center mb-8`}>
