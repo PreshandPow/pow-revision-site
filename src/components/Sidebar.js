@@ -1,14 +1,27 @@
 import { ChevronDown } from "lucide-react";
+import { useEffect, useRef } from "react";
 
 export default function Sidebar({ isNavOpen, setIsNavOpen, isOptionsOpen, setIsOptionsOpen, theme, handleThemeChange }) {
+
+    const sidebarRef = useRef(null);
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (isNavOpen && sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+                setIsNavOpen(false); // Close it
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [isNavOpen, setIsNavOpen]);
+
     return (
-        <aside
+        <aside ref={sidebarRef}
             className={`
-                            fixed top-0 left-0 h-full w-72 bg-[var(--layer1)] z-[70] 
-                            transform transition-transform duration-300 ease-in-out
-                            ${isNavOpen ? 'translate-x-0' : '-translate-x-full'}
-                            p-6 shadow-2xl border-r border-[var(--layer3)]
-                        `}
+                fixed top-0 left-0 h-full w-2/3 bg-[var(--layer1)] z-[70] 
+                transform transition-transform duration-300 ease-in-out
+                ${isNavOpen ? 'translate-x-0' : '-translate-x-full'}
+                p-6 shadow-2xl border-r border-[var(--layer3)]
+            `}
             aria-label="Side Navigation"
             aria-hidden={!isNavOpen}
         >
@@ -17,7 +30,7 @@ export default function Sidebar({ isNavOpen, setIsNavOpen, isOptionsOpen, setIsO
                     <a href="#">POW</a>
                 </div>
                 <button
-                    className=" cursor-pointer md:hidden p-3 hover:bg-[var(--layer2)] rounded-full transition-colors cursor-pointer"
+                    className="cursor-pointer md:hidden p-3 hover:bg-[var(--layer2)] rounded-full transition-colors"
                     onClick={() => setIsNavOpen(!isNavOpen)}
                 >
                     <div className="flex flex-col gap-1.5">
@@ -27,8 +40,21 @@ export default function Sidebar({ isNavOpen, setIsNavOpen, isOptionsOpen, setIsO
                     </div>
                 </button>
             </header>
+
             <nav className="flex flex-col h-full">
                 <ul className="space-y-2">
+                    <li>
+                        <button className="flex items-center gap-4 w-full p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group">
+                            <span className="text-2xl grayscale group-hover:grayscale-0 transition-all">📝</span>
+                            <span className="font-bold text-[var(--text)]">Notes</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button className="flex items-center gap-4 w-full p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group">
+                            <span className="text-2xl grayscale group-hover:grayscale-0 transition-all">🗃️</span>
+                            <span className="font-bold text-[var(--text)]">Flashcards</span>
+                        </button>
+                    </li>
                     <li>
                         <button
                             onClick={() => setIsOptionsOpen(!isOptionsOpen)}
@@ -59,8 +85,8 @@ export default function Sidebar({ isNavOpen, setIsNavOpen, isOptionsOpen, setIsO
                                                 <span className="font-semibold text-[var(--text-muted)] group-hover:text-[var(--text)] transition-colors">Appearance</span>
                                             </div>
                                             <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] bg-[var(--layer3)] px-2 py-0.5 ml-1 rounded shadow-sm">
-                                                    {theme}
-                                                </span>
+                                                {theme}
+                                            </span>
                                         </button>
                                     </li>
                                     <li>
