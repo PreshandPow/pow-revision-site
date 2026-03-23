@@ -43,6 +43,12 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                 <p className="text-2xl font-black text-[var(--nice-blue)] tracking-tighter"><a href="http://localhost:3000">POW</a></p>
                 <div className="hidden md:flex items-center gap-8 font-semibold">
                     <button className="cursor-pointer text-[var(--text-muted)] hover:text-[var(--nice-blue)] transition-colors">
+                        <p><span>📝</span>Notes</p>
+                    </button>
+                    <button className="cursor-pointer text-[var(--text-muted)] hover:text-[var(--nice-blue)] transition-colors">
+                        <p><span>🗃️</span>Flashcards</p>
+                    </button>
+                    <button className="cursor-pointer text-[var(--text-muted)] hover:text-[var(--nice-blue)] transition-colors">
                         <p><span>❔</span>Support</p>
                     </button>
                     <button onClick={handleThemeChange} className="cursor-pointer p-2 hover:bg-[var(--layer2)] rounded-full">
