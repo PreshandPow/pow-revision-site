@@ -19,7 +19,6 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
 
     const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
-    const [sendingRecovery, setSendingRecovery] = useState(false);
     const [popup, setPopup] = useState(false);
     const supabase = createClient();
 

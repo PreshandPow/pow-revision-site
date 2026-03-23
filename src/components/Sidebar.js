@@ -7,7 +7,7 @@ export default function Sidebar({ isNavOpen, setIsNavOpen, isOptionsOpen, setIsO
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (isNavOpen && sidebarRef.current && !sidebarRef.current.contains(event.target)) {
-                setIsNavOpen(false); // Close it
+                setIsNavOpen(false);
             }
         };
         document.addEventListener("mousedown", handleClickOutside);
