@@ -21,7 +21,22 @@ export default function Home() {
     const [password, setPassword] = useState("");
     const [session, setSession] = useState(null);
     const [name, setName] = useState("");
-    const [age, setAge] = useState("");
+    const [day, setDay] = useState("");
+    const [month, setMonth] = useState("");
+    const [year, setYear] = useState("");
+
+    const updateUser = async () => {
+
+        const dobString = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+
+        const { data, error } = await supabase
+            .from('profiles')
+            .update({
+                username: name,
+                date_of_birth: dobString,
+            })
+            .eq('id', session.user.id)
+    };
 
     const fetchSession = async () => {
         const { data: { session } } = await supabase.auth.getSession();
@@ -272,8 +287,12 @@ export default function Home() {
                         setPassword={setPassword}
                         name={name}
                         setName={setName}
-                        age={age}
-                        setAge={setAge}
+                        day={day}
+                        setDay={setDay}
+                        month={month}
+                        setMonth={setMonth}
+                        year={year}
+                        setYear={setYear}
                     />
                 )}
             </AnimatePresence>

@@ -17,7 +17,7 @@ export function createClient() {
     )
 }
 
-export default function AuthPage( { authMode, setAuthMode, email, setEmail, password, setPassword, name, setName, age, setAge }) {
+export default function AuthPage( { authMode, setAuthMode, email, setEmail, password, setPassword, name, setName, day, setDay, month, setMonth, year, setYear}) {
 
     const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
@@ -38,84 +38,70 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if(!email || !password) {
+        if (!email || !password || (authMode === 'signup' && (!name || !day || !month || !year))) {
             setPopup(true);
-        }   else (
-            setPopup(false)
-        )
+            toast.error("Please fill in all fields");
+            return;
+        } else {
+            setPopup(false);
+        }
 
         if (authMode === 'signup') {
-            const {error: signUpError} = await supabase.auth.signUp({email, password, options: {
-                emailRedirectTo: 'http://localhost:3000/dashboard',
-                }})
-            if (signUpError || !email || !password) {
-                console.error('Error signing up:', signUpError)
-                toast.error(signUpError.message, {
-                    style: {
-                        border: '1px solid var(--nice-blue)',
-                        padding: '16px',
-                        color: 'var(--text)',
-                        background: 'var(--layer2)',
-                        zIndex: '9999',
-                    },
-                    iconTheme: {
-                        primary: 'var(--nice-blue)',
-                        secondary: '#FFFAEE',
-                    },
-                });
+            const birthDate = new Date(year, month - 1, day);
+            const ageLimitDate = new Date();
+            ageLimitDate.setFullYear(ageLimitDate.getFullYear() - 13);
+
+            if (birthDate > ageLimitDate) {
+                toast.error("You must be at least 13 years old to join POW.");
+                return;
+            }
+            const dobString = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+
+            const { error: signUpError } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    emailRedirectTo: 'http://localhost:3000/dashboard',
+                    data: {
+                        username: name,
+                        dob: dobString,
+                    }
+                }
+            });
+
+            if (signUpError) {
+                handleError(signUpError);
             } else {
-                toast.success('Please check your email to verify!', {
-                    style: {
-                        border: '1px solid var(--nice-blue)',
-                        padding: '16px',
-                        color: 'var(--text)',
-                        background: 'var(--layer2)',
-                    },
-                    iconTheme: {
-                        primary: 'var(--nice-blue)',
-                        secondary: '#FFFAEE',
-                    },
-                });
+                toast.success('Please check your email to verify!', toastStyle);
             }
         } else {
-            const {error: signInError} = await supabase.auth.signInWithPassword({email, password})
+            const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
             if (signInError) {
-                console.error('Error signing in:', signInError)
-                toast.error(signInError.message, {
-                    style: {
-                        border: '1px solid var(--nice-blue)',
-                        padding: '16px',
-                        color: 'var(--text)',
-                        background: 'var(--layer2)',
-                        zIndex: '9999',
-                    },
-                    iconTheme: {
-                        primary: 'var(--nice-blue)',
-                        secondary: '#FFFAEE',
-                    },
-                });
-            }   else {
-                    const { data: sessionData } = await supabase.auth.getSession()
-                    if (sessionData) {
-                        console.log('suuccess')
-                        router.push('/dashboard');
-                        router.refresh();
-                        toast.success('Successfully logged in!', {
-                            style: {
-                                border: '1px solid var(--nice-blue)',
-                                padding: '16px',
-                                color: 'var(--text)',
-                                background: 'var(--layer2)',
-                                zIndex: '9999',
-                            },
-                            iconTheme: {
-                                primary: 'var(--nice-blue)',
-                                secondary: '#FFFAEE',
-                            },
-                        });
-                    }
+                handleError(signInError);
+            } else {
+                router.push('/dashboard');
+                router.refresh();
             }
         }
+    };
+
+    const toastStyle = {
+        style: {
+            border: '1px solid var(--nice-blue)',
+            padding: '16px',
+            color: 'var(--text)',
+            background: 'var(--layer2)',
+            zIndex: '9999',
+        },
+        iconTheme: {
+            primary: 'var(--nice-blue)',
+            secondary: '#FFFAEE',
+        },
+    };
+
+    const handleError = (error) => {
+        console.error('Auth Error:', error);
+        toast.error(error.message, toastStyle);
     };
 
     useEffect(() => {
@@ -293,7 +279,7 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                                     <span className="px-4 text-sm font-bold text-[var(--text-muted)] uppercase tracking-widest">OR</span>
                                     <div className="flex-1 h-[1px] bg-[var(--layer2)]"></div>
                                 </div>
-                                <label htmlFor="email" className="font-bold text-[var(--text-muted)] w-full text-left text-[1rem] mb-2">
+                                <label htmlFor="email" className="font-bold text-[var(--text-muted)] w-full text-left text-[1rem] mb-3">
                                     Email
                                 </label>
                                 <input
@@ -303,8 +289,8 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                                     className="p-4.5 font-semibold border rounded-xl w-full bg-[var(--layer2)] text-[var(--text-muted)] border-none focus:ring-2 focus:ring-[var(--nice-blue)] outline-none mb-8"
                                     onChange={(e) => setEmail(e.target.value)}
                                 />
-                                <div className="w-full mb-8">
-                                    <div className="flex justify-between items-center mb-2">
+                                <div className="w-full mb-3">
+                                    <div className="flex justify-between items-center mb-3">
                                         <label htmlFor="password" title="password" className="font-bold text-[var(--text-muted)] text-[1rem]">
                                             Password
                                         </label>
@@ -342,7 +328,7 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                                         </button>
                                     </div>
                                 </div>
-                                <p className={'md:whitespace-nowrap mb-8 text-sm font-semibold text-[var(--nice-blue)]'}>
+                                <p className={'md:whitespace-nowrap mb-6 text-sm font-semibold text-[var(--nice-blue)]'}>
                                     By clicking Log in, you accept Pow's Terms of Service and Privacy Policy
                                 </p>
                                 {popup && (
@@ -399,12 +385,13 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                                     <span className="px-4 text-sm font-bold text-[var(--text-muted)] uppercase tracking-widest">OR EMAIL</span>
                                     <div className="flex-1 h-[1px] bg-[var(--layer2)]"></div>
                                 </div>
-                                <div className={'grid grid-cols-3 gap-2 mb-8'}>
+                                <div className={'grid grid-cols-3 gap-2 mb-3'}>
                                     <div className="relative w-full max-w-[100px]">
                                         <label htmlFor="age"></label>
                                         <input
                                             type="number"
                                             placeholder="Day"
+                                            onChange={(e) => setDay(e.target.value)}
                                             className="w-full bg-[var(--layer2)] text-center p-5 pr-8 rounded-xl
                                              appearance-none outline-none focus:ring-2 focus:ring-[var(--nice-blue)]
                                               [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none
@@ -420,6 +407,7 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                                         <input
                                             type="number"
                                             placeholder="Month"
+                                            onChange={(e) => setMonth(e.target.value)}
                                             className="w-full bg-[var(--layer2)] text-center p-5 pr-8 rounded-xl
                                             appearance-none outline-none focus:ring-2 focus:ring-[var(--nice-blue)]
                                             [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none
@@ -435,6 +423,7 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                                         <input
                                             type="number"
                                             placeholder="Year"
+                                            onChange={(e) => setYear(e.target.value)}
                                             className="w-full bg-[var(--layer2)] text-center p-5 pr-8 rounded-xl
                                             appearance-none outline-none focus:ring-2 focus:ring-[var(--nice-blue)]
                                             [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none
@@ -446,28 +435,28 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                                         />
                                     </div>
                                 </div>
-                                <label htmlFor="email" className="font-bold text-[var(--text-muted)] w-full text-left text-[1rem] mb-2">
+                                <label htmlFor="email" className="font-bold text-[var(--text-muted)] w-full text-left text-[1rem] mb-3">
                                     Email
                                 </label>
                                 <input
                                     type="email"
                                     placeholder="user@email.co.uk"
                                     name="email"
-                                    className="p-4.5 font-semibold border rounded-xl w-full bg-[var(--layer2)] text-[var(--text-muted)] border-none focus:ring-2 focus:ring-[var(--nice-blue)] outline-none mb-8"
+                                    className="p-4.5 font-semibold border rounded-xl w-full bg-[var(--layer2)] text-[var(--text-muted)] border-none focus:ring-2 focus:ring-[var(--nice-blue)] outline-none mb-3"
                                     onChange={(e) => setEmail(e.target.value)}
                                 />
-                                <label htmlFor="username" className="font-bold text-[var(--text-muted)] w-full text-left text-[1rem] mb-2">
+                                <label htmlFor="username" className="font-bold text-[var(--text-muted)] w-full text-left text-[1rem] mb-3">
                                     Username
                                 </label>
                                 <input
                                     type="text"
                                     placeholder="Create a username"
                                     name="username"
-                                    className="p-4.5 font-semibold border rounded-xl w-full bg-[var(--layer2)] text-[var(--text-muted)] border-none focus:ring-2 focus:ring-[var(--nice-blue)] outline-none mb-8"
+                                    className="p-4.5 font-semibold border rounded-xl w-full bg-[var(--layer2)] text-[var(--text-muted)] border-none focus:ring-2 focus:ring-[var(--nice-blue)] outline-none mb-3"
                                     onChange={(e) => setName(e.target.value)}
                                 />
-                                <div className="w-full mb-8">
-                                    <label htmlFor="password" title="password" className="font-bold text-[var(--text-muted)] text-[1rem] block mb-2">
+                                <div className="w-full mb-3">
+                                    <label htmlFor="password" title="password" className="font-bold text-[var(--text-muted)] text-[1rem] block mb-3">
                                         Password
                                     </label>
                                     <div className="relative">
@@ -480,7 +469,7 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                                         />
                                         <button
                                             type="button"
-                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--nice-blue)] cursor-pointer "
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--nice-blue)] cursor-pointer hover:opacity-70 transition-opacity"
                                             onClick={() => setShowPassword(!showPassword)}
                                         >
                                             {showPassword ? (
@@ -498,7 +487,7 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                                 </div>
                                 <button
                                     type="submit"
-                                    className="cursor-pointer p-4 font-semibold border rounded-full w-full bg-[var(--nice-blue)] border-none shadow-lg shadow-blue-500/20 hover:scale-95 transition-transform mb-8"
+                                    className="cursor-pointer p-4 font-semibold border rounded-full w-full bg-[var(--nice-blue)] border-none shadow-lg shadow-blue-500/20 hover:scale-95 transition-transform mb-6"
                                 >
                                     Sign up
                                 </button>
