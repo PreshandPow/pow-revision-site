@@ -37,7 +37,6 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         if (!email || !password || (authMode === 'signup' && (!name || !day || !month || !year))) {
             setPopup(true);
             toast.error("Please fill in all fields");
@@ -55,32 +54,47 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                 toast.error("You must be at least 13 years old to join POW.");
                 return;
             }
-            const dobString = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
 
-            const { error: signUpError } = await supabase.auth.signUp({
+            const dobString = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+            const { data, error: signUpError } = await supabase.auth.signUp({
                 email,
                 password,
                 options: {
                     emailRedirectTo: 'http://localhost:3000/dashboard',
-                    data: {
-                        username: name,
-                        dob: dobString,
-                    }
+                    data: { username: name, dob: dobString }
                 }
             });
 
             if (signUpError) {
-                handleError(signUpError);
-            } else {
+                console.error("Full error:", JSON.stringify(signUpError, null, 2));
+                toast.error(signUpError.message, toastStyle);
+                return;
+            }
+            if (data.user) {
+                const { error: profileError } = await supabase
+                    .from('profiles')
+                    .insert([{
+                        id: data.user.id,
+                        username: name,
+                        date_of_birth: dobString
+                    }]);
+
+                if (profileError) console.error("Profile sync error:", profileError.message);
                 toast.success('Please check your email to verify!', toastStyle);
             }
+
         } else {
             const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+
             if (signInError) {
                 handleError(signInError);
             } else {
-                router.push('/dashboard');
-                router.refresh();
+                const { data: sessionData } = await supabase.auth.getSession();
+                if (sessionData.session) {
+                    toast.success('Successfully logged in!', toastStyle);
+                    router.push('/dashboard');
+                    router.refresh();
+                }
             }
         }
     };
