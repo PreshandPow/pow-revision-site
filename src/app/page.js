@@ -20,6 +20,8 @@ export default function Home() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [session, setSession] = useState(null);
+    const [name, setName] = useState("");
+    const [age, setAge] = useState("");
 
     const fetchSession = async () => {
         const { data: { session } } = await supabase.auth.getSession();
@@ -268,6 +270,10 @@ export default function Home() {
                         setEmail={setEmail}
                         password={password}
                         setPassword={setPassword}
+                        name={name}
+                        setName={setName}
+                        age={age}
+                        setAge={setAge}
                     />
                 )}
             </AnimatePresence>

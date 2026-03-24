@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr'
 import Link from 'next/link';
+import { ChevronDown } from "lucide-react";
 
 export function createClient() {
     return createBrowserClient(
@@ -16,7 +17,7 @@ export function createClient() {
     )
 }
 
-export default function AuthPage( { authMode, setAuthMode, email, setEmail, password, setPassword }) {
+export default function AuthPage( { authMode, setAuthMode, email, setEmail, password, setPassword, name, setName, age, setAge }) {
 
     const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
@@ -395,8 +396,55 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                                 </button>
                                 <div className="w-full flex items-center my-6">
                                     <div className="flex-1 h-[1px] bg-[var(--layer2)]"></div>
-                                    <span className="px-4 text-sm font-bold text-[var(--text-muted)] uppercase tracking-widest">OR</span>
+                                    <span className="px-4 text-sm font-bold text-[var(--text-muted)] uppercase tracking-widest">OR EMAIL</span>
                                     <div className="flex-1 h-[1px] bg-[var(--layer2)]"></div>
+                                </div>
+                                <div className={'grid grid-cols-3 gap-2 mb-8'}>
+                                    <div className="relative w-full max-w-[100px]">
+                                        <label htmlFor="age"></label>
+                                        <input
+                                            type="number"
+                                            placeholder="Day"
+                                            className="w-full bg-[var(--layer2)] text-center p-5 pr-8 rounded-xl
+                                             appearance-none outline-none focus:ring-2 focus:ring-[var(--nice-blue)]
+                                              [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none
+                                               [&::-webkit-inner-spin-button]:appearance-none cursor-pointer hover:bg-[var(--layer3)]"
+                                        />
+                                        <ChevronDown
+                                            size={18}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] pointer-events-none"
+                                        />
+                                    </div>
+                                    <div className="relative w-full max-w-[100px]">
+                                        <label htmlFor="age"></label>
+                                        <input
+                                            type="number"
+                                            placeholder="Month"
+                                            className="w-full bg-[var(--layer2)] text-center p-5 pr-8 rounded-xl
+                                            appearance-none outline-none focus:ring-2 focus:ring-[var(--nice-blue)]
+                                            [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none
+                                            [&::-webkit-inner-spin-button]:appearance-none  cursor-pointer hover:bg-[var(--layer3)]"
+                                        />
+                                        <ChevronDown
+                                            size={18}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] pointer-events-none"
+                                        />
+                                    </div>
+                                    <div className="relative w-full max-w-[100px]">
+                                        <label htmlFor="age"></label>
+                                        <input
+                                            type="number"
+                                            placeholder="Year"
+                                            className="w-full bg-[var(--layer2)] text-center p-5 pr-8 rounded-xl
+                                            appearance-none outline-none focus:ring-2 focus:ring-[var(--nice-blue)]
+                                            [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none
+                                            [&::-webkit-inner-spin-button]:appearance-none  cursor-pointer hover:bg-[var(--layer3)]"
+                                        />
+                                        <ChevronDown
+                                            size={18}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] pointer-events-none"
+                                        />
+                                    </div>
                                 </div>
                                 <label htmlFor="email" className="font-bold text-[var(--text-muted)] w-full text-left text-[1rem] mb-2">
                                     Email
@@ -404,8 +452,19 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                                 <input
                                     type="email"
                                     placeholder="user@email.co.uk"
+                                    name="email"
                                     className="p-4.5 font-semibold border rounded-xl w-full bg-[var(--layer2)] text-[var(--text-muted)] border-none focus:ring-2 focus:ring-[var(--nice-blue)] outline-none mb-8"
                                     onChange={(e) => setEmail(e.target.value)}
+                                />
+                                <label htmlFor="username" className="font-bold text-[var(--text-muted)] w-full text-left text-[1rem] mb-2">
+                                    Username
+                                </label>
+                                <input
+                                    type="text"
+                                    placeholder="Create a username"
+                                    name="username"
+                                    className="p-4.5 font-semibold border rounded-xl w-full bg-[var(--layer2)] text-[var(--text-muted)] border-none focus:ring-2 focus:ring-[var(--nice-blue)] outline-none mb-8"
+                                    onChange={(e) => setName(e.target.value)}
                                 />
                                 <div className="w-full mb-8">
                                     <label htmlFor="password" title="password" className="font-bold text-[var(--text-muted)] text-[1rem] block mb-2">
@@ -414,7 +473,8 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                                     <div className="relative">
                                         <input
                                             type={showPassword ? "text" : "password"}
-                                            placeholder="password"
+                                            placeholder="Create a secure password"
+                                            name="password"
                                             className="p-4.5 pr-12 font-semibold border rounded-xl w-full bg-[var(--layer2)] text-[var(--text-muted)] border-none focus:ring-2 focus:ring-[var(--nice-blue)] outline-none"
                                             onChange={(e) => setPassword(e.target.value)}
                                         />

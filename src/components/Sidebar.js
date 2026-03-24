@@ -1,4 +1,4 @@
-import {ChevronDown, Menu} from "lucide-react";
+import { ChevronDown, Menu } from "lucide-react";
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 
