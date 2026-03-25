@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { motion } from 'framer-motion';
+import Image from 'next/image';
 
 export function createClient() {
     return createBrowserClient(
@@ -19,6 +21,7 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(true);
     const [username, setUsername] = useState(null);
     const [age, setAge] = useState(null);
+    const [avatarUrl, setAvatarUrl] = useState(null);
 
     const toastStyle = {
         style: {
@@ -47,6 +50,8 @@ export default function Dashboard() {
                     .single();
 
                 setUsername(profile?.username)
+                setAge(profile?.date_of_birth)
+                setAvatarUrl(profile?.avatar_url)
 
                 if (error) {
                     console.error(error);
@@ -74,6 +79,13 @@ export default function Dashboard() {
             <h1 className="text-2xl font-bold text-[var(--text)] mb-4">
                 Hey {username}!
             </h1>
+            <Image
+                src={avatarUrl}
+                alt="avatar"
+                width={96}
+                height={96}
+                className="rounded-full"
+            />
             <button
                 type="button"
                 className="cursor-pointer p-4 font-semibold border rounded-xl w-full text-[var(--text)] hover:bg-[var(--layer2)] transition-colors"
@@ -81,6 +93,11 @@ export default function Dashboard() {
             >
                 Sign Out
             </button>
+            {!age && (
+                <motion.div>
+                    <h1>THEIR IS NO DOB</h1>
+                </motion.div>
+            )}
         </div>
     );
 }
