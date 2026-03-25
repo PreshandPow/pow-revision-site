@@ -2,7 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
-import { useEffect, useState } from 'react'; // Added these
+import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 
 export function createClient() {
     return createBrowserClient(
@@ -11,35 +12,54 @@ export function createClient() {
     )
 }
 
-function getAge(birthDateString) {
-    if (!birthDateString) return 0;
-    const today = new Date();
-    const birthDate = new Date(birthDateString);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const m = today.getMonth() - birthDate.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
-    }
-    return age;
-}
-
 export default function Dashboard() {
     const router = useRouter();
     const supabase = createClient();
     const [userProfile, setUserProfile] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [username, setUsername] = useState(null);
+    const [age, setAge] = useState(null);
+
+    const toastStyle = {
+        style: {
+            border: '1px solid var(--nice-blue)',
+            padding: '16px',
+            color: 'var(--text)',
+            background: 'var(--layer2)',
+            zIndex: '9999',
+        },
+        iconTheme: {
+            primary: 'var(--nice-blue)',
+            secondary: '#FFFAEE',
+        },
+    };
+
     useEffect(() => {
         const getUser = async () => {
+
             const { data: { user } } = await supabase.auth.getUser();
+
             if (user) {
-                setUserProfile(user.user_metadata);
-            } else {
+                const {data: profile, error} = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single();
+
+                setUsername(profile?.username)
+
+                if (error) {
+                    console.error(error);
+                    toast.error(error.message, toastStyle);
+                }
+                setUserProfile(profile);
+            }   else {
                 router.replace('/');
             }
             setLoading(false);
-        };
+        }
         getUser();
-    }, [supabase, router]);
+    }, [supabase, router])
 
     const handleLogOut = async () => {
         await supabase.auth.signOut();
@@ -52,14 +72,8 @@ export default function Dashboard() {
     return (
         <div className="p-6 max-w-md mx-auto">
             <h1 className="text-2xl font-bold text-[var(--text)] mb-4">
-                Welcome back, {userProfile?.username || 'Learner'}!
+                Hey {username}!
             </h1>
-            {userProfile?.dob && (
-                <p className="text-[var(--text-muted)] mb-6">
-                    You are {getAge(userProfile.dob)} years old.
-                </p>
-            )}
-
             <button
                 type="button"
                 className="cursor-pointer p-4 font-semibold border rounded-xl w-full text-[var(--text)] hover:bg-[var(--layer2)] transition-colors"
