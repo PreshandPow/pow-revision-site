@@ -121,8 +121,8 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
     useEffect(() => {
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_IN' && session) {
-                router.push('/dashboard');
-                router.refresh();
+                // FORCE a hard reload to the dashboard so the server sees the cookies!
+                window.location.href = '/dashboard';
             }
         });
 
@@ -175,7 +175,7 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: 'https://edacious-isaura-descendingly.ngrok-free.dev',
+                redirectTo: `${window.location.origin}/auth/callback`,
                 queryParams: {
                     access_type: 'offline',
                     prompt: 'select_account',

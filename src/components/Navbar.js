@@ -46,7 +46,10 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                         </button>
                     </li>
                     <li>
-                        <button className="flex items-center gap-3 p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group">
+                        <button
+                            className="flex items-center gap-3 p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group"
+
+                        >
                             <span className="text-xl grayscale group-hover:grayscale-0">🗃️</span>
                             <span className="text-[var(--text)]">Flashcards</span>
                         </button>
