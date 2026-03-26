@@ -84,7 +84,7 @@ export default function Dashboard() {
                 alt="avatar"
                 width={96}
                 height={96}
-                className="rounded-full"
+                className="rounded-full hover:scale-110 cursor-pointer"
             />
             <button
                 type="button"
