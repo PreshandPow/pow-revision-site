@@ -39,10 +39,14 @@ export async function proxy(request) {
         return NextResponse.redirect(new URL('/', request.url))
     }
 
-    console.log('no condition reahced', pathname, !!user)
+    if (pathname.startsWith('/auth/callback')) {
+        const response = NextResponse.next({ request });
+        return response;
+    }
+
     return response
 }
 
 export const config = {
-    matcher: ['/((?!_next/static|_next/image|favicon.ico|api).*)'],
+    matcher: ['/((?!_next/static|_next/image|favicon.ico|api|auth).*)'],
 }
