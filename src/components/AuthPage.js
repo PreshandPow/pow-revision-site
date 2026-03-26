@@ -136,7 +136,7 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
             return;
         }
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: 'http://localhost:3000/resetPassword/callback',  // ✅ updated
+            redirectTo: 'http://localhost:3000/resetPassword/callback',
         });
         if (error) {
             console.error("Error sending reset email:", error.message);
@@ -175,7 +175,7 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: 'http://localhost:3000/auth/callback',
+                redirectTo: 'https://edacious-isaura-descendingly.ngrok-free.dev',
                 queryParams: {
                     access_type: 'offline',
                     prompt: 'select_account',

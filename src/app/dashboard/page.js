@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+import DetailsModal from '../../components/DetailsModal';
 
 export function createClient() {
     return createBrowserClient(
@@ -22,6 +23,9 @@ export default function Dashboard() {
     const [username, setUsername] = useState(null);
     const [age, setAge] = useState(null);
     const [avatarUrl, setAvatarUrl] = useState(null);
+    const [day, setDay] = useState(null);
+    const [month, setMonth] = useState(null);
+    const [year, setYear] = useState(null);
 
     const toastStyle = {
         style: {
@@ -47,7 +51,7 @@ export default function Dashboard() {
                     .from('profiles')
                     .select('*')
                     .eq('id', user.id)
-                    .single();
+                    .maybeSingle();
 
                 setUsername(profile?.username)
                 setAge(profile?.date_of_birth)
@@ -64,7 +68,16 @@ export default function Dashboard() {
             setLoading(false);
         }
         getUser();
-    }, [supabase, router])
+    }, [supabase, router]);
+
+    useEffect(() => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_IN') {
+                router.refresh();
+            }
+        });
+        return () => subscription.unsubscribe();
+    }, []);
 
     const handleLogOut = async () => {
         await supabase.auth.signOut();
@@ -94,9 +107,9 @@ export default function Dashboard() {
                 Sign Out
             </button>
             {!age && (
-                <motion.div>
-                    <h1>THEIR IS NO DOB</h1>
-                </motion.div>
+                <DetailsModal
+
+                />
             )}
         </div>
     );
