@@ -237,8 +237,6 @@ export default function Home() {
                                             <span className="w-2 h-2 rounded-full bg-amber-400" />
                                         </div>
                                     </div>
-
-                                    {/* Folder 3: Physics */}
                                     <div className="p-4 rounded-2xl bg-blue-50 border-2 border-blue-100 flex flex-col gap-3 md:gap-8 hover:scale-105 transition-transform">
                                         <div className="w-10 h-8 bg-blue-400 rounded-md shadow-sm relative overflow-hidden">
                                             <div className="absolute top-0 left-0 w-4 h-2 bg-blue-600 rounded-br-sm" />

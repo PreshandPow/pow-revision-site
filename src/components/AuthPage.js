@@ -121,7 +121,6 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
     useEffect(() => {
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_IN' && session) {
-                // FORCE a hard reload to the dashboard so the server sees the cookies!
                 window.location.href = '/dashboard';
             }
         });

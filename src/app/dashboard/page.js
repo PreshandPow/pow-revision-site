@@ -9,10 +9,24 @@ import Image from 'next/image';
 import DetailsModal from '../../components/DetailsModal';
 
 export function createClient() {
+
     return createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     )
+}
+
+function calculateAge(day, month, year) {
+    const today = new Date();
+    const birthDate = new Date(year, month - 1, day);
+    let age = today.getFullYear() - birthDate.getFullYear();
+
+    const monthDifference = today.getMonth() - birthDate.getMonth();
+    if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+
+    return age;
 }
 
 export default function Dashboard() {
@@ -85,13 +99,39 @@ export default function Dashboard() {
         router.refresh();
     };
 
+    const handleSaveDob = async () => {
+        if (!day || !month || !year) {
+            toast.error('Please fill in all fields', toastStyle);
+            return;
+        }
+        const calculatedAge = calculateAge(day, month, year);
+        if (calculatedAge < 13) {
+            toast.error("You must be at least 13 years old to use POW.", toastStyle);
+            return;
+        }
+        const dobString = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const { error } = await supabase
+            .from('profiles')
+            .update({ date_of_birth: dobString })
+            .eq('id', userProfile.id);
+        if (error) {
+            console.error("Supabase update error:", error.message);
+            toast.error('Error updating profile.', toastStyle);
+        } else {
+            setAge(calculatedAge);
+            toast.success('Profile completed!', toastStyle);
+        }
+    };
+
     if (loading) return <div className="p-10 text-[var(--text)]">Loading your information...</div>;
 
     return (
-        <div className="p-6 max-w-md mx-auto">
-            <h1 className="text-2xl font-bold text-[var(--text)] mb-4">
-                Hey {username}!
-            </h1>
+        <main className="bg-[var(--layer2)] min-h-screen transition-colors duration-300">
+            <header>
+                <h1 className="text-2xl font-bold text-[var(--text)] mb-4">
+                    Hey {username}!
+                </h1>
+            </header>
             <Image
                 src={avatarUrl}
                 alt="avatar"
@@ -101,16 +141,22 @@ export default function Dashboard() {
             />
             <button
                 type="button"
-                className="cursor-pointer p-4 font-semibold border rounded-xl w-full text-[var(--text)] hover:bg-[var(--layer2)] transition-colors"
+                className="cursor-pointer p-4 font-semibold border rounded-xl w-1/4 text-[var(--text)] hover:bg-[var(--layer2)] transition-colors"
                 onClick={handleLogOut}
             >
                 Sign Out
             </button>
             {!age && (
                 <DetailsModal
-
+                    day={day}
+                    setDay={setDay}
+                    month={month}
+                    setMonth={setMonth}
+                    year={year}
+                    setYear={setYear}
+                    onSubmit={handleSaveDob}
                 />
             )}
-        </div>
+        </main>
     );
 }
