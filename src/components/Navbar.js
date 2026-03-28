@@ -4,6 +4,7 @@ import { Search, Menu } from "lucide-react";
 import { createBrowserClient } from '@supabase/ssr';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import toast from "react-hot-toast";
 
 const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -12,6 +13,21 @@ const supabase = createBrowserClient(
 
 export default function Navbar({ setSearchInput, theme, handleThemeChange, isNavOpen, setIsNavOpen, setAuthMode, router }) {
     const [session, setSession] = useState(null);
+    const [userProfile, setUserProfile] = useState(null);
+
+    const toastStyle = {
+        style: {
+            border: '1px solid var(--nice-blue)',
+            padding: '16px',
+            color: 'var(--text)',
+            background: 'var(--layer2)',
+            zIndex: '9999',
+        },
+        iconTheme: {
+            primary: 'var(--nice-blue)',
+            secondary: '#FFFAEE',
+        },
+    };
 
     useEffect(() => {
         supabase.auth.getSession().then(({ data }) => {
@@ -24,6 +40,31 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
 
         return () => subscription.unsubscribe();
     }, []);
+
+    useEffect(() => {
+        const getUser = async () => {
+
+            const { data: { user } } = await supabase.auth.getUser();
+
+            if (user) {
+                const {data: profile, error} = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', user.id)
+                    .maybeSingle();
+
+                if (error) {
+                    console.error(error);
+                    toast.error(error.message, toastStyle);
+                }
+                setUserProfile(profile);
+            }   else {
+                router.replace('/');
+            }
+            setLoading(false);
+        }
+        getUser();
+    }, [supabase, router]);
 
     return (
         <nav className="sticky top-0 z-50 flex flex-col gap-6 w-full bg-[var(--layer1)] p-4 md:p-6 shadow-sm border-b border-[var(--layer3)]">
