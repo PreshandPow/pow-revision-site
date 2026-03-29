@@ -17,7 +17,6 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
     const [userProfile, setUserProfile] = useState(null);
     const [email, setEmail] = useState(null);
 
-    // 1. ADDED: State to track if the dropdown is open
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     const toastStyle = {
@@ -160,7 +159,6 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                                     <button
                                         className="flex flex-row gap-4 px-5 py-4 text-left font-bold text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                                         onClick={() => {
-                                            setIsDropdownOpen(false);
                                             console.log('Navigate to profile');
                                         }}
                                     >
@@ -168,10 +166,7 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                                         <span>Profile</span>
                                     </button>
                                     <button
-                                        onClick={() => {
-                                            setIsDropdownOpen(false);
-                                            handleThemeChange();
-                                        }}
+                                        onClick={handleThemeChange}
                                         className="px-5 py-4 text-left font-bold text-[var(--text)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                                         aria-label="Toggle theme"
                                     >
@@ -180,7 +175,6 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                                     <button
                                         className="flex flex-row gap-4 whitespace-nowrap px-5 py-4 text-left font-bold text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                                         onClick={() => {
-                                            setIsDropdownOpen(false);
                                             console.log('Navigate to settings');
                                         }}
                                     >
@@ -190,7 +184,6 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                                     <button
                                         className="flex flex-row gap-4 px-5 py-4 text-left font-bold text-yellow-600 hover:text-yellow-400 hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                                         onClick={() => {
-                                            setIsDropdownOpen(false);
                                             console.log('Handle upgrade');
                                         }}
                                     >
@@ -201,7 +194,6 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                                     <button
                                         className="flex flex-row gap-4 px-5 py-4 text-left font-bold text-red-400 hover:text-red-600 transition-colors cursor-pointer hover:bg-[var(--layer3)]"
                                         onClick={() => {
-                                            setIsDropdownOpen(false);
                                             supabase.auth.signOut();
                                             router.replace('/');
                                             router.refresh();
