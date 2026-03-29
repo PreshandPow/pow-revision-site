@@ -1,10 +1,11 @@
 "use client";
 
-import { Search, Menu } from "lucide-react";
+import { Search, Menu, Settings, LogOut, UserCircle, Sparkles } from "lucide-react";
 import { createBrowserClient } from '@supabase/ssr';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import toast from "react-hot-toast";
+import Image from "next/image";
 
 const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -14,6 +15,10 @@ const supabase = createBrowserClient(
 export default function Navbar({ setSearchInput, theme, handleThemeChange, isNavOpen, setIsNavOpen, setAuthMode, router }) {
     const [session, setSession] = useState(null);
     const [userProfile, setUserProfile] = useState(null);
+    const [email, setEmail] = useState(null);
+
+    // 1. ADDED: State to track if the dropdown is open
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     const toastStyle = {
         style: {
@@ -43,10 +48,10 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
 
     useEffect(() => {
         const getUser = async () => {
-
             const { data: { user } } = await supabase.auth.getUser();
 
             if (user) {
+                setEmail(user.email);
                 const {data: profile, error} = await supabase
                     .from('profiles')
                     .select('*')
@@ -58,10 +63,9 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                     toast.error(error.message, toastStyle);
                 }
                 setUserProfile(profile);
-            }   else {
+            } else {
                 router.replace('/');
             }
-            setLoading(false);
         }
         getUser();
     }, [supabase, router]);
@@ -76,7 +80,7 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                 >
                     <Menu className="w-6 h-6 text-[var(--text)]" />
                 </button>
-                <Link href="/" className="font-brand font-black tracking-tighter z-20 text-5xl font-black text-[var(--nice-blue)]">
+                <Link href="/" className="font-brand font-black tracking-tighter z-20 text-5xl text-[var(--nice-blue)]">
                     POW
                 </Link>
                 <ul className="hidden md:flex items-center gap-4 font-semibold">
@@ -87,10 +91,7 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                         </button>
                     </li>
                     <li>
-                        <button
-                            className="flex items-center gap-3 p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group"
-
-                        >
+                        <button className="flex items-center gap-3 p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group">
                             <span className="text-xl grayscale group-hover:grayscale-0">🗃️</span>
                             <span className="text-[var(--text)]">Flashcards</span>
                         </button>
@@ -104,7 +105,7 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                     <li>
                         <button
                             onClick={handleThemeChange}
-                            className="p-2 hover:bg-[var(--layer2)] rounded-full text-2xl  cursor-pointer"
+                            className="p-2 hover:bg-[var(--layer2)] rounded-full text-2xl cursor-pointer"
                             aria-label="Toggle theme"
                         >
                             {theme === 'light' ? '☀️' : '🌙'}
@@ -114,11 +115,104 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
 
                 <div className="flex items-center gap-2">
                     {session ? (
-                        <button
-                            className="font-bold text-[var(--nice-blue)] px-4 py-2"
-                            onClick={() => router.push('/dashboard')}>
-                            My Dashboard
-                        </button>
+                        <div className="relative">
+                            {isDropdownOpen && (
+                                <div
+                                    className="fixed inset-0 z-40 bg-black/60 backdrop-blur-[2px] transition-all duration-300"
+                                    onClick={() => setIsDropdownOpen(false)}
+                                ></div>
+                            )}
+                            <button
+                                className="relative z-50 font-bold text-[var(--nice-blue)] px-4 py-2"
+                                onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
+                                {userProfile?.avatar_url && (
+                                    <Image
+                                        src={userProfile.avatar_url}
+                                        alt="avatar"
+                                        width={48}
+                                        height={48}
+                                        className="rounded-full hover:scale-110 cursor-pointer transition-transform"
+                                    />
+                                )}
+                            </button>
+                            <div className={`absolute right-0 top-full pt-2 w-80 md:w-96 transition-all duration-200 z-50 ${isDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible translate-y-2'}`}>
+                                <div className="bg-[var(--layer2)] rounded-xl shadow-lg border border-[var(--layer1)] flex flex-col overflow-hidden">
+                                    <div
+                                        className="px-4 py-4 text-left font-bold flex gap-8 text-[var(--text)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
+                                        onClick={() => {
+                                            setIsDropdownOpen(false);
+                                            router.push('/dashboard');
+                                        }}
+                                    >
+                                        <Image
+                                            src={userProfile?.avatar_url}
+                                            alt="avatar"
+                                            width={60}
+                                            height={40}
+                                            className="rounded-full cursor-pointer"
+                                        />
+                                        <div>
+                                            <p className={'whitespace-nowrap text-xl text-[var(--text)]'}>{userProfile?.username}</p>
+                                            <p className={'whitespace-nowrap text-sm text-[var(--text-muted)] truncate max-w-[180px]'}>{email}</p>
+                                        </div>
+                                    </div>
+                                    <div className="h-[1px] bg-[var(--layer3)] w-full"></div>
+                                    <button
+                                        className="flex flex-row gap-4 px-5 py-4 text-left font-bold text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
+                                        onClick={() => {
+                                            setIsDropdownOpen(false);
+                                            console.log('Navigate to profile');
+                                        }}
+                                    >
+                                        <UserCircle className="w-5 h-5 text-[var(--text-muted)] hover:text-[var(--text)] shrink-0"/>
+                                        <span>Profile</span>
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setIsDropdownOpen(false);
+                                            handleThemeChange();
+                                        }}
+                                        className="px-5 py-4 text-left font-bold text-[var(--text)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
+                                        aria-label="Toggle theme"
+                                    >
+                                        {theme === 'light' ? '☀️ Dark Mode' : `🌙 Light Mode`}
+                                    </button>
+                                    <button
+                                        className="flex flex-row gap-4 whitespace-nowrap px-5 py-4 text-left font-bold text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
+                                        onClick={() => {
+                                            setIsDropdownOpen(false);
+                                            console.log('Navigate to settings');
+                                        }}
+                                    >
+                                        <Settings className="w-5 h-5 text-[var(--text-muted)] shrink-0"/>
+                                        <span>Settings</span>
+                                    </button>
+                                    <button
+                                        className="flex flex-row gap-4 px-5 py-4 text-left font-bold text-yellow-600 hover:text-yellow-400 hover:bg-[var(--layer3)] transition-colors cursor-pointer"
+                                        onClick={() => {
+                                            setIsDropdownOpen(false);
+                                            console.log('Handle upgrade');
+                                        }}
+                                    >
+                                        <Sparkles className="w-5 h-5 text-yellow-400 shrink-0"/>
+                                        <span>Upgrade</span>
+                                    </button>
+                                    <div className="h-[1px] bg-[var(--layer3)] w-full"></div>
+                                    <button
+                                        className="flex flex-row gap-4 px-5 py-4 text-left font-bold text-red-400 hover:text-red-600 transition-colors cursor-pointer hover:bg-[var(--layer3)]"
+                                        onClick={() => {
+                                            setIsDropdownOpen(false);
+                                            supabase.auth.signOut();
+                                            router.replace('/');
+                                            router.refresh();
+                                        }}
+                                    >
+                                        <LogOut className="w-5 h-5 text-red-600 shrink-0"/>
+                                        <span>Log out</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     ) : (
                         <div className="flex gap-2">
                             <button

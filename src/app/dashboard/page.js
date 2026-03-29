@@ -123,29 +123,21 @@ export default function Dashboard() {
         }
     };
 
-    if (loading) return <div className="p-10 text-[var(--text)]">Loading your information...</div>;
+    if (loading) return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20 backdrop-blur-md p-0 md:p-6">
+            <h1 className="text-4xl font-semibold text-white dark:text-white">
+                Hold on. POW Bot is setting up your dashboard...
+            </h1>
+        </div>
+    );
 
     return (
-        <main className="bg-[var(--layer2)] min-h-screen transition-colors duration-300">
+        <main className=" flex bg-[var(--layer2)] min-h-screen transition-colors duration-300">
             <header>
                 <h1 className="text-2xl font-bold text-[var(--text)] mb-4">
                     Hey {username}!
                 </h1>
             </header>
-            <Image
-                src={avatarUrl}
-                alt="avatar"
-                width={96}
-                height={96}
-                className="rounded-full hover:scale-110 cursor-pointer"
-            />
-            <button
-                type="button"
-                className="cursor-pointer p-4 font-semibold border rounded-xl w-1/4 text-[var(--text)] hover:bg-[var(--layer2)] transition-colors"
-                onClick={handleLogOut}
-            >
-                Sign Out
-            </button>
             {!age && (
                 <DetailsModal
                     day={day}
