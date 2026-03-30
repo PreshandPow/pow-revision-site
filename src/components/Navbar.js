@@ -33,6 +33,14 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
         },
     };
 
+    const handleSignOut = async () => {
+        await supabase.auth.signOut();
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.href = '/';
+        router.refresh();
+    };
+
     useEffect(() => {
         supabase.auth.getSession().then(({ data }) => {
             setSession(data.session);
@@ -193,11 +201,7 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                                     <div className="h-[1px] bg-[var(--layer3)] w-full"></div>
                                     <button
                                         className="flex flex-row gap-4 px-5 py-4 text-left font-bold text-red-400 hover:text-red-600 transition-colors cursor-pointer hover:bg-[var(--layer3)]"
-                                        onClick={() => {
-                                            supabase.auth.signOut();
-                                            router.replace('/');
-                                            router.refresh();
-                                        }}
+                                        onClick={handleSignOut}
                                     >
                                         <LogOut className="w-5 h-5 text-red-600 shrink-0"/>
                                         <span>Log out</span>

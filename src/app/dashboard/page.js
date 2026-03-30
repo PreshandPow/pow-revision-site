@@ -125,7 +125,7 @@ export default function Dashboard() {
 
     if (loading) return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20 backdrop-blur-md p-0 md:p-6">
-            <h1 className="text-4xl font-semibold text-white dark:text-white">
+            <h1 className="font-brand text-[var(--nice-blue)] text-2xl md:text-4xl font-semibold">
                 Hold on. POW Bot is setting up your dashboard...
             </h1>
         </div>
@@ -138,7 +138,7 @@ export default function Dashboard() {
                     Hey {username}!
                 </h1>
             </header>
-            {!age && (
+            {!age || !username && (
                 <DetailsModal
                     day={day}
                     setDay={setDay}

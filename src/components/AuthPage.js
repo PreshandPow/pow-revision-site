@@ -80,7 +80,7 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
                     }]);
 
                 if (profileError) console.error("Profile sync error:", profileError.message);
-                toast.success('Please check your email to verify!', toastStyle);
+                toast.success('Setting up your account', toastStyle);
             }
 
         } else {

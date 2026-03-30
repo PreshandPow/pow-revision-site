@@ -50,7 +50,7 @@ export async function GET(request) {
             if (!profile) {
                 await supabase.from('profiles').insert({
                     id: user.id,
-                    username: user.user_metadata.full_name,
+                    username: null,
                     date_of_birth: null,
                     avatar_url: user.user_metadata.avatar_url
                 });
