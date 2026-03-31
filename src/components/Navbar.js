@@ -130,16 +130,23 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                                 ></div>
                             )}
                             <button
-                                className="relative z-50 font-bold text-[var(--nice-blue)] px-4 py-2"
-                                onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
-                                {userProfile?.avatar_url && (
+                                className="relative z-50 px-4 py-2 flex items-center justify-center transition-transform hover:scale-110 cursor-pointer"
+                                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                            >
+                                {userProfile?.avatar_url ? (
                                     <Image
                                         src={userProfile.avatar_url}
                                         alt="avatar"
                                         width={48}
                                         height={48}
-                                        className="rounded-full hover:scale-110 cursor-pointer transition-transform"
+                                        className="rounded-full object-cover shadow-sm"
                                     />
+                                ) : (
+                                    <div className="w-[48px] h-[48px] bg-white rounded-full shadow-md border border-[var(--layer3)] flex items-center justify-center">
+                                        <span className="text-[var(--nice-blue)] text-xs font-black">
+                {userProfile?.username?.charAt(0).toUpperCase() || "P"}
+            </span>
+                                    </div>
                                 )}
                             </button>
                             <div className={`absolute right-0 top-full pt-2 w-80 md:w-96 transition-all duration-200 z-50 ${isDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible translate-y-2'}`}>

@@ -12,6 +12,8 @@ export async function GET(request) {
 
     const actualOrigin = forwardedHost ? `${forwardedProto}://${forwardedHost}` : origin;
 
+    console.log('running route')
+
     if (code) {
         const cookieStore = await cookies();
 
@@ -39,6 +41,7 @@ export async function GET(request) {
         const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
         if (!error && data?.session) {
+            console.log('reached 1')
             const user = data.session.user;
 
             const { data: profile } = await supabase
@@ -48,6 +51,7 @@ export async function GET(request) {
                 .maybeSingle();
 
             if (!profile) {
+                console.log('reached 2')
                 await supabase.from('profiles').insert({
                     id: user.id,
                     username: null,
@@ -60,6 +64,8 @@ export async function GET(request) {
             console.error("Auth exchange error:", error);
         }
     }
+
+    console.log('end reached')
 
     return NextResponse.redirect(`${actualOrigin}/`);
 }
