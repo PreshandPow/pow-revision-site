@@ -40,6 +40,7 @@ export default function Dashboard() {
     const [day, setDay] = useState(null);
     const [month, setMonth] = useState(null);
     const [year, setYear] = useState(null);
+    const [completedProfile, setCompletedProfile] = useState(true);
 
     const toastStyle = {
         style: {
@@ -71,6 +72,8 @@ export default function Dashboard() {
                 setAge(profile?.date_of_birth)
                 setAvatarUrl(profile?.avatar_url)
 
+                if ( !age || !avatarUrl ) setCompletedProfile(false);
+
                 if (error) {
                     console.error(error);
                     toast.error(error.message, toastStyle);
@@ -99,21 +102,31 @@ export default function Dashboard() {
         router.refresh();
     };
 
-    const handleSaveDob = async () => {
+    const handleSaveDetails = async () => {
         if (!day || !month || !year) {
-            toast.error('Please fill in all fields', toastStyle);
+            toast.error('Please fill in your date of birth', toastStyle);
             return;
         }
+
         const calculatedAge = calculateAge(day, month, year);
         if (calculatedAge < 13) {
             toast.error("You must be at least 13 years old to use POW.", toastStyle);
             return;
         }
+
         const dobString = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+        const profileUpdates = { date_of_birth: dobString };
+
+        if (avatarUrl && avatarUrl !== userProfile?.avatar_url) {
+            profileUpdates.avatar_url = avatarUrl;
+        }
+
         const { error } = await supabase
             .from('profiles')
-            .update({ date_of_birth: dobString })
+            .update(profileUpdates)
             .eq('id', userProfile.id);
+
         if (error) {
             console.error("Supabase update error:", error.message);
             toast.error('Error updating profile.', toastStyle);
@@ -138,7 +151,7 @@ export default function Dashboard() {
                     Hey {username}!
                 </h1>
             </header>
-            {!age || !username && (
+            {!completedProfile && (
                 <DetailsModal
                     day={day}
                     setDay={setDay}
@@ -146,7 +159,8 @@ export default function Dashboard() {
                     setMonth={setMonth}
                     year={year}
                     setYear={setYear}
-                    onSubmit={handleSaveDob}
+                    onSubmit={handleSaveDetails}
+                    needsAvatar={!userProfile?.avatar_url}
                 />
             )}
         </main>
