@@ -163,13 +163,8 @@ export default function Dashboard() {
     );
 
     return (
-        <main className=" flex bg-[var(--layer2)] min-h-screen transition-colors duration-300">
-            <header>
-                <h1 className="text-2xl font-bold text-[var(--text)] mb-4">
-                    Hey {username}!
-                </h1>
-            </header>
-            {!userProfile?.date_of_birth || !userProfile?.avatar_url && (
+        <main className="flex flex-col bg-[var(--layer2)] min-h-screen transition-colors duration-300 p-6 md:p-10">
+            {(!userProfile?.date_of_birth || !userProfile?.avatar_url) && (
                 <DetailsModal
                     day={day}
                     setDay={setDay}
@@ -184,6 +179,123 @@ export default function Dashboard() {
                     needsDate={!userProfile?.date_of_birth}
                 />
             )}
+
+            <div className="mb-8">
+                <h1 className="text-3xl font-bold text-[var(--text)]">Hey, {username}!</h1>
+                <p className="text-[var(--text-muted)] mt-1">Here's what's happening on your POW dashboard.</p>
+            </div>
+
+            <p className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest mb-4">Quick actions</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+                <div className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5 flex flex-col gap-3 cursor-pointer hover:border-[var(--nice-blue)] transition-colors">
+                    <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M10 3v9m0-9-3 3m3-3 3 3M4 14h12v1a2 2 0 01-2 2H6a2 2 0 01-2-2v-1z" stroke="#185FA5" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                    </div>
+                    <p className="font-bold text-[var(--text)]">Upload a file</p>
+                    <p className="text-sm text-[var(--text-muted)] flex-1">Turn a PDF or doc into notes or flashcards instantly.</p>
+                    <button className="cursor-pointer text-sm font-bold border border-[var(--layer3)] rounded-xl px-4 py-2 hover:bg-[var(--layer2)] transition-colors text-[var(--text)] w-fit">
+                        Upload
+                    </button>
+                </div>
+
+                <div className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5 flex flex-col gap-3 cursor-pointer hover:border-[var(--nice-blue)] transition-colors">
+                    <div className="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <rect x="4" y="3" width="12" height="14" rx="2" stroke="#0F6E56" strokeWidth="1.5"/>
+                            <path d="M7 7h6M7 10h6M7 13h4" stroke="#0F6E56" strokeWidth="1.5" strokeLinecap="round"/>
+                        </svg>
+                    </div>
+                    <p className="font-bold text-[var(--text)]">Notes</p>
+                    <p className="text-sm text-[var(--text-muted)] flex-1">Access practice tests or start a 1:1 voice tutor.</p>
+                    <button className="cursor-pointer text-sm font-bold border border-[var(--layer3)] rounded-xl px-4 py-2 hover:bg-[var(--layer2)] transition-colors text-[var(--text)] w-fit">
+                        Create
+                    </button>
+                </div>
+
+                <div className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5 flex flex-col gap-3 cursor-pointer hover:border-[var(--nice-blue)] transition-colors">
+                    <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <rect x="3" y="5" width="14" height="10" rx="2" stroke="#534AB7" strokeWidth="1.5"/>
+                            <path d="M7 10h6M10 7v6" stroke="#534AB7" strokeWidth="1.5" strokeLinecap="round"/>
+                        </svg>
+                    </div>
+                    <p className="font-bold text-[var(--text)]">Flashcards</p>
+                    <p className="text-sm text-[var(--text-muted)] flex-1">Learn mode, spaced repetition, or voice quiz.</p>
+                    <button className="cursor-pointer text-sm font-bold border border-[var(--layer3)] rounded-xl px-4 py-2 hover:bg-[var(--layer2)] transition-colors text-[var(--text)] w-fit">
+                        Create
+                    </button>
+                </div>
+
+                <div className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5 flex flex-col gap-3 cursor-pointer hover:border-[var(--nice-blue)] transition-colors">
+                    <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <circle cx="10" cy="8" r="3" stroke="#BA7517" strokeWidth="1.5"/>
+                            <path d="M5 8a5 5 0 0010 0M10 13v4" stroke="#BA7517" strokeWidth="1.5" strokeLinecap="round"/>
+                        </svg>
+                    </div>
+                    <p className="font-bold text-[var(--text)]">Live record class</p>
+                    <p className="text-sm text-[var(--text-muted)] flex-1">Record your lecture and let POW Bot turn it into notes.</p>
+                    <button className="cursor-pointer text-sm font-bold border border-[var(--layer3)] rounded-xl px-4 py-2 hover:bg-[var(--layer2)] transition-colors text-[var(--text)] w-fit">
+                        Record
+                    </button>
+                </div>
+            </div>
+
+            <p className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest mb-4">POW bot</p>
+            <div className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center gap-4 mb-10 hover:border-[var(--nice-blue)] transition-colors cursor-pointer">
+                <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                        <circle cx="14" cy="14" r="10" stroke="#185FA5" strokeWidth="1.5"/>
+                        <circle cx="10" cy="13" r="1.5" fill="#185FA5"/>
+                        <circle cx="18" cy="13" r="1.5" fill="#185FA5"/>
+                        <path d="M10 18c1.2 1.5 6.8 1.5 8 0" stroke="#185FA5" strokeWidth="1.5" strokeLinecap="round"/>
+                        <path d="M14 4v2M14 22v2M4 14H2M26 14h-2" stroke="#185FA5" strokeWidth="1.5" strokeLinecap="round"/>
+                    </svg>
+                </div>
+                <div className="flex-1">
+                    <p className="font-bold text-[var(--text)]">Chat with POW Bot</p>
+                    <p className="text-sm text-[var(--text-muted)] mt-1">Ask anything about your notes, get summaries, generate practice questions, or start a voice tutoring session.</p>
+                    <span className="inline-block mt-2 text-xs font-bold bg-blue-100 text-blue-800 px-3 py-1 rounded-lg">AI tutor</span>
+                </div>
+                <button className="cursor-pointer text-sm font-bold bg-[var(--nice-blue)] text-white px-5 py-2.5 rounded-xl shadow-lg shadow-blue-500/20 hover:scale-95 transition-transform whitespace-nowrap">
+                    Ask POW →
+                </button>
+            </div>
+
+            <p className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest mb-4">Recent activity</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5">
+                    <div className="flex items-center gap-2 mb-3">
+                        <div className="w-2 h-2 rounded-full bg-teal-500"></div>
+                        <span className="text-xs font-bold text-[var(--text-muted)]">Most recent note</span>
+                    </div>
+                    <p className="font-bold text-[var(--text)] mb-1">No notes yet</p>
+                    <p className="text-sm text-[var(--text-muted)]">Upload a file or create a note set to get started.</p>
+                    <div className="flex justify-between items-center mt-4 pt-3 border-t border-[var(--layer3)]">
+                        <span className="text-xs text-[var(--text-muted)]">—</span>
+                        <button className="cursor-pointer text-sm font-bold border border-[var(--layer3)] rounded-xl px-4 py-2 hover:bg-[var(--layer2)] transition-colors text-[var(--text)]">
+                            Create note →
+                        </button>
+                    </div>
+                </div>
+
+                <div className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5">
+                    <div className="flex items-center gap-2 mb-3">
+                        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                        <span className="text-xs font-bold text-[var(--text-muted)]">Most recent flashcard set</span>
+                    </div>
+                    <p className="font-bold text-[var(--text)] mb-1">No flashcard sets yet</p>
+                    <p className="text-sm text-[var(--text-muted)]">Create a flashcard set from scratch or generate one from your notes.</p>
+                    <div className="flex justify-between items-center mt-4 pt-3 border-t border-[var(--layer3)]">
+                        <span className="text-xs text-[var(--text-muted)]">—</span>
+                        <button className="cursor-pointer text-sm font-bold border border-[var(--layer3)] rounded-xl px-4 py-2 hover:bg-[var(--layer2)] transition-colors text-[var(--text)]">
+                            Create set →
+                        </button>
+                    </div>
+                </div>
+            </div>
         </main>
     );
 }
