@@ -102,24 +102,35 @@ export default function Dashboard() {
         router.refresh();
     };
 
+    const needsDate = !userProfile?.date_of_birth;
+    const needsAvatar = !userProfile?.avatar_url;
+
     const handleSaveDetails = async () => {
-        if (!day || !month || !year) {
-            toast.error('Please fill in your date of birth', toastStyle);
-            return;
+        const profileUpdates = {};
+
+        if (needsDate) {
+            if (!day || !month || !year) {
+                toast.error('Please fill in your date of birth', toastStyle);
+                return;
+            }
+
+            const calculatedAge = calculateAge(day, month, year);
+            if (calculatedAge < 13) {
+                toast.error("You must be at least 13 years old to use POW.", toastStyle);
+                return;
+            }
+
+            const dobString = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            profileUpdates.date_of_birth = dobString;
         }
 
-        const calculatedAge = calculateAge(day, month, year);
-        if (calculatedAge < 13) {
-            toast.error("You must be at least 13 years old to use POW.", toastStyle);
-            return;
-        }
-
-        const dobString = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-
-        const profileUpdates = { date_of_birth: dobString };
-
-        if (avatarUrl && avatarUrl !== userProfile?.avatar_url) {
+        if (needsAvatar && avatarUrl) {
             profileUpdates.avatar_url = avatarUrl;
+        }
+
+        if (Object.keys(profileUpdates).length === 0) {
+            toast.error('Nothing to update', toastStyle);
+            return;
         }
 
         const { error } = await supabase
@@ -131,8 +142,10 @@ export default function Dashboard() {
             console.error("Supabase update error:", error.message);
             toast.error('Error updating profile.', toastStyle);
         } else {
-            setAge(calculatedAge);
+            if (needsDate) setAge(calculateAge(day, month, year));
+            if (needsAvatar) setAvatarUrl(avatarUrl);
             toast.success('Profile completed!', toastStyle);
+            setCompletedProfile(true);
         }
     };
 
@@ -151,7 +164,7 @@ export default function Dashboard() {
                     Hey {username}!
                 </h1>
             </header>
-            {!completedProfile && (
+            {!userProfile?.date_of_birth || !userProfile?.avatar_url && (
                 <DetailsModal
                     day={day}
                     setDay={setDay}
@@ -160,6 +173,8 @@ export default function Dashboard() {
                     year={year}
                     setYear={setYear}
                     onSubmit={handleSaveDetails}
+                    avatarUrl={avatarUrl}
+                    setAvatarUrl={setAvatarUrl}
                     needsAvatar={!userProfile?.avatar_url}
                     needsDate={!userProfile?.date_of_birth}
                 />

@@ -134,18 +134,28 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                             >
                                 {userProfile?.avatar_url ? (
-                                    <Image
-                                        src={userProfile.avatar_url}
-                                        alt="avatar"
-                                        width={48}
-                                        height={48}
-                                        className="rounded-full object-cover shadow-sm"
-                                    />
+                                    userProfile.avatar_url.includes('dicebear') ? (
+                                        <img
+                                            src={userProfile.avatar_url}
+                                            alt="avatar"
+                                            width={48}
+                                            height={48}
+                                            className="rounded-full object-cover shadow-sm"
+                                        />
+                                    ) : (
+                                        <Image
+                                            src={userProfile.avatar_url}
+                                            alt="avatar"
+                                            width={48}
+                                            height={48}
+                                            className="rounded-full object-cover shadow-sm"
+                                        />
+                                    )
                                 ) : (
                                     <div className="w-[48px] h-[48px] bg-white rounded-full shadow-md border border-[var(--layer3)] flex items-center justify-center">
-                                        <span className="text-[var(--nice-blue)] text-xs font-black">
-                {userProfile?.username?.charAt(0).toUpperCase() || "P"}
-            </span>
+                                    <span className="text-[var(--nice-blue)] text-xs font-black">
+                                        {userProfile?.username?.charAt(0).toUpperCase() || "P"}
+                                    </span>
                                     </div>
                                 )}
                             </button>
@@ -158,13 +168,31 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                                             router.push('/dashboard');
                                         }}
                                     >
-                                        <Image
-                                            src={userProfile?.avatar_url}
-                                            alt="avatar"
-                                            width={60}
-                                            height={40}
-                                            className="rounded-full cursor-pointer"
-                                        />
+                                        {userProfile?.avatar_url ? (
+                                            userProfile.avatar_url.includes('dicebear') ? (
+                                                <img
+                                                    src={userProfile.avatar_url}
+                                                    alt="avatar"
+                                                    width={48}
+                                                    height={48}
+                                                    className="rounded-full object-cover shadow-sm"
+                                                />
+                                            ) : (
+                                                <Image
+                                                    src={userProfile.avatar_url}
+                                                    alt="avatar"
+                                                    width={48}
+                                                    height={48}
+                                                    className="rounded-full object-cover shadow-sm"
+                                                />
+                                            )
+                                        ) : (
+                                            <div className="w-[48px] h-[48px] bg-white rounded-full shadow-md border border-[var(--layer3)] flex items-center justify-center">
+        <span className="text-[var(--nice-blue)] text-xs font-black">
+            {userProfile?.username?.charAt(0).toUpperCase() || "P"}
+        </span>
+                                            </div>
+                                        )}
                                         <div>
                                             <p className={'whitespace-nowrap text-xl text-[var(--text)]'}>{userProfile?.username}</p>
                                             <p className={'whitespace-nowrap text-sm text-[var(--text-muted)] truncate max-w-[180px]'}>{email}</p>

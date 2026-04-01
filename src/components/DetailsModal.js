@@ -13,7 +13,7 @@ const PRESET_AVATARS = [
     "https://api.dicebear.com/9.x/shapes/svg?seed=Theta&backgroundColor=f6e6b4",
 ];
 
-export default function DetailsModal({ day, setDay, month, setMonth, year, setYear, avatar, setAvatar, needsAvatar, onSubmit, needsDate }) {
+export default function DetailsModal({ day, setDay, month, setMonth, year, setYear, avatarUrl, setAvatarUrl, needsAvatar, onSubmit, needsDate }) {
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20 backdrop-blur-md p-0 md:p-6">
             <motion.div
@@ -37,20 +37,24 @@ export default function DetailsModal({ day, setDay, month, setMonth, year, setYe
                         <div className="w-full flex flex-col items-center mb-2">
                             <h3 className="text-[var(--text-muted)] font-bold mb-4">Choose an Avatar</h3>
                             <div className="flex flex-wrap justify-center gap-4">
-                                {PRESET_AVATARS.map((url, idx) => (
-                                    <button
-                                        key={idx}
-                                        type="button"
-                                        onClick={() => setAvatar(url)}
-                                        className={`w-14 h-14 rounded-full overflow-hidden transition-all duration-200 cursor-pointer ${
-                                            avatar === url
-                                                ? 'ring-4 ring-[var(--nice-blue)] scale-110 shadow-lg'
-                                                : 'hover:scale-110 opacity-50 hover:opacity-100'
-                                        }`}
-                                    >
-                                        <img src={url} alt={`Avatar ${idx}`} className="w-full h-full object-cover" />
-                                    </button>
-                                ))}
+                                {PRESET_AVATARS.map((url, idx) => {
+                                    const isSelected = avatarUrl === url;
+                                    return (
+                                        <button
+                                            key={url}
+                                            type="button"
+                                            onClick={() => setAvatarUrl(url)}
+                                            className={`relative w-16 h-16 rounded-full overflow-hidden transition-all duration-200 cursor-pointer outline-none
+                                                hover:scale-110 hover:ring-4 hover:ring-blue-500/50
+                                                ${isSelected
+                                                ? 'scale-110 ring-4 ring-blue-500 shadow-lg'
+                                                : 'scale-100 opacity-70 hover:opacity-100'
+                                            }`}
+                                        >
+                                            <img src={url} alt={`Avatar ${idx}`} className="w-full h-full object-cover" />
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </div>
                     )}
