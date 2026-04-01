@@ -40,7 +40,6 @@ export default function Dashboard() {
     const [day, setDay] = useState(null);
     const [month, setMonth] = useState(null);
     const [year, setYear] = useState(null);
-    const [completedProfile, setCompletedProfile] = useState(true);
 
     const toastStyle = {
         style: {
@@ -71,8 +70,6 @@ export default function Dashboard() {
                 setUsername(profile?.username)
                 setAge(profile?.date_of_birth)
                 setAvatarUrl(profile?.avatar_url)
-
-                if ( !age || !avatarUrl ) setCompletedProfile(false);
 
                 if (error) {
                     console.error(error);
