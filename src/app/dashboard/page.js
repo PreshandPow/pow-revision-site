@@ -150,10 +150,15 @@ export default function Dashboard() {
     };
 
     if (loading) return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20 backdrop-blur-md p-0 md:p-6">
-            <h1 className="font-brand text-[var(--nice-blue)] text-2xl md:text-4xl font-semibold">
-                Hold on. POW Bot is setting up your dashboard...
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--layer1)] backdrop-blur-xl p-6">
+            <div className="w-16 h-16 mb-8 rounded-2xl bg-[var(--nice-blue)] animate-pulse shadow-[0_0_40px_rgba(var(--blue-rgb),0.3)]" />
+
+            <h1 className="font-brand text-[var(--text)] text-2xl md:text-3xl font-bold tracking-tight text-center max-w-md leading-tight">
+                Setting up your <span className="text-[var(--nice-blue)]">POW Dashboard</span>
             </h1>
+            <p className="mt-4 text-[var(--text-muted)] font-medium animate-bounce">
+                Fetching your data...
+            </p>
         </div>
     );
 
