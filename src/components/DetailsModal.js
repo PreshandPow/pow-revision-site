@@ -13,7 +13,7 @@ const PRESET_AVATARS = [
     "https://api.dicebear.com/9.x/shapes/svg?seed=Theta&backgroundColor=f6e6b4",
 ];
 
-export default function DetailsModal({ day, setDay, month, setMonth, year, setYear, avatar, setAvatar, needsAvatar, onSubmit }) {
+export default function DetailsModal({ day, setDay, month, setMonth, year, setYear, avatar, setAvatar, needsAvatar, onSubmit, needsDate }) {
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20 backdrop-blur-md p-0 md:p-6">
             <motion.div
@@ -54,7 +54,7 @@ export default function DetailsModal({ day, setDay, month, setMonth, year, setYe
                             </div>
                         </div>
                     )}
-                    <div className="w-full flex flex-col items-center">
+                    {needsDate && (<div className="w-full flex flex-col items-center">
                         <h3 className="text-[var(--text-muted)] font-bold mb-4">Date of Birth</h3>
                         <div className="grid grid-cols-3 gap-3 w-full">
                             <div className="relative w-full">
@@ -103,7 +103,7 @@ export default function DetailsModal({ day, setDay, month, setMonth, year, setYe
                                 />
                             </div>
                         </div>
-                    </div>
+                    </div>)}
 
                     <button
                         onClick={onSubmit}

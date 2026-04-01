@@ -161,6 +161,7 @@ export default function Dashboard() {
                     setYear={setYear}
                     onSubmit={handleSaveDetails}
                     needsAvatar={!userProfile?.avatar_url}
+                    needsDate={!userProfile?.date_of_birth}
                 />
             )}
         </main>
