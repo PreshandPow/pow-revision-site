@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import { X, Folder, FileText, BookOpen } from "lucide-react";
-import { useState } from "react";
 
 const SIDEBAR_ITEMS = [
     {
