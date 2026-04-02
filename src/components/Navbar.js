@@ -164,8 +164,7 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                                     <div
                                         className="px-4 py-4 text-left font-bold flex gap-8 text-[var(--text)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                                         onClick={() => {
-                                            setIsDropdownOpen(false);
-                                            router.push('/dashboard');
+                                            console.log('opening profile page')
                                         }}
                                     >
                                         {userProfile?.avatar_url ? (

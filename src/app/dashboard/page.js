@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import DetailsModal from '../../components/DetailsModal';
+import CreateModal from "../../components/CreateModal";
 
 export function createClient() {
 
@@ -40,6 +41,7 @@ export default function Dashboard() {
     const [day, setDay] = useState(null);
     const [month, setMonth] = useState(null);
     const [year, setYear] = useState(null);
+    const [openCreateModal , setOpenCreateModal] = useState(false);
 
     const toastStyle = {
         style: {
@@ -192,7 +194,9 @@ export default function Dashboard() {
                     </div>
                     <p className="font-bold text-[var(--text)]">Upload a file</p>
                     <p className="text-sm text-[var(--text-muted)] flex-1">Turn a PDF or doc into notes or flashcards instantly.</p>
-                    <button className="cursor-pointer text-sm font-bold border border-[var(--layer3)] rounded-xl px-4 py-2 hover:bg-[var(--layer2)] transition-colors text-[var(--text)] w-fit">
+                    <button className="cursor-pointer text-sm font-bold border border-[var(--layer3)] rounded-xl px-4 py-2 hover:bg-[var(--layer2)] transition-colors text-[var(--text)] w-fit"
+                            onClick={() => setOpenCreateModal(true)}
+                           >
                         Upload
                     </button>
                 </div>
@@ -293,6 +297,11 @@ export default function Dashboard() {
                     </div>
                 </div>
             </div>
+            {openCreateModal && (
+                <CreateModal
+                    setOpenCreateModal={setOpenCreateModal}
+                />
+            )}
         </main>
     );
 }
