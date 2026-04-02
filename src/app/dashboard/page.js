@@ -42,6 +42,7 @@ export default function Dashboard() {
     const [month, setMonth] = useState(null);
     const [year, setYear] = useState(null);
     const [openCreateModal , setOpenCreateModal] = useState(false);
+    const [activeTaskModal, setActiveTaskModal] = useState(null);
 
     const toastStyle = {
         style: {
@@ -195,7 +196,6 @@ export default function Dashboard() {
                     <p className="font-bold text-[var(--text)]">Upload a file</p>
                     <p className="text-sm text-[var(--text-muted)] flex-1">Turn a PDF or doc into notes or flashcards instantly.</p>
                     <button className="cursor-pointer text-sm font-bold border border-[var(--layer3)] rounded-xl px-4 py-2 hover:bg-[var(--layer2)] transition-colors text-[var(--text)] w-fit"
-                            onClick={() => setOpenCreateModal(true)}
                            >
                         Upload
                     </button>
@@ -210,7 +210,12 @@ export default function Dashboard() {
                     </div>
                     <p className="font-bold text-[var(--text)]">Notes</p>
                     <p className="text-sm text-[var(--text-muted)] flex-1">Access practice tests or start a 1:1 voice tutor.</p>
-                    <button className="cursor-pointer text-sm font-bold border border-[var(--layer3)] rounded-xl px-4 py-2 hover:bg-[var(--layer2)] transition-colors text-[var(--text)] w-fit">
+                    <button
+                        className="cursor-pointer text-sm font-bold border border-[var(--layer3)] rounded-xl px-4 py-2 hover:bg-[var(--layer2)] transition-colors text-[var(--text)] w-fit"
+                        onClick={() => {
+                            setOpenCreateModal(true);
+                            setActiveTaskModal('notes');
+                        }}>
                         Create
                     </button>
                 </div>
@@ -224,7 +229,12 @@ export default function Dashboard() {
                     </div>
                     <p className="font-bold text-[var(--text)]">Flashcards</p>
                     <p className="text-sm text-[var(--text-muted)] flex-1">Learn mode, spaced repetition, or voice quiz.</p>
-                    <button className="cursor-pointer text-sm font-bold border border-[var(--layer3)] rounded-xl px-4 py-2 hover:bg-[var(--layer2)] transition-colors text-[var(--text)] w-fit">
+                    <button
+                        className="cursor-pointer text-sm font-bold border border-[var(--layer3)] rounded-xl px-4 py-2 hover:bg-[var(--layer2)] transition-colors text-[var(--text)] w-fit"
+                        onClick={() => {
+                            setOpenCreateModal(true);
+                            setActiveTaskModal('flashcards');
+                        }}>
                         Create
                     </button>
                 </div>
@@ -300,6 +310,8 @@ export default function Dashboard() {
             {openCreateModal && (
                 <CreateModal
                     setOpenCreateModal={setOpenCreateModal}
+                    activeTaskModal={activeTaskModal}
+                    setActiveTaskModal={setActiveTaskModal}
                 />
             )}
         </main>

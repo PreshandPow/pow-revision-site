@@ -63,10 +63,9 @@ const SIDEBAR_ITEMS = [
     },
 ];
 
-export default function CreateModal({ setOpenCreateModal }) {
-    const [active, setActive] = useState('folders');
+export default function CreateModal({ setOpenCreateModal, activeTaskModal, setActiveTaskModal }) {
 
-    const current = SIDEBAR_ITEMS.find(i => i.id === active);
+    const current = SIDEBAR_ITEMS.find(i => i.id === activeTaskModal);
 
     return (
         <div
@@ -81,13 +80,13 @@ export default function CreateModal({ setOpenCreateModal }) {
                 transition={{ duration: 0.3, ease: 'easeOut' }}
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="w-52 flex-shrink-0 bg-[var(--layer2)] border-r border-[var(--layer3)] flex flex-col p-4 gap-1">
+                <div className="w-3/7 md:w-52 flex-shrink-0 bg-[var(--layer2)] border-r border-[var(--layer3)] flex flex-col p-4 gap-1">
                     {SIDEBAR_ITEMS.map(item => (
                         <button
                             key={item.id}
-                            onClick={() => setActive(item.id)}
+                            onClick={() => setActiveTaskModal(item.id)}
                             className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-semibold text-sm cursor-pointer transition-colors text-left
-                                ${active === item.id
+                                ${activeTaskModal === item.id
                                 ? 'bg-[var(--nice-blue)] text-white'
                                 : 'text-[var(--text-muted)] hover:bg-[var(--layer3)] hover:text-[var(--text)]'
                             }`}
