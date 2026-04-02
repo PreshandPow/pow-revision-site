@@ -187,7 +187,7 @@ export default function Dashboard() {
 
             <p className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest mb-4">Quick actions</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-                <div className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5 flex flex-col gap-3 cursor-pointer hover:border-[var(--nice-blue)] transition-colors">
+                <div className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5 flex flex-col gap-3 hover:border-[var(--nice-blue)] transition-colors">
                     <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                             <path d="M10 3v9m0-9-3 3m3-3 3 3M4 14h12v1a2 2 0 01-2 2H6a2 2 0 01-2-2v-1z" stroke="#185FA5" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -201,7 +201,7 @@ export default function Dashboard() {
                     </button>
                 </div>
 
-                <div className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5 flex flex-col gap-3 cursor-pointer hover:border-[var(--nice-blue)] transition-colors">
+                <div className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5 flex flex-col gap-3 hover:border-[var(--nice-blue)] transition-colors">
                     <div className="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center">
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                             <rect x="4" y="3" width="12" height="14" rx="2" stroke="#0F6E56" strokeWidth="1.5"/>
@@ -220,7 +220,7 @@ export default function Dashboard() {
                     </button>
                 </div>
 
-                <div className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5 flex flex-col gap-3 cursor-pointer hover:border-[var(--nice-blue)] transition-colors">
+                <div className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5 flex flex-col gap-3 hover:border-[var(--nice-blue)] transition-colors">
                     <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                             <rect x="3" y="5" width="14" height="10" rx="2" stroke="#534AB7" strokeWidth="1.5"/>
@@ -239,7 +239,7 @@ export default function Dashboard() {
                     </button>
                 </div>
 
-                <div className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5 flex flex-col gap-3 cursor-pointer hover:border-[var(--nice-blue)] transition-colors">
+                <div className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5 flex flex-col gap-3 hover:border-[var(--nice-blue)] transition-colors">
                     <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                             <circle cx="10" cy="8" r="3" stroke="#BA7517" strokeWidth="1.5"/>
@@ -255,7 +255,7 @@ export default function Dashboard() {
             </div>
 
             <p className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest mb-4">POW bot</p>
-            <div className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center gap-4 mb-10 hover:border-[var(--nice-blue)] transition-colors cursor-pointer">
+            <div className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center gap-4 mb-10 hover:border-[var(--nice-blue)] transition-colors">
                 <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
                     <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
                         <circle cx="14" cy="14" r="10" stroke="#185FA5" strokeWidth="1.5"/>
