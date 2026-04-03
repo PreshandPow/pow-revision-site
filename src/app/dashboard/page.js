@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import DetailsModal from '../../components/DetailsModal';
 import CreateModal from "../../components/CreateModal";
+import Footer from "../../components/Footer";
 
 export function createClient() {
 
@@ -163,7 +164,7 @@ export default function Dashboard() {
     );
 
     return (
-        <main className="flex flex-col bg-[var(--layer2)] min-h-screen transition-colors duration-300 p-6 md:p-10">
+        <main className="flex flex-col bg-[var(--layer2)] min-h-screen transition-colors duration-300 p-6 md:p-10 w-full">
             {(!userProfile?.date_of_birth || !userProfile?.avatar_url) && (
                 <DetailsModal
                     day={day}
@@ -307,6 +308,7 @@ export default function Dashboard() {
                     </div>
                 </div>
             </div>
+            <Footer />
             {openCreateModal && (
                 <CreateModal
                     setOpenCreateModal={setOpenCreateModal}
