@@ -12,7 +12,7 @@ const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
-export default function Navbar({ setSearchInput, theme, handleThemeChange, isNavOpen, setIsNavOpen, setAuthMode, router }) {
+export default function Navbar({ setSearchInput, theme, handleThemeChange, isNavOpen, setIsNavOpen, setAuthMode, router, handleViewNotes }) {
     const [session, setSession] = useState(null);
     const [userProfile, setUserProfile] = useState(null);
     const [email, setEmail] = useState(null);
@@ -78,7 +78,7 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
     }, [supabase, router]);
 
     return (
-        <nav className="sticky top-0 z-50 flex flex-col gap-6 w-full bg-[var(--layer1)] p-4 md:p-6 shadow-sm border-b border-[var(--layer3)]">
+        <nav className="sticky top-0 z-50 flex flex-col gap-6 w-full bg-[var(--layer1)] p-4 md:p-6 shadow-sm border-b border-[var(--layer3)] mb-4">
             <div className="flex items-center justify-between w-full max-w-7xl mx-auto">
                 <button
                     className="cursor-pointer md:hidden p-3 hover:bg-[var(--layer2)] rounded-full transition-colors"
@@ -92,7 +92,13 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                 </Link>
                 <ul className="hidden md:flex items-center gap-4 font-semibold">
                     <li>
-                        <button className="flex items-center gap-3 p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group">
+                        <button
+                            className="flex items-center gap-3 p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group"
+                            onClick={() => {
+                                if (session) {
+                                    console.log('awdawsddwa');
+                                    router.push(`/dashboard/Notes`);
+                            }}}>
                             <span className="text-xl grayscale group-hover:grayscale-0">📝</span>
                             <span className="text-[var(--text)]">Notes</span>
                         </button>

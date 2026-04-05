@@ -9,6 +9,7 @@ import Image from 'next/image';
 import DetailsModal from '../../components/DetailsModal';
 import CreateModal from "../../components/CreateModal";
 import Footer from "../../components/Footer";
+import Navbar from "../../components/Navbar";
 
 export function createClient() {
 
@@ -308,7 +309,6 @@ export default function Dashboard() {
                     </div>
                 </div>
             </div>
-            <Footer />
             {openCreateModal && (
                 <CreateModal
                     setOpenCreateModal={setOpenCreateModal}

@@ -5,6 +5,7 @@ import Navbar from "../../components/Navbar";
 import Sidebar from "../../components/Sidebar";
 import {supabase} from "../../lib/supabase-client";
 import { useRouter } from 'next/navigation';
+import Footer from "../../components/Footer";
 
 export default function DashboardLayout({ children }) {
 
@@ -68,6 +69,7 @@ export default function DashboardLayout({ children }) {
                 handleThemeChange={handleThemeChange}
             />
             <main>{children}</main>
+            <Footer />
         </div>
     );
 }
