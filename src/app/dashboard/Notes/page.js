@@ -127,7 +127,7 @@ export default function NotesPage() {
                                     <p className="font-bold text-[var(--text)] truncate flex-1">{note.title || 'Untitled'}</p>
                                     <button
                                         onClick={(e) => handleDelete(e, note.id)}
-                                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg hover:bg-red-500/10 cursor-pointer"
+                                        className="md:opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg hover:bg-red-500/10 cursor-pointer"
                                     >
                                         <Trash2 size={15} className="text-red-400" />
                                     </button>
