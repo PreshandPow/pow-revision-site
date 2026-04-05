@@ -74,13 +74,13 @@ export default function Sidebar({ isNavOpen, setIsNavOpen, isOptionsOpen, setIsO
                                         setIsNavOpen(false);
                                         router.push(`/dashboard/Notes`);
                                     }}}>
-                                <span className="text-2xl grayscale group-hover:grayscale-0 transition-all">📝</span>
+                                <span className="text-2xl">📝</span>
                                 <span className="font-bold text-[var(--text)]">Notes</span>
                             </button>
                         </li>
                         <li>
                             <button className="flex items-center gap-4 w-full p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group">
-                                <span className="text-2xl grayscale group-hover:grayscale-0 transition-all">🗃️</span>
+                                <span className="text-2xl">🗃️</span>
                                 <span className="font-bold text-[var(--text)]">Flashcards</span>
                             </button>
                         </li>
@@ -91,7 +91,7 @@ export default function Sidebar({ isNavOpen, setIsNavOpen, isOptionsOpen, setIsO
                                 className="flex items-center justify-between w-full p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group"
                             >
                                 <div className="flex items-center gap-4">
-                                    <span className="text-2xl grayscale group-hover:grayscale-0 transition-all">⚙️</span>
+                                    <span className="text-2xl">⚙️</span>
                                     <span className="font-bold text-[var(--text)]">Options</span>
                                 </div>
                                 <ChevronDown
