@@ -67,6 +67,7 @@ export default function DashboardLayout({ children }) {
                 setIsOptionsOpen={setIsOptionsOpen}
                 theme={theme}
                 handleThemeChange={handleThemeChange}
+                router={router}
             />
             <main>{children}</main>
             <Footer />

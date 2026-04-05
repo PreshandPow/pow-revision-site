@@ -12,7 +12,7 @@ const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
-export default function Navbar({ setSearchInput, theme, handleThemeChange, isNavOpen, setIsNavOpen, setAuthMode, router, handleViewNotes }) {
+export default function Navbar({ setSearchInput, theme, handleThemeChange, isNavOpen, setIsNavOpen, setAuthMode, router }) {
     const [session, setSession] = useState(null);
     const [userProfile, setUserProfile] = useState(null);
     const [email, setEmail] = useState(null);
@@ -98,7 +98,7 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                                 if (session) {
                                     console.log('awdawsddwa');
                                     router.push(`/dashboard/Notes`);
-                            }}}>
+                                }}}>
                             <span className="text-xl grayscale group-hover:grayscale-0">📝</span>
                             <span className="text-[var(--text)]">Notes</span>
                         </button>
