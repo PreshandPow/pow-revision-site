@@ -96,7 +96,6 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                             className="flex items-center gap-3 p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group"
                             onClick={() => {
                                 if (session) {
-                                    console.log('awdawsddwa');
                                     router.push(`/dashboard/Notes`);
                                 }}}>
                             <span className="text-xl grayscale group-hover:grayscale-0">📝</span>

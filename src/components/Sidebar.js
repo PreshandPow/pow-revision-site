@@ -71,7 +71,7 @@ export default function Sidebar({ isNavOpen, setIsNavOpen, isOptionsOpen, setIsO
                                 className="flex items-center gap-4 w-full p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group"
                                 onClick={() => {
                                     if (session) {
-                                        console.log('awdawsddwa');
+                                        setIsNavOpen(false);
                                         router.push(`/dashboard/Notes`);
                                     }}}>
                                 <span className="text-2xl grayscale group-hover:grayscale-0 transition-all">📝</span>
