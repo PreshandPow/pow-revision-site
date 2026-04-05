@@ -32,6 +32,15 @@ export default function RootLayout({ children }) {
     return (
         <html lang="en" className={`${inter.variable} ${outfit.variable}`}>
             <body>
+            <script dangerouslySetInnerHTML={{
+                __html: `
+                        (function() {
+                            const saved = localStorage.getItem('theme');
+                            const system = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                            document.body.classList.add(saved || system);
+                        })()
+                    `
+            }} />
                 {children}
                 <Toaster
                     position="top-center"

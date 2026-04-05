@@ -151,6 +151,19 @@ export default function Dashboard() {
         }
     };
 
+    const handleCreateNote = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+
+        const { data: note, error } = await supabase
+            .from('notes')
+            .insert({ user_id: user.id, title: 'Untitled', content: '' })
+            .select()
+            .single();
+
+        if (error) { toast.error('Could not create note', toastStyle); return; }
+        router.push(`/dashboard/notes/${note.id}`);
+    };
+
     if (loading) return (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--layer1)] backdrop-blur-xl p-6">
             <div className="w-16 h-16 mb-8 rounded-2xl bg-[var(--nice-blue)] animate-pulse shadow-[0_0_40px_rgba(var(--blue-rgb),0.3)]" />
@@ -314,6 +327,7 @@ export default function Dashboard() {
                     setOpenCreateModal={setOpenCreateModal}
                     activeTaskModal={activeTaskModal}
                     setActiveTaskModal={setActiveTaskModal}
+                    handleCreateNote={handleCreateNote}
                 />
             )}
         </main>

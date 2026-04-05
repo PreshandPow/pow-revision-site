@@ -15,7 +15,7 @@ export default function DashboardLayout({ children }) {
     const [theme, setTheme] = useState('light');
     const [searchInput, setSearchInput] = useState("");
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
-    const [session, setSession] = useState(null);
+    const [session, setSession] = useState(undefined);
 
     const fetchSession = async () => {
         const {data: {session}} = await supabase.auth.getSession();

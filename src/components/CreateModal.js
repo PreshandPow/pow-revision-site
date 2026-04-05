@@ -62,7 +62,7 @@ const SIDEBAR_ITEMS = [
     },
 ];
 
-export default function CreateModal({ setOpenCreateModal, activeTaskModal, setActiveTaskModal }) {
+export default function CreateModal({ setOpenCreateModal, activeTaskModal, setActiveTaskModal, handleCreateNote }) {
 
     const current = SIDEBAR_ITEMS.find(i => i.id === activeTaskModal);
 
@@ -115,6 +115,9 @@ export default function CreateModal({ setOpenCreateModal, activeTaskModal, setAc
                             <div
                                 key={idx}
                                 className="bg-[var(--layer2)] border border-[var(--layer3)] rounded-2xl p-5 flex flex-col gap-3 cursor-pointer hover:border-[var(--nice-blue)] transition-colors"
+                                onClick={(e) => {
+                                    if (card.title === 'Create from scratch') handleCreateNote();
+                                }}
                             >
                                 <span className="text-2xl">{card.icon}</span>
                                 <p className="font-bold text-[var(--text)]">{card.title}</p>

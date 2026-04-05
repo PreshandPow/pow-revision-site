@@ -86,7 +86,6 @@ export default function NotesPage() {
         <main className="min-h-screen bg-[var(--layer2)] p-6 md:p-10">
             <div className="max-w-5xl mx-auto">
 
-                {/* Header */}
                 <div className="flex items-center justify-between mb-8">
                     <div>
                         <h1 className="text-3xl font-bold text-[var(--text)]">Notes</h1>
