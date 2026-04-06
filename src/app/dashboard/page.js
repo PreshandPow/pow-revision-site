@@ -45,6 +45,9 @@ export default function Dashboard() {
     const [year, setYear] = useState(null);
     const [openCreateModal , setOpenCreateModal] = useState(false);
     const [activeTaskModal, setActiveTaskModal] = useState(null);
+    const [completedProfile, setCompletedProfile] = useState(true);
+    const [notes, setNotes] = useState([]);
+    const [flashcards, setFlashcards] = useState([]);
 
     const toastStyle = {
         style: {
@@ -72,9 +75,18 @@ export default function Dashboard() {
                     .eq('id', user.id)
                     .maybeSingle();
 
+                const { data: recentNote } = await supabase
+                    .from('notes')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .order('updated_at', { ascending: false })
+                    .limit(1)
+                    .maybeSingle();
+
                 setUsername(profile?.username)
                 setAge(profile?.date_of_birth)
                 setAvatarUrl(profile?.avatar_url)
+                setNotes(recentNote)
 
                 if (error) {
                     console.error(error);
@@ -88,6 +100,11 @@ export default function Dashboard() {
         }
         getUser();
     }, [supabase, router]);
+
+
+    useEffect(() => {
+        if (userProfile?.date_of_birth || userProfile?.avatar_url) setCompletedProfile(false);
+    }, [userProfile]);
 
     useEffect(() => {
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -179,7 +196,7 @@ export default function Dashboard() {
 
     return (
         <main className="flex flex-col bg-[var(--layer2)] min-h-screen transition-colors duration-300 p-6 md:p-10 w-full">
-            {(!userProfile?.date_of_birth || !userProfile?.avatar_url) && (
+            {(!userProfile?.date_of_birth || !userProfile?.avatar_url && !completedProfile) && (
                 <DetailsModal
                     day={day}
                     setDay={setDay}
@@ -292,35 +309,90 @@ export default function Dashboard() {
 
             <p className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest mb-4">Recent activity</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5">
-                    <div className="flex items-center gap-2 mb-3">
-                        <div className="w-2 h-2 rounded-full bg-teal-500"></div>
-                        <span className="text-xs font-bold text-[var(--text-muted)]">Most recent note</span>
-                    </div>
-                    <p className="font-bold text-[var(--text)] mb-1">No notes yet</p>
-                    <p className="text-sm text-[var(--text-muted)]">Upload a file or create a note set to get started.</p>
-                    <div className="flex justify-between items-center mt-4 pt-3 border-t border-[var(--layer3)]">
-                        <span className="text-xs text-[var(--text-muted)]">—</span>
-                        <button className="cursor-pointer text-sm font-bold border border-[var(--layer3)] rounded-xl px-4 py-2 hover:bg-[var(--layer2)] transition-colors text-[var(--text)]">
-                            Create note →
-                        </button>
-                    </div>
-                </div>
 
-                <div className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5">
-                    <div className="flex items-center gap-2 mb-3">
-                        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                        <span className="text-xs font-bold text-[var(--text-muted)]">Most recent flashcard set</span>
+                {notes.length === 0 ? (
+                    <div className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5">
+                        <div className="flex items-center gap-2 mb-3">
+                            <div className="w-2 h-2 rounded-full bg-teal-500"></div>
+                            <span className="text-xs font-bold text-[var(--text-muted)]">Most recent note</span>
+                        </div>
+                        <p className="font-bold text-[var(--text)] mb-1">No notes yet</p>
+                        <p className="text-sm text-[var(--text-muted)]">Upload a file or create a note set to get started.</p>
+                        <div className="flex justify-between items-center mt-4 pt-3 border-t border-[var(--layer3)]">
+                            <span className="text-xs text-[var(--text-muted)]">—</span>
+                            <button onClick={handleCreateNote} className="cursor-pointer text-sm font-bold border border-[var(--layer3)] rounded-xl px-4 py-2 hover:bg-[var(--layer2)] transition-colors text-[var(--text)]">
+                                Create note →
+                            </button>
+                        </div>
                     </div>
-                    <p className="font-bold text-[var(--text)] mb-1">No flashcard sets yet</p>
-                    <p className="text-sm text-[var(--text-muted)]">Create a flashcard set from scratch or generate one from your notes.</p>
-                    <div className="flex justify-between items-center mt-4 pt-3 border-t border-[var(--layer3)]">
-                        <span className="text-xs text-[var(--text-muted)]">—</span>
-                        <button className="cursor-pointer text-sm font-bold border border-[var(--layer3)] rounded-xl px-4 py-2 hover:bg-[var(--layer2)] transition-colors text-[var(--text)]">
-                            Create set →
-                        </button>
+                ) : (
+                    <div
+                        className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5 hover:border-[var(--nice-blue)] transition-colors"
+                    >
+                        <div className="flex items-center gap-2 mb-3">
+                            <div className="w-2 h-2 rounded-full bg-teal-500"></div>
+                            <span className="text-xs font-bold text-[var(--text-muted)]">Most recent note</span>
+                        </div>
+                        <p className="font-bold text-[var(--text)] mb-1 truncate">{notes.title || 'Untitled'}</p>
+                        <p className="text-sm text-[var(--text-muted)] line-clamp-2">{notes.content || 'No content yet...'}</p>
+                        {notes.tags?.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2">
+                                {notes.tags.map(tag => (
+                                    <span key={tag} className="text-xs font-semibold bg-[var(--layer2)] text-[var(--text-muted)] px-2 py-0.5 rounded-lg">
+                        {tag}
+                    </span>
+                                ))}
+                            </div>
+                        )}
+                        <div className="flex justify-between items-center mt-4 pt-3 border-t border-[var(--layer3)]">
+            <span className="text-xs text-[var(--text-muted)]">
+                {new Date(notes.updated_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+            </span>
+                            <button
+                                className="cursor-pointer text-sm font-bold border border-[var(--layer3)] rounded-xl px-4 py-2 hover:bg-[var(--layer2)] transition-colors text-[var(--text)]"
+                                onClick={() => router.push(`/dashboard/Notes/${notes.id}`)}>
+                                Open →
+                            </button>
+                        </div>
                     </div>
-                </div>
+                )}
+
+                {flashcards.length === 0 ? (
+                    <div className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5">
+                        <div className="flex items-center gap-2 mb-3">
+                            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                            <span className="text-xs font-bold text-[var(--text-muted)]">Most recent flashcard set</span>
+                        </div>
+                        <p className="font-bold text-[var(--text)] mb-1">No flashcard sets yet</p>
+                        <p className="text-sm text-[var(--text-muted)]">Create a flashcard set from scratch or generate one from your notes.</p>
+                        <div className="flex justify-between items-center mt-4 pt-3 border-t border-[var(--layer3)]">
+                            <span className="text-xs text-[var(--text-muted)]">—</span>
+                            <button className="cursor-pointer text-sm font-bold border border-[var(--layer3)] rounded-xl px-4 py-2 hover:bg-[var(--layer2)] transition-colors text-[var(--text)]">
+                                Create set →
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    <div
+                        onClick={() => router.push(`/dashboard/flashcards/${flashcards.id}`)}
+                        className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5 cursor-pointer hover:border-[var(--nice-blue)] transition-colors"
+                    >
+                        <div className="flex items-center gap-2 mb-3">
+                            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                            <span className="text-xs font-bold text-[var(--text-muted)]">Most recent flashcard set</span>
+                        </div>
+                        <p className="font-bold text-[var(--text)] mb-1 truncate">{flashcards.title || 'Untitled'}</p>
+                        <p className="text-sm text-[var(--text-muted)]">{flashcards.card_count ?? 0} cards</p>
+                        <div className="flex justify-between items-center mt-4 pt-3 border-t border-[var(--layer3)]">
+            <span className="text-xs text-[var(--text-muted)]">
+                {new Date(flashcards.updated_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+            </span>
+                            <button className="cursor-pointer text-sm font-bold border border-[var(--layer3)] rounded-xl px-4 py-2 hover:bg-[var(--layer2)] transition-colors text-[var(--text)]">
+                                Open →
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
             {openCreateModal && (
                 <CreateModal

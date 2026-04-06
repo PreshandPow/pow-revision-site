@@ -179,7 +179,7 @@ export default function NotePage() {
                         onChange={(e) => setTagInput(e.target.value)}
                         onKeyDown={handleAddTag}
                         placeholder="Add tag..."
-                        className="bg-transparent text-xs font-semibold text-[var(--text-muted)] placeholder:text-[var(--layer3)] outline-none border-none w-24"
+                        className="bg-transparent text-xs font-semibold text-[var(--text-muted)] placeholder:text-[var(--nice-blue)] outline-none border-none w-24"
                     />
                 </div>
 
@@ -189,7 +189,7 @@ export default function NotePage() {
                     value={content}
                     onChange={handleContentChange}
                     placeholder="Start writing..."
-                    className="w-full flex-1 min-h-[60vh] bg-transparent text-[var(--text)] placeholder:text-[var(--layer3)] outline-none border-none resize-none text-base leading-relaxed font-medium"
+                    className="w-full flex-1 min-h-[60vh] bg-transparent text-[var(--text)] placeholder:text-[var(--nice-blue)] outline-none border-none resize-none text-base leading-relaxed font-medium"
                 />
             </div>
         </main>
