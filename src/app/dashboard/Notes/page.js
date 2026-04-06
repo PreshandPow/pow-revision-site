@@ -61,7 +61,7 @@ export default function NotesPage() {
             .single();
 
         if (error) { toast.error('Could not create note', toastStyle); return; }
-        router.push(`/dashboard/notes/${note.id}`);
+        router.push(`/dashboard/Notes/${note.id}`);
     };
 
     const handleDelete = async (e, id) => {
@@ -77,8 +77,15 @@ export default function NotesPage() {
     });
 
     if (loading) return (
-        <div className="flex items-center justify-center min-h-screen bg-[var(--layer2)]">
-            <p className="text-[var(--text-muted)] font-semibold animate-pulse">Loading notes...</p>
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--layer1)] backdrop-blur-xl p-6">
+            <div className="w-16 h-16 mb-8 rounded-2xl bg-[var(--nice-blue)] animate-pulse shadow-[0_0_40px_rgba(var(--blue-rgb),0.3)]" />
+
+            <h1 className="font-brand text-[var(--text)] text-2xl md:text-3xl font-bold tracking-tight text-center max-w-md leading-tight">
+                <span className="text-[var(--nice-blue)]">POW Bot</span> is getting your notes for you
+            </h1>
+            <p className="mt-4 text-[var(--text-muted)] font-medium animate-bounce">
+                Fetching your data...
+            </p>
         </div>
     );
 
@@ -120,7 +127,7 @@ export default function NotesPage() {
                         {notes.map(note => (
                             <div
                                 key={note.id}
-                                onClick={() => router.push(`/dashboard/notes/${note.id}`)}
+                                onClick={() => router.push(`/dashboard/Notes/${note.id}`)}
                                 className="group bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5 flex flex-col gap-3 cursor-pointer hover:border-[var(--nice-blue)] transition-colors"
                             >
                                 <div className="flex items-start justify-between gap-2">

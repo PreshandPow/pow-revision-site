@@ -161,7 +161,7 @@ export default function Dashboard() {
             .single();
 
         if (error) { toast.error('Could not create note', toastStyle); return; }
-        router.push(`/dashboard/notes/${note.id}`);
+        router.push(`/dashboard/Notes/${note.id}`);
     };
 
     if (loading) return (
