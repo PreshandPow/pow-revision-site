@@ -89,7 +89,7 @@ export default function NotePage() {
         saveTimer.current = setTimeout(() => {
             save(newTitle, newContent, newTags);
         }, 1500);
-    }, [save]);
+    }, [save, isAutosave]);
 
     const handleTitleChange = (e) => {
         setTitle(e.target.value);
@@ -148,10 +148,20 @@ export default function NotePage() {
 
                     <li>
                         <button
-                            className={'text-xs font-semibold text-[var(--text-muted)] hover:text-[var(--text)] transition-colors cursor-pointer font-semibold text-sm'}>
-                            Turn off autosave
+                            className={'text-xs font-semibold text-[var(--text-muted)] hover:text-[var(--text)] transition-colors cursor-pointer font-semibold text-sm'}
+                            onClick={() => setIsAutosave(!isAutosave)}>
+                            {isAutosave ? 'Turn off autosave' : 'Turn on autosave'}
                         </button>
                     </li>
+
+                    {!isAutosave && saveStatus === 'unsaved' && (
+                        <button
+                            onClick={() => save(title, content, tags)}
+                            className="text-xs font-bold bg-[var(--nice-blue)] text-white px-3 py-1.5 rounded-lg cursor-pointer hover:scale-95 transition-transform"
+                        >
+                            Save
+                        </button>
+                    )}
 
                     <li>
                         <span className={`text-xs font-semibold transition-colors ${
