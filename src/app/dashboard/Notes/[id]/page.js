@@ -22,9 +22,10 @@ export default function NotePage() {
     const [content, setContent] = useState('');
     const [tags, setTags] = useState([]);
     const [tagInput, setTagInput] = useState('');
-    const [saveStatus, setSaveStatus] = useState('saved'); // 'saved' | 'saving' | 'unsaved'
+    const [saveStatus, setSaveStatus] = useState('saved');
     const [loading, setLoading] = useState(true);
     const saveTimer = useRef(null);
+    const [isAutosave, setIsAutosave] = useState(false);
 
     const toastStyle = {
         style: {
@@ -83,6 +84,7 @@ export default function NotePage() {
 
     const debouncedSave = useCallback((newTitle, newContent, newTags) => {
         setSaveStatus('unsaved');
+        if (!isAutosave) return;
         if (saveTimer.current) clearTimeout(saveTimer.current);
         saveTimer.current = setTimeout(() => {
             save(newTitle, newContent, newTags);
@@ -133,25 +135,36 @@ export default function NotePage() {
 
     return (
         <main className="min-h-screen bg-[var(--layer2)] flex flex-col">
-            <div className="sticky top-0 z-10 bg-[var(--layer1)] border-b border-[var(--layer3)] px-4 md:px-10 py-3 flex items-center justify-between gap-4">
-                <button
-                    onClick={() => router.push('/dashboard/Notes')}
-                    className="flex items-center gap-2 text-[var(--text-muted)] hover:text-[var(--text)] transition-colors cursor-pointer font-semibold text-sm"
-                >
-                    <ArrowLeft size={16} />
-                    Notes
-                </button>
+            <ul className={'sticky top-0 z-10 bg-[var(--layer1)] border-b border-[var(--layer3)] px-4 md:px-10 py-3 flex items-center justify-between gap-4'}>
+                    <li>
+                        <button
+                            onClick={() => router.push('/dashboard/Notes')}
+                            className="flex items-center gap-2 text-[var(--text-muted)] hover:text-[var(--text)] transition-colors cursor-pointer font-semibold text-sm"
+                        >
+                            <ArrowLeft size={16} />
+                            Notes
+                        </button>
+                    </li>
 
-                <span className={`text-xs font-semibold transition-colors ${
-                    saveStatus === 'saving' ? 'text-[var(--nice-blue)]' :
-                        saveStatus === 'unsaved' ? 'text-yellow-500' :
-                            'text-[var(--text-muted)]'
-                }`}>
+                    <li>
+                        <button
+                            className={'text-xs font-semibold text-[var(--text-muted)] hover:text-[var(--text)] transition-colors cursor-pointer font-semibold text-sm'}>
+                            Turn off autosave
+                        </button>
+                    </li>
+
+                    <li>
+                        <span className={`text-xs font-semibold transition-colors ${
+                            saveStatus === 'saving' ? 'text-[var(--nice-blue)]' :
+                                saveStatus === 'unsaved' ? 'text-yellow-500' :
+                                    'text-[var(--text-muted)]'
+                        }`}>
                     {saveStatus === 'saving' ? 'Saving...' :
                         saveStatus === 'unsaved' ? 'Unsaved changes' :
                             'Saved'}
-                </span>
-            </div>
+                    </span>
+                    </li>
+            </ul>
 
             <div className="flex-1 w-full max-w-3xl mx-auto px-4 md:px-0 py-10 flex flex-col gap-6">
 
