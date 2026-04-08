@@ -3,8 +3,9 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
-import { ArrowLeft, Tag, X } from 'lucide-react';
+import {ArrowLeft, Menu, Tag, X} from 'lucide-react';
 import toast from 'react-hot-toast';
+import Link from "next/link";
 
 export function createClient() {
     return createBrowserClient(
@@ -136,44 +137,56 @@ export default function NotePage() {
     return (
         <main className="min-h-screen bg-[var(--layer2)] flex flex-col">
             <ul className={'sticky top-0 z-10 bg-[var(--layer1)] border-b border-[var(--layer3)] px-4 md:px-10 py-3 flex items-center justify-between gap-4'}>
-                    <li>
-                        <button
-                            onClick={() => router.push('/dashboard/Notes')}
-                            className="flex items-center gap-2 text-[var(--text-muted)] hover:text-[var(--text)] transition-colors cursor-pointer font-semibold text-sm"
-                        >
-                            <ArrowLeft size={16} />
-                            Notes
-                        </button>
-                    </li>
+                <li>
+                    <button
+                        className="cursor-pointer md:hidden p-3 hover:bg-[var(--layer2)] rounded-full transition-colors"
+                        onClick={() => setIsNavOpen(!isNavOpen)}
+                        aria-label="Toggle menu"
+                    >
+                        <Menu className="w-6 h-6 text-[var(--text)]" />
+                    </button>
+                    <Link href="/" className="font-brand font-black tracking-tighter z-20 text-5xl text-[var(--nice-blue)]">
+                        POW
+                    </Link>
+                </li>
+                <li>
+                    <button
+                        onClick={() => router.push('/dashboard/Notes')}
+                        className="flex items-center gap-2 text-[var(--text-muted)] hover:text-[var(--text)] transition-colors cursor-pointer font-semibold text-sm"
+                    >
+                        <ArrowLeft size={16} />
+                        Notes
+                    </button>
+                </li>
 
-                    <li>
-                        <button
-                            className={'text-xs font-semibold text-[var(--text-muted)] hover:text-[var(--text)] transition-colors cursor-pointer font-semibold text-sm'}
-                            onClick={() => setIsAutosave(!isAutosave)}>
-                            {isAutosave ? 'Turn off autosave' : 'Turn on autosave'}
-                        </button>
-                    </li>
+                <li>
+                    <button
+                        className={'text-xs font-semibold text-[var(--text-muted)] hover:text-[var(--text)] transition-colors cursor-pointer font-semibold text-sm'}
+                        onClick={() => setIsAutosave(!isAutosave)}>
+                        {isAutosave ? 'Turn off autosave' : 'Turn on autosave'}
+                    </button>
+                </li>
 
-                    {!isAutosave && saveStatus === 'unsaved' && (
-                        <button
-                            onClick={() => save(title, content, tags)}
-                            className="text-xs font-bold bg-[var(--nice-blue)] text-white px-3 py-1.5 rounded-lg cursor-pointer hover:scale-95 transition-transform"
-                        >
-                            Save
-                        </button>
-                    )}
+                {!isAutosave && saveStatus === 'unsaved' && (
+                    <button
+                        onClick={() => save(title, content, tags)}
+                        className="text-xs font-bold bg-[var(--nice-blue)] text-white px-3 py-1.5 rounded-lg cursor-pointer hover:scale-95 transition-transform"
+                    >
+                        Save
+                    </button>
+                )}
 
-                    <li>
-                        <span className={`text-xs font-semibold transition-colors ${
-                            saveStatus === 'saving' ? 'text-[var(--nice-blue)]' :
-                                saveStatus === 'unsaved' ? 'text-yellow-500' :
-                                    'text-[var(--text-muted)]'
-                        }`}>
-                    {saveStatus === 'saving' ? 'Saving...' :
-                        saveStatus === 'unsaved' ? 'Unsaved changes' :
-                            'Saved'}
-                    </span>
-                    </li>
+                <li>
+                    <span className={`text-xs font-semibold transition-colors ${
+                        saveStatus === 'saving' ? 'text-[var(--nice-blue)]' :
+                            saveStatus === 'unsaved' ? 'text-yellow-500' :
+                                'text-[var(--text-muted)]'
+                    }`}>
+                {saveStatus === 'saving' ? 'Saving...' :
+                    saveStatus === 'unsaved' ? 'Unsaved changes' :
+                        'Saved'}
+                </span>
+                </li>
             </ul>
 
             <div className="flex-1 w-full max-w-3xl mx-auto px-4 md:px-0 py-10 flex flex-col gap-6">

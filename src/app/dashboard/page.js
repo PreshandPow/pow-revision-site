@@ -311,7 +311,7 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                 {notes.length === 0 ? (
-                    <div className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5">
+                    <div className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5 hover:border-[var(--nice-blue)] transition-colors">
                         <div className="flex items-center gap-2 mb-3">
                             <div className="w-2 h-2 rounded-full bg-teal-500"></div>
                             <span className="text-xs font-bold text-[var(--text-muted)]">Most recent note</span>
@@ -358,7 +358,7 @@ export default function Dashboard() {
                 )}
 
                 {flashcards.length === 0 ? (
-                    <div className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5">
+                    <div className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5 hover:border-[var(--nice-blue)] transition-colors">
                         <div className="flex items-center gap-2 mb-3">
                             <div className="w-2 h-2 rounded-full bg-blue-500"></div>
                             <span className="text-xs font-bold text-[var(--text-muted)]">Most recent flashcard set</span>

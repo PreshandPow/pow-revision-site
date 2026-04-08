@@ -6,6 +6,7 @@ import Sidebar from "../../components/Sidebar";
 import {supabase} from "../../lib/supabase-client";
 import { useRouter } from 'next/navigation';
 import Footer from "../../components/Footer";
+import { usePathname } from 'next/navigation';
 
 export default function DashboardLayout({ children }) {
 
@@ -16,6 +17,9 @@ export default function DashboardLayout({ children }) {
     const [searchInput, setSearchInput] = useState("");
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
     const [session, setSession] = useState(undefined);
+
+    const pathname = usePathname();
+    const isNoteCanvas = pathname.startsWith('/dashboard/Notes/') && pathname !== '/dashboard/Notes';
 
     const fetchSession = async () => {
         const {data: {session}} = await supabase.auth.getSession();
@@ -50,27 +54,33 @@ export default function DashboardLayout({ children }) {
 
     return (
         <div className={theme}>
-            <Navbar
-                isNavOpen={isNavOpen}
-                setIsNavOpen={setIsNavOpen}
-                theme={theme}
-                handleThemeChange={handleThemeChange}
-                searchInput={searchInput}
-                setSearchInput={setSearchInput}
-                loggedIn={loggedIn}
-                router={router}
-            />
-            <Sidebar
-                isNavOpen={isNavOpen}
-                setIsNavOpen={setIsNavOpen}
-                isOptionsOpen={isOptionsOpen}
-                setIsOptionsOpen={setIsOptionsOpen}
-                theme={theme}
-                handleThemeChange={handleThemeChange}
-                router={router}
-            />
+            {!isNoteCanvas && (
+                <Navbar
+                    isNavOpen={isNavOpen}
+                    setIsNavOpen={setIsNavOpen}
+                    theme={theme}
+                    handleThemeChange={handleThemeChange}
+                    searchInput={searchInput}
+                    setSearchInput={setSearchInput}
+                    loggedIn={loggedIn}
+                    router={router}
+                />
+            )}
+            {!isNoteCanvas && (
+                <Sidebar
+                    isNavOpen={isNavOpen}
+                    setIsNavOpen={setIsNavOpen}
+                    isOptionsOpen={isOptionsOpen}
+                    setIsOptionsOpen={setIsOptionsOpen}
+                    theme={theme}
+                    handleThemeChange={handleThemeChange}
+                    router={router}
+                />
+            )}
             <main>{children}</main>
-            <Footer />
+            {!isNoteCanvas && (
+                <Footer />
+            )}
         </div>
     );
 }
