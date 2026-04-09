@@ -139,24 +139,25 @@ export default function NotePage() {
             <ul className={'sticky top-0 z-10 bg-[var(--layer1)] border-b border-[var(--layer3)] px-4 md:px-10 py-3 flex items-center justify-between gap-4'}>
                 <li>
                     <button
-                        className="cursor-pointer md:hidden p-3 hover:bg-[var(--layer2)] rounded-full transition-colors"
-                        onClick={() => setIsNavOpen(!isNavOpen)}
-                        aria-label="Toggle menu"
-                    >
-                        <Menu className="w-6 h-6 text-[var(--text)]" />
-                    </button>
-                    <Link href="/" className="font-brand font-black tracking-tighter z-20 text-5xl text-[var(--nice-blue)]">
-                        POW
-                    </Link>
-                </li>
-                <li>
-                    <button
                         onClick={() => router.push('/dashboard/Notes')}
                         className="flex items-center gap-2 text-[var(--text-muted)] hover:text-[var(--text)] transition-colors cursor-pointer font-semibold text-sm"
                     >
                         <ArrowLeft size={16} />
                         Notes
                     </button>
+                </li>
+
+                <li>
+                    <button
+                        className="cursor-pointer md:hidden p-3 hover:bg-[var(--layer2)] rounded-full transition-colors"
+                        onClick={() => setIsNavOpen(!isNavOpen)}
+                        aria-label="Toggle menu"
+                    >
+                        <Menu className="w-6 h-6 text-[var(--text)]" />
+                    </button>
+                    <Link href="/" className="font-brand font-black tracking-tighter z-20 text-2xl text-[var(--nice-blue)]">
+                        POW
+                    </Link>
                 </li>
 
                 <li>
