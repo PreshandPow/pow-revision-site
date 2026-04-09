@@ -148,13 +148,6 @@ export default function NotePage() {
                 </li>
 
                 <li>
-                    <button
-                        className="cursor-pointer md:hidden p-3 hover:bg-[var(--layer2)] rounded-full transition-colors"
-                        onClick={() => setIsNavOpen(!isNavOpen)}
-                        aria-label="Toggle menu"
-                    >
-                        <Menu className="w-6 h-6 text-[var(--text)]" />
-                    </button>
                     <Link href="/" className="font-brand font-black tracking-tighter z-20 text-2xl text-[var(--nice-blue)]">
                         POW
                     </Link>
