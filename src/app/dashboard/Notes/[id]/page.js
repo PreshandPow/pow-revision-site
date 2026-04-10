@@ -3,9 +3,14 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
-import {ArrowLeft, Menu, Tag, X} from 'lucide-react';
 import toast from 'react-hot-toast';
-import Link from "next/link";
+import {
+    AlignLeft, AlignCenter, AlignRight, AlignJustify,
+    Bold, Italic, Underline, Strikethrough, Code,
+    Link, Image, Minus, Undo, Redo, Printer,
+    Highlighter, List, ListOrdered, Quote,
+    ArrowLeft, Menu, Tag, X
+} from 'lucide-react';
 
 export function createClient() {
     return createBrowserClient(
@@ -13,6 +18,20 @@ export function createClient() {
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     );
 }
+
+const Divider = () => <div className="w-[1px] h-5 bg-[var(--layer1)]" />;
+
+const ToolbarButton = ({ onClick, children, title }) => (
+    <button
+        type="button"
+        title={title}
+        onClick={onClick}
+        className="p-1.5 rounded-lg hover:bg-[var(--layer1)] cursor-pointer transition-colors text-[var(--text-muted)] hover:text-[var(--text)]"
+    >
+        {children}
+    </button>
+);
+
 
 export default function NotePage() {
     const router = useRouter();
@@ -155,9 +174,9 @@ export default function NotePage() {
 
                 <li>
                     <button
-                        className={'text-xs font-semibold text-[var(--text-muted)] hover:text-[var(--text)] transition-colors cursor-pointer font-semibold text-sm'}
+                        className={'text-sm font-semibold text-[var(--text-muted)] hover:text-[var(--text)] transition-colors cursor-pointer'}
                         onClick={() => setIsAutosave(!isAutosave)}>
-                        {isAutosave ? 'Turn off autosave' : 'Turn on autosave'}
+                        {isAutosave ? 'Autosave On' : 'Autosave Off'}
                     </button>
                 </li>
 
@@ -192,6 +211,68 @@ export default function NotePage() {
                     placeholder="Untitled"
                     className="w-full bg-transparent text-3xl md:text-4xl font-bold text-[var(--text)] placeholder:text-[var(--layer3)] outline-none border-none resize-none"
                 />
+
+                <ul className="sticky bg-[var(--layer3)] border-2 border-[var(--layer1)] rounded-xl px-4 md:px-6 py-2 flex flex-wrap items-center gap-1">
+
+                    <li>
+                        <select className="bg-transparent text-[var(--text-muted)] text-sm font-semibold outline-none cursor-pointer px-1 hover:text-[var(--text)]">
+                            <option>Paragraph</option>
+                            <option>Heading 1</option>
+                            <option>Heading 2</option>
+                            <option>Heading 3</option>
+                        </select>
+                    </li>
+
+                    <li>
+                        <select className="bg-transparent text-[var(--text-muted)] text-sm font-semibold outline-none cursor-pointer px-1 hover:text-[var(--text)]">
+                            <option>Inter</option>
+                            <option>Serif</option>
+                            <option>Mono</option>
+                        </select>
+                    </li>
+
+                    <li>
+                        <select className="bg-transparent text-[var(--text-muted)] text-sm font-semibold outline-none cursor-pointer px-1 hover:text-[var(--text)]">
+                            <option>Small</option>
+                            <option>Medium</option>
+                            <option>Large</option>
+                        </select>
+                    </li>
+
+                    <li><Divider /></li>
+
+                    <li><ToolbarButton title="Align left"><AlignLeft size={16} /></ToolbarButton></li>
+                    <li><ToolbarButton title="Align center"><AlignCenter size={16} /></ToolbarButton></li>
+                    <li><ToolbarButton title="Align right"><AlignRight size={16} /></ToolbarButton></li>
+                    <li><ToolbarButton title="Justify"><AlignJustify size={16} /></ToolbarButton></li>
+
+                    <li><Divider /></li>
+
+                    <li><ToolbarButton title="Bold"><Bold size={16} /></ToolbarButton></li>
+                    <li><ToolbarButton title="Italic"><Italic size={16} /></ToolbarButton></li>
+                    <li><ToolbarButton title="Underline"><Underline size={16} /></ToolbarButton></li>
+                    <li><ToolbarButton title="Strikethrough"><Strikethrough size={16} /></ToolbarButton></li>
+                    <li><ToolbarButton title="Highlight"><Highlighter size={16} /></ToolbarButton></li>
+
+                    <li><Divider /></li>
+
+                    <li><ToolbarButton title="Bullet list"><List size={16} /></ToolbarButton></li>
+                    <li><ToolbarButton title="Numbered list"><ListOrdered size={16} /></ToolbarButton></li>
+                    <li><ToolbarButton title="Quote"><Quote size={16} /></ToolbarButton></li>
+
+                    <li><Divider /></li>
+
+                    <li><ToolbarButton title="Link"><Link size={16} /></ToolbarButton></li>
+                    <li><ToolbarButton title="Code"><Code size={16} /></ToolbarButton></li>
+                    <li><ToolbarButton title="Image"><Image size={16} /></ToolbarButton></li>
+                    <li><ToolbarButton title="Divider"><Minus size={16} /></ToolbarButton></li>
+
+                    <li><Divider /></li>
+
+                    <li><ToolbarButton title="Undo"><Undo size={16} /></ToolbarButton></li>
+                    <li><ToolbarButton title="Redo"><Redo size={16} /></ToolbarButton></li>
+                    <li><ToolbarButton title="Print"><Printer size={16} /></ToolbarButton></li>
+                </ul>
 
                 <div className="flex flex-wrap items-center gap-2">
                     <Tag size={14} className="text-[var(--text-muted)]" />
