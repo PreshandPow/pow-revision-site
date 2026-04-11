@@ -4,10 +4,11 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import toast from 'react-hot-toast';
+import Link from 'next/link';
 import {
     AlignLeft, AlignCenter, AlignRight, AlignJustify,
     Bold, Italic, Underline, Strikethrough, Code,
-    Link, Image, Minus, Undo, Redo, Printer,
+    Link as LinkIcon, Image, Minus, Undo, Redo, Printer,
     Highlighter, List, ListOrdered, Quote,
     ArrowLeft, Menu, Tag, X
 } from 'lucide-react';
@@ -46,6 +47,9 @@ export default function NotePage() {
     const [loading, setLoading] = useState(true);
     const saveTimer = useRef(null);
     const [isAutosave, setIsAutosave] = useState(false);
+    const [hasChanged, setHasChanged] = useState(false);
+
+    const lastSavedContent = useRef('');
 
     const toastStyle = {
         style: {
@@ -70,12 +74,13 @@ export default function NotePage() {
 
             if (error) {
                 toast.error('Could not load note', toastStyle);
-                router.replace('/dashboard/notes');
+                router.replace('/dashboard/Notes');
                 return;
             }
 
             setTitle(note.title || '');
             setContent(note.content || '');
+            lastSavedContent.current = note.content || '';
             setTags(note.tags || []);
             setLoading(false);
         };
@@ -99,10 +104,20 @@ export default function NotePage() {
             setSaveStatus('unsaved');
         } else {
             setSaveStatus('saved');
+            setHasChanged(false);
+            lastSavedContent.current = newContent;
         }
     }, [id]);
 
     const debouncedSave = useCallback((newTitle, newContent, newTags) => {
+        const changed = newContent !== lastSavedContent.current;
+
+        setHasChanged(changed);
+        if (!changed) {
+            setSaveStatus('saved');
+            return;
+        }
+
         setSaveStatus('unsaved');
         if (!isAutosave) return;
         if (saveTimer.current) clearTimeout(saveTimer.current);
@@ -180,17 +195,17 @@ export default function NotePage() {
                     </button>
                 </li>
 
-                {!isAutosave && saveStatus === 'unsaved' && (
+                {!isAutosave && hasChanged && (
                     <button
                         onClick={() => save(title, content, tags)}
-                        className="text-xs font-bold bg-[var(--nice-blue)] text-white px-3 py-1.5 rounded-lg cursor-pointer hover:scale-95 transition-transform"
+                        className="text-sm font-bold bg-[var(--nice-blue)] text-white px-3 py-1.5 rounded-lg cursor-pointer hover:scale-95 transition-transform"
                     >
                         Save
                     </button>
                 )}
 
                 <li>
-                    <span className={`text-xs font-semibold transition-colors ${
+                    <span className={`text-sm font-semibold transition-colors ${
                         saveStatus === 'saving' ? 'text-[var(--nice-blue)]' :
                             saveStatus === 'unsaved' ? 'text-yellow-500' :
                                 'text-[var(--text-muted)]'
