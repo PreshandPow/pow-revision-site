@@ -46,7 +46,11 @@ export default function NotePage() {
     const [saveStatus, setSaveStatus] = useState('saved');
     const [loading, setLoading] = useState(true);
     const saveTimer = useRef(null);
-    const [isAutosave, setIsAutosave] = useState(false);
+    const [isAutosave, setIsAutosave] = useState(() => {
+        if (typeof window === 'undefined') return true;
+        const saved = localStorage.getItem('pow_autosave');
+        return saved !== null ? JSON.parse(saved) : true;
+    });
     const [hasChanged, setHasChanged] = useState(false);
 
     const lastSavedContent = useRef('');
@@ -62,6 +66,12 @@ export default function NotePage() {
             primary: 'var(--nice-blue)',
             secondary: '#FFFAEE',
         },
+    };
+
+    const handleAutosaveToggle = () => {
+        const newValue = !isAutosave;
+        setIsAutosave(newValue);
+        localStorage.setItem('pow_autosave', JSON.stringify(newValue));
     };
 
     useEffect(() => {
@@ -190,7 +200,7 @@ export default function NotePage() {
                 <li>
                     <button
                         className={'text-sm font-semibold text-[var(--text-muted)] hover:text-[var(--text)] transition-colors cursor-pointer'}
-                        onClick={() => setIsAutosave(!isAutosave)}>
+                        onClick={handleAutosaveToggle}>
                         {isAutosave ? 'Autosave On' : 'Autosave Off'}
                     </button>
                 </li>
