@@ -78,7 +78,29 @@ export default function NotesPage() {
 
     if (loading) return (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--layer1)] backdrop-blur-xl p-6">
-            <div className="w-16 h-16 mb-8 rounded-2xl bg-[var(--nice-blue)] animate-pulse shadow-[0_0_40px_rgba(var(--blue-rgb),0.3)]" />
+            <div className="w-16 h-16 mb-8 rounded-2xl bg-[var(--nice-blue)] animate-pulse shadow-[0_0_40px_rgba(var(--blue-rgb),0.3)] flex items-center justify-center">
+                <svg
+                    className="animate-spin"
+                    width="40"
+                    height="40"
+                    viewBox="0 0 32 32"
+                    fill="none"
+                >
+                    <circle
+                        cx="16"
+                        cy="16"
+                        r="12"
+                        stroke="rgba(255,255,255,0.2)"
+                        strokeWidth="3"
+                    />
+                    <path
+                        d="M16 4 A12 12 0 0 1 28 16"
+                        stroke="white"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                    />
+                </svg>
+            </div>
 
             <h1 className="font-brand text-[var(--text)] text-2xl md:text-3xl font-bold tracking-tight text-center max-w-md leading-tight">
                 <span className="text-[var(--nice-blue)]">POW Bot</span> is getting your notes for you
