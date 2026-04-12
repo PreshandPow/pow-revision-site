@@ -28,7 +28,7 @@ const FONT_SIZES = [
     { label: 'Extra Large', value: 'text-2xl' },
 ];
 
-const Divider = () => <div className="w-[1px] h-5 bg-[var(--layer1)]" />;
+const Divider = () => <div className="w-[2px] h-8 bg-[var(--layer3)]" />;
 
 const ToolbarButton = ({ onClick, children, title }) => (
     <button
@@ -298,7 +298,7 @@ export default function NotePage() {
                             <ChevronDown size={12}/>
                         </button>
                         {isFontSizeDropdownOpen && (
-                            <div className={'absolute top-full left-0 mt-1 w-36 bg-[var(--layer2)] border border-[var(--layer3)] rounded-xl overflow-hidden z-50 py-1 shadow-lg'}>
+                            <div className={'absolute top-full left-0 mt-1 w-36 bg-[var(--layer2)] border border-[var(--layer3)] rounded-sm overflow-hidden z-50 py-1 shadow-lg min-w-[200px]'}>
                                 {FONT_SIZES.map(size => (
                                     <button
                                         key={size.value}
@@ -317,6 +317,8 @@ export default function NotePage() {
                             </div>
                         )}
                     </li>
+
+                    <Divider />
 
                     <li>
 
