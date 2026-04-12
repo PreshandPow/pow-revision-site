@@ -309,7 +309,7 @@ export default function NotePage() {
                                             setIsFontSizeDropdownOpen(false);
                                         }}
                                         className={`w-full text-left px-4 py-2 cursor-pointer transition-colors hover:bg-[var(--layer3)]
-                                        ${selectedFontSize === size.label ? 'bg-[var(--layer3)] text-[var(--text)] font-semibold' : 'text-[var(--text-muted)]'}
+                                        ${selectedFontSize === size.label ? 'text-[var(--nice-blue)] font-semibold' : 'text-[var(--text-muted)]'}
                                         ${size.value}`}>
                                         {size.label}
                                     </button>
