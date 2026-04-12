@@ -10,7 +10,7 @@ import {
     Bold, Italic, Underline, Strikethrough, Code,
     Link as LinkIcon, Image, Minus, Undo, Redo, Printer,
     Highlighter, List, ListOrdered, Quote,
-    ArrowLeft, Menu, Tag, X
+    ArrowLeft, Menu, Tag, X, ChevronDown
 } from 'lucide-react';
 
 export function createClient() {
@@ -19,6 +19,14 @@ export function createClient() {
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     );
 }
+
+const FONT_SIZES = [
+    { label: 'Smaller', value: 'text-xs' },
+    { label: 'Small', value: 'text-sm' },
+    { label: 'Medium', value: 'text-base' },
+    { label: 'Large', value: 'text-lg' },
+    { label: 'Extra Large', value: 'text-2xl' },
+];
 
 const Divider = () => <div className="w-[1px] h-5 bg-[var(--layer1)]" />;
 
@@ -68,11 +76,33 @@ export default function NotePage() {
         },
     };
 
+    const [isFontSizeDropdownOpen, setIsFontSizeDropdownOpen] = useState(false);
+    const [selectedFontSize, setSelectedFontSize] = useState(() => {
+        if (typeof window === 'undefined') return 'Medium';
+        return localStorage.getItem('pow_selectedFontSize') || 'Medium';
+    });
+
     const handleAutosaveToggle = () => {
         const newValue = !isAutosave;
         setIsAutosave(newValue);
         localStorage.setItem('pow_autosave', JSON.stringify(newValue));
     };
+
+    const handleFontSizeChange = () => {
+        localStorage.setItem('pow_selectedFontSize', JSON.stringify(selectedFontSize));
+    };
+
+    const ref = useRef(null);
+
+    useEffect(() => {
+        const handleClick = (e) => {
+            if (ref.current && !ref.current.contains(e.target)) {
+                setIsFontSizeDropdownOpen(false);
+            }
+        }
+        document.addEventListener('mousedown', handleClick);
+        return () => document.removeEventListener('mousedown', handleClick);
+    }, []);
 
     useEffect(() => {
         const fetchNote = async () => {
@@ -259,12 +289,37 @@ export default function NotePage() {
                     className="w-full bg-transparent text-3xl md:text-4xl font-bold text-[var(--text)] placeholder:text-[var(--layer3)] outline-none border-none resize-none"
                 />
 
-                <ul className="sticky bg-[var(--layer3)] border-2 border-[var(--layer1)] rounded-xl px-4 md:px-6 py-2 flex flex-wrap items-center gap-1">
+                <ul className="sticky bg-[var(--layer2)] border-2 border-[var(--layer3)] rounded-xl px-4 md:px-6 py-2 flex flex-wrap items-center gap-1">
+                    <li className={'relative'} ref={ref}>
+                        <button
+                            onClick={() => setIsFontSizeDropdownOpen(!isFontSizeDropdownOpen)}
+                            className="flex items-center justify-between gap-1 text-sm font-semibold text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1 min-w-[100px]">
+                            {selectedFontSize}
+                            <ChevronDown size={12}/>
+                        </button>
+                        {isFontSizeDropdownOpen && (
+                            <div className={'absolute top-full left-0 mt-1 w-36 bg-[var(--layer2)] border border-[var(--layer3)] rounded-xl overflow-hidden z-50 py-1 shadow-lg'}>
+                                {FONT_SIZES.map(size => (
+                                    <button
+                                        key={size.value}
+                                        type="button"
+                                        onClick={() => {
+                                            setSelectedFontSize(size.label);
+                                            localStorage.setItem('pow_selectedFontSize', size.label);
+                                            setIsFontSizeDropdownOpen(false);
+                                        }}
+                                        className={`w-full text-left px-4 py-2 cursor-pointer transition-colors hover:bg-[var(--layer3)]
+                                        ${selectedFontSize === size.label ? 'bg-[var(--layer3)] text-[var(--text)] font-semibold' : 'text-[var(--text-muted)]'}
+                                        ${size.value}`}>
+                                        {size.label}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </li>
+
                     <li>
-                        <div>
-                            Medium
-                            <select name="" id=''></select>
-                        </div>
+
                     </li>
                 </ul>
 
@@ -294,7 +349,8 @@ export default function NotePage() {
                     value={content}
                     onChange={handleContentChange}
                     placeholder="Start writing..."
-                    className="w-full flex-1 min-h-[60vh] bg-transparent text-[var(--text)] placeholder:text-[var(--nice-blue)] outline-none border-none resize-none text-base leading-relaxed font-medium"
+                    className={`w-full flex-1 min-h-[60vh] bg-transparent text-[var(--text)] placeholder:text-[var(--nice-blue)] outline-none border-none resize-none leading-relaxed font-medium
+                    ${FONT_SIZES.find(f => f.label === selectedFontSize)?.value || 'text-base'}`}
                 />
             </div>
         </main>
