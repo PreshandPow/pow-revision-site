@@ -261,7 +261,10 @@ export default function NotePage() {
 
                 <ul className="sticky bg-[var(--layer3)] border-2 border-[var(--layer1)] rounded-xl px-4 md:px-6 py-2 flex flex-wrap items-center gap-1">
                     <li>
-
+                        <div>
+                            Medium
+                            <select name="" id=''></select>
+                        </div>
                     </li>
                 </ul>
 
