@@ -28,6 +28,15 @@ const FONT_SIZES = [
     { label: 'Extra Large', value: 'text-2xl' },
 ];
 
+const FONT_STYLES = [
+    { group: 'SANS SERIF', label: 'Arial', value: 'font-sans' },
+    { group: 'SANS SERIF', label: 'Inter', value: 'font-sans' },
+    { group: 'SERIF', label: 'Georgia', value: 'font-serif' },
+    { group: 'SERIF', label: 'Garamond', value: 'font-serif' },
+    { group: 'MONOSPACE', label: 'Courier', value: 'font-mono' },
+    { group: 'MONOSPACE', label: 'Courier New', value: 'font-mono' },
+];
+
 const Divider = () => <div className="w-[2px] h-8 bg-[var(--layer3)]" />;
 
 const ToolbarButton = ({ onClick, children, title }) => (
@@ -82,6 +91,12 @@ export default function NotePage() {
         return localStorage.getItem('pow_selectedFontSize') || 'Medium';
     });
 
+    const [isFontStyleDropdownOpen, setIsFontStyleDropdownOpen] = useState(false);
+    const [selectedFontStyle, setSelectedFontStyle] = useState(() => {
+        if (typeof window === 'undefined') return 'Inter';
+        return localStorage.getItem('pow_selectedFontStyle') || 'Inter';
+    });
+
     const handleAutosaveToggle = () => {
         const newValue = !isAutosave;
         setIsAutosave(newValue);
@@ -92,14 +107,25 @@ export default function NotePage() {
         localStorage.setItem('pow_selectedFontSize', JSON.stringify(selectedFontSize));
     };
 
-    const ref = useRef(null);
+    const fontSizeDropdownRef = useRef(null);
+    const fontStyleDropdownRef = useRef(null);
 
     useEffect(() => {
         const handleClick = (e) => {
-            if (ref.current && !ref.current.contains(e.target)) {
+            if (fontSizeDropdownRef.current && !fontSizeDropdownRef.current.contains(e.target)) {
                 setIsFontSizeDropdownOpen(false);
             }
         }
+        document.addEventListener('mousedown', handleClick);
+        return () => document.removeEventListener('mousedown', handleClick);
+    }, []);
+
+    useEffect(() => {
+        const handleClick = (e) => {
+            if (fontStyleDropdownRef.current && !fontStyleDropdownRef.current.contains(e.target)) {
+                setIsFontStyleDropdownOpen(false);
+            }
+        };
         document.addEventListener('mousedown', handleClick);
         return () => document.removeEventListener('mousedown', handleClick);
     }, []);
@@ -290,10 +316,10 @@ export default function NotePage() {
                 />
 
                 <ul className="sticky bg-[var(--layer2)] border-2 border-[var(--layer3)] rounded-xl px-4 md:px-6 py-2 flex flex-wrap items-center gap-1">
-                    <li className={'relative'} ref={ref}>
+                    <li className={'relative'} ref={fontSizeDropdownRef}>
                         <button
                             onClick={() => setIsFontSizeDropdownOpen(!isFontSizeDropdownOpen)}
-                            className="flex items-center justify-between gap-1 text-sm font-semibold text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1 min-w-[100px]">
+                            className="flex items-center justify-between gap-1 text-[1rem] font-semibold text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1 min-w-[100px]">
                             {selectedFontSize}
                             <ChevronDown size={12}/>
                         </button>
@@ -318,11 +344,61 @@ export default function NotePage() {
                         )}
                     </li>
 
-                    <Divider />
-
-                    <li>
-
+                    <li className="relative" ref={fontStyleDropdownRef}>
+                        <button
+                            onClick={() => setIsFontStyleDropdownOpen(!isFontStyleDropdownOpen)}
+                            className="flex items-center justify-between gap-1 text-[1rem] font-semibold text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1 min-w-[100px]"
+                        >
+                            {selectedFontStyle}
+                            <ChevronDown size={12} />
+                        </button>
+                        {isFontStyleDropdownOpen && (
+                            <div className="absolute top-full left-0 mt-1 bg-[var(--layer2)] border border-[var(--layer3)] rounded-sm overflow-hidden z-50 py-1 shadow-lg min-w-[200px]">
+                                {Object.groupBy ? (
+                                    ['SANS SERIF', 'SERIF', 'MONOSPACE'].map(group => (
+                                        <div key={group}>
+                                            <p className="px-4 py-1 text-xs font-bold text-[var(--text-muted)] opacity-50 tracking-widest">
+                                                {group}
+                                            </p>
+                                            {FONT_STYLES.filter(f => f.group === group).map(font => (
+                                                <button
+                                                    key={font.label}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setSelectedFontStyle(font.label);
+                                                        localStorage.setItem('pow_selectedFontStyle', font.label);
+                                                        setIsFontStyleDropdownOpen(false);
+                                                    }}
+                                                    className={`w-full text-left px-4 py-2 cursor-pointer transition-colors hover:bg-[var(--layer3)] ${font.value}
+                                    ${selectedFontStyle === font.label ? 'text-[var(--nice-blue)] font-semibold' : 'text-[var(--text-muted)]'}`}
+                                                >
+                                                    {font.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    ))
+                                ) : (
+                                    FONT_STYLES.map(font => (
+                                        <button
+                                            key={font.label}
+                                            type="button"
+                                            onClick={() => {
+                                                setSelectedFontStyle(font.label);
+                                                localStorage.setItem('pow_selectedFontStyle', font.label);
+                                                setIsFontStyleDropdownOpen(false);
+                                            }}
+                                            className={`w-full text-left px-4 py-2 cursor-pointer transition-colors hover:bg-[var(--layer3)] ${font.value}
+                            ${selectedFontStyle === font.label ? 'text-[var(--nice-blue)] font-semibold' : 'text-[var(--text-muted)]'}`}
+                                        >
+                                            {font.label}
+                                        </button>
+                                    ))
+                                )}
+                            </div>
+                        )}
                     </li>
+
+                    <Divider />
                 </ul>
 
                 <div className="flex flex-wrap items-center gap-2">
@@ -352,8 +428,9 @@ export default function NotePage() {
                     onChange={handleContentChange}
                     placeholder="Start writing..."
                     className={`w-full flex-1 min-h-[60vh] bg-transparent text-[var(--text)] placeholder:text-[var(--nice-blue)] outline-none border-none resize-none leading-relaxed font-medium
-                    ${FONT_SIZES.find(f => f.label === selectedFontSize)?.value || 'text-base'}`}
-                />
+                    ${FONT_SIZES.find(f => f.label === selectedFontSize)?.value || 'text-base'}
+                    ${FONT_STYLES.find(f => f.label === selectedFontStyle)?.value || 'font-sans'}`}
+                    />
             </div>
         </main>
     );
