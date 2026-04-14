@@ -315,11 +315,11 @@ export default function NotePage() {
                     className="w-full bg-transparent text-3xl md:text-4xl font-bold text-[var(--text)] placeholder:text-[var(--layer3)] outline-none border-none resize-none"
                 />
 
-                <ul className="sticky bg-[var(--layer2)] border-2 border-[var(--layer3)] rounded-xl px-4 md:px-6 py-2 flex flex-wrap items-center gap-1">
+                <ul className="sticky bg-[var(--layer2)] border-2 border-[var(--layer3)] rounded-xl px-1 md:px-2 py-1 flex flex-wrap items-center gap-1">
                     <li className={'relative'} ref={fontSizeDropdownRef}>
                         <button
                             onClick={() => setIsFontSizeDropdownOpen(!isFontSizeDropdownOpen)}
-                            className="flex items-center justify-between gap-1 text-[1rem] font-semibold text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1 min-w-[100px]">
+                            className="flex items-center justify-between gap-1 text-sm font-semibold text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1 min-w-[80px]">
                             {selectedFontSize}
                             <ChevronDown size={12}/>
                         </button>
@@ -347,7 +347,7 @@ export default function NotePage() {
                     <li className="relative" ref={fontStyleDropdownRef}>
                         <button
                             onClick={() => setIsFontStyleDropdownOpen(!isFontStyleDropdownOpen)}
-                            className="flex items-center justify-between gap-1 text-[1rem] font-semibold text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1 min-w-[100px]"
+                            className="flex items-center justify-between gap-1 text-sm font-semibold text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1 min-w-[80px]"
                         >
                             {selectedFontStyle}
                             <ChevronDown size={12} />
