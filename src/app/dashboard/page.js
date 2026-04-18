@@ -332,22 +332,7 @@ export default function Dashboard() {
             <p className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest mb-4">Recent activity</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                {notes.length === 0 ? (
-                    <div className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5 hover:border-[var(--nice-blue)] transition-colors">
-                        <div className="flex items-center gap-2 mb-3">
-                            <div className="w-2 h-2 rounded-full bg-teal-500"></div>
-                            <span className="text-xs font-bold text-[var(--text-muted)]">Most recent note</span>
-                        </div>
-                        <p className="font-bold text-[var(--text)] mb-1">No notes yet</p>
-                        <p className="text-sm text-[var(--text-muted)]">Upload a file or create a note set to get started.</p>
-                        <div className="flex justify-between items-center mt-4 pt-3 border-t border-[var(--layer3)]">
-                            <span className="text-xs text-[var(--text-muted)]">—</span>
-                            <button onClick={handleCreateNote} className="cursor-pointer text-sm font-bold border border-[var(--layer3)] rounded-xl px-4 py-2 hover:bg-[var(--layer2)] transition-colors text-[var(--text)]">
-                                Create note →
-                            </button>
-                        </div>
-                    </div>
-                ) : (
+                {notes ? (
                     <div
                         className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5 hover:border-[var(--nice-blue)] transition-colors"
                     >
@@ -374,6 +359,21 @@ export default function Dashboard() {
                                 className="cursor-pointer text-sm font-bold border border-[var(--layer3)] rounded-xl px-4 py-2 hover:bg-[var(--layer2)] transition-colors text-[var(--text)]"
                                 onClick={() => router.push(`/dashboard/Notes/${notes.id}`)}>
                                 Open →
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5 hover:border-[var(--nice-blue)] transition-colors">
+                        <div className="flex items-center gap-2 mb-3">
+                            <div className="w-2 h-2 rounded-full bg-teal-500"></div>
+                            <span className="text-xs font-bold text-[var(--text-muted)]">Most recent note</span>
+                        </div>
+                        <p className="font-bold text-[var(--text)] mb-1">No notes yet</p>
+                        <p className="text-sm text-[var(--text-muted)]">Upload a file or create a note set to get started.</p>
+                        <div className="flex justify-between items-center mt-4 pt-3 border-t border-[var(--layer3)]">
+                            <span className="text-xs text-[var(--text-muted)]">—</span>
+                            <button onClick={handleCreateNote} className="cursor-pointer text-sm font-bold border border-[var(--layer3)] rounded-xl px-4 py-2 hover:bg-[var(--layer2)] transition-colors text-[var(--text)]">
+                                Create note →
                             </button>
                         </div>
                     </div>
