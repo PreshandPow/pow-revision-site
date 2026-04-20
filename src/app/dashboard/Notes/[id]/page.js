@@ -107,6 +107,28 @@ export default function NotePage() {
     const [isTextUnderlined, setIsTextUnderlined] = useState(false);
     const [isTextStrikethrough, setIsTextStrikethrough] = useState(false);
 
+    const handleKeyDown = (e) => {
+        const isMod = e.ctrlKey || e.metaKey;
+
+        if (isMod && e.key.toLowerCase() === 's' && !e.shiftKey) {
+            e.preventDefault();
+            save(title, content, tags);
+            toast.success('Note saved!', toastStyle);
+        }
+
+        if (isMod && e.shiftKey && e.key.toLowerCase() === 's') {
+            e.preventDefault();
+            document.execCommand('strikeThrough');
+            handleContentChange();
+        }
+
+        if (isMod &&e.shiftKey && e.key.toLowerCase() === 'a') {
+            e.preventDefault();
+            handleAutosaveToggle();
+        }
+
+    };
+
     const [isFontSizeDropdownOpen, setIsFontSizeDropdownOpen] = useState(false);
     const [selectedFontSize, setSelectedFontSize] = useState(() => {
         if (typeof window === 'undefined') return 'Medium';
@@ -311,7 +333,13 @@ export default function NotePage() {
                     </Link>
                 </li>
 
-                <li>
+                <li className={'relative group'}>
+                    <div className="absolute top-8 bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
+                        <span className="text-xs font-bold text-[var(--text)]">Toggle Autosave</span>
+                        <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>
+                        <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Shift</span>
+                        <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">A</span>
+                    </div>
                     <button
                         className={'text-sm font-semibold text-[var(--text-muted)] hover:text-[var(--text)] transition-colors cursor-pointer'}
                         onClick={handleAutosaveToggle}>
@@ -320,12 +348,19 @@ export default function NotePage() {
                 </li>
 
                 {!isAutosave && hasChanged && (
-                    <button
-                        onClick={() => save(title, content, tags)}
-                        className="text-sm font-bold bg-[var(--nice-blue)] text-white px-3 py-1.5 rounded-lg cursor-pointer hover:scale-95 transition-transform"
-                    >
-                        Save
-                    </button>
+                    <div className={'relative group'}>
+                        <div className="absolute top-8 bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
+                            <span className="text-xs font-bold text-[var(--text)]">Save</span>
+                            <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>
+                            <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">S</span>
+                        </div>
+                        <button
+                            onClick={() => save(title, content, tags)}
+                            className="text-sm font-bold bg-[var(--nice-blue)] text-white px-3 py-1.5 rounded-lg cursor-pointer hover:scale-95 transition-transform"
+                        >
+                            Save
+                        </button>
+                    </div>
                 )}
 
                 <li>
@@ -505,8 +540,8 @@ export default function NotePage() {
                         <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
                             <span className="text-xs font-bold text-[var(--text)]">Strikethrough</span>
                             <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>
-                            <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono"></span>
-                            <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono"></span>
+                            <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Shift</span>
+                            <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">S</span>
                         </div>
                         <button
                             onMouseDown={(e) => {
@@ -548,6 +583,7 @@ export default function NotePage() {
                 <div
                     ref={editorRef}
                     contentEditable
+                    onKeyDown={handleKeyDown}
                     suppressContentEditableWarning
                     onInput={handleContentChange}
                     onKeyUp={handleSelectionChange}
