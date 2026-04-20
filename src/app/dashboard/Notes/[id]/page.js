@@ -103,6 +103,9 @@ export default function NotePage() {
 
     /toolbar states/
     const [isTextBold, setIsTextBold] = useState(false);
+    const [isTextItalic, setIsTextItalic] = useState(false);
+    const [isTextUnderlined, setIsTextUnderlined] = useState(false);
+    const [isTextStrikethrough, setIsTextStrikethrough] = useState(false);
 
     const [isFontSizeDropdownOpen, setIsFontSizeDropdownOpen] = useState(false);
     const [selectedFontSize, setSelectedFontSize] = useState(() => {
@@ -457,6 +460,64 @@ export default function NotePage() {
                                 ${isTextBold ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
                             >
                             <Bold size={18} />
+                        </button>
+                    </li>
+
+                    <li className={'relative group'}>
+                        <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
+                            <span className="text-xs font-bold text-[var(--text)]">Italic</span>
+                            <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>
+                            <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">I</span>
+                        </div>
+                        <button
+                            onMouseDown={(e) => {
+                                e.preventDefault();
+                                document.execCommand('italic');
+                                setIsTextItalic(!isTextItalic);
+                            }}
+                            className={`flex items-center justify-center gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1
+                                ${isTextItalic ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
+                        >
+                            <Italic size={18} />
+                        </button>
+                    </li>
+
+                    <li className={'relative group'}>
+                        <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
+                            <span className="text-xs font-bold text-[var(--text)]">Underline</span>
+                            <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>
+                            <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">U</span>
+                        </div>
+                        <button
+                            onMouseDown={(e) => {
+                                e.preventDefault();
+                                document.execCommand('underline');
+                                setIsTextUnderlined(!isTextUnderlined);
+                            }}
+                            className={`flex items-center justify-center gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1
+                                ${isTextUnderlined ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
+                        >
+                            <Underline size={18} />
+                        </button>
+                    </li>
+
+                    <li className={'relative group'}>
+                        <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
+                            <span className="text-xs font-bold text-[var(--text)]">Strikethrough</span>
+                            <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>
+                            <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono"></span>
+                            <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono"></span>
+                        </div>
+                        <button
+                            onMouseDown={(e) => {
+                                e.preventDefault();
+                                document.execCommand('strikeThrough');
+                                setIsTextStrikethrough(!isTextStrikethrough);
+                            }}
+                            className={`flex items-center justify-center gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1
+                                ${isTextStrikethrough ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
+                        >
+                            <Strikethrough size={18} />
                         </button>
                     </li>
 
