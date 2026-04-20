@@ -76,6 +76,11 @@ export default function NotesPage() {
         day: 'numeric', month: 'short', year: 'numeric'
     });
 
+    const stripHtml = (html) => {
+        if (!html) return "";
+        return html.replace(/<[^>]*>?/gm, '');
+    };
+
     if (loading) return (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--layer1)] backdrop-blur-xl p-6">
             <div className="w-16 h-16 mb-8 rounded-2xl bg-[var(--nice-blue)] animate-pulse shadow-[0_0_40px_rgba(var(--blue-rgb),0.3)] flex items-center justify-center">
@@ -163,7 +168,7 @@ export default function NotesPage() {
                                 </div>
 
                                 <p className="text-sm text-[var(--text-muted)] line-clamp-2 flex-1">
-                                    {note.content || 'No content yet...'}
+                                    {stripHtml(note.content) || 'No content yet...'}
                                 </p>
 
                                 {note.tags?.length > 0 && (

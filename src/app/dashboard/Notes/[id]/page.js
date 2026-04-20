@@ -21,20 +21,22 @@ export function createClient() {
 }
 
 const FONT_SIZES = [
-    { label: 'Smaller', value: 'text-xs' },
-    { label: 'Small', value: 'text-sm' },
-    { label: 'Medium', value: 'text-base' },
-    { label: 'Large', value: 'text-lg' },
-    { label: 'Extra Large', value: 'text-2xl' },
+    { label: 'Smaller', value: '1' },
+    { label: 'Small', value: '2' },
+    { label: 'Medium', value: '3' },
+    { label: 'Large', value: '4' },
+    { label: 'Extra Large', value: '5' },
 ];
 
 const FONT_STYLES = [
-    { group: 'SANS SERIF', label: 'Arial', value: 'font-sans' },
-    { group: 'SANS SERIF', label: 'Inter', value: 'font-sans' },
-    { group: 'SERIF', label: 'Georgia', value: 'font-serif' },
-    { group: 'SERIF', label: 'Garamond', value: 'font-serif' },
-    { group: 'MONOSPACE', label: 'Courier', value: 'font-mono' },
-    { group: 'MONOSPACE', label: 'Courier New', value: 'font-mono' },
+    { group: 'SANS SERIF', label: 'Arial', value: 'Arial' },
+    { group: 'SANS SERIF', label: 'Inter', value: 'Inter, system-ui, sans-serif' },
+    { group: 'SANS SERIF', label: 'Verdana', value: 'Verdana, sans-serif' },
+    { group: 'SERIF', label: 'Georgia', value: 'Georgia' },
+    { group: 'SERIF', label: 'Garamond', value: 'Garamond, serif' },
+    { group: 'SERIF', label: 'Times New Roman', value: 'Times New Roman, serif' },
+    { group: 'MONOSPACE', label: 'Courier New', value: 'Courier New' },
+    { group: 'MONOSPACE', label: 'Monaco', value: 'Monaco, monospace' },
 ];
 
 const Divider = () => <div className="w-[2px] h-8 bg-[var(--layer3)]" />;
@@ -360,10 +362,13 @@ export default function NotePage() {
                                     <button
                                         key={size.value}
                                         type="button"
-                                        onClick={() => {
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            document.execCommand('fontSize', false, size.value);
                                             setSelectedFontSize(size.label);
                                             localStorage.setItem('pow_selectedFontSize', size.label);
                                             setIsFontSizeDropdownOpen(false);
+                                            handleContentChange();
                                         }}
                                         className={`w-full text-left px-4 py-2 cursor-pointer transition-colors hover:bg-[var(--layer3)]
                                         ${selectedFontSize === size.label ? 'text-[var(--nice-blue)] font-semibold' : 'text-[var(--text-muted)]'}
@@ -395,10 +400,15 @@ export default function NotePage() {
                                                 <button
                                                     key={font.label}
                                                     type="button"
-                                                    onClick={() => {
+                                                    style={{ fontFamily: font.value }}
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        editorRef.current.focus();
+                                                        document.execCommand('fontName', false, font.value);
                                                         setSelectedFontStyle(font.label);
                                                         localStorage.setItem('pow_selectedFontStyle', font.label);
                                                         setIsFontStyleDropdownOpen(false);
+                                                        handleContentChange();
                                                     }}
                                                     className={`w-full text-left px-4 py-2 cursor-pointer transition-colors hover:bg-[var(--layer3)] ${font.value}
                                     ${selectedFontStyle === font.label ? 'text-[var(--nice-blue)] font-semibold' : 'text-[var(--text-muted)]'}`}
@@ -419,7 +429,7 @@ export default function NotePage() {
                                                 setIsFontStyleDropdownOpen(false);
                                             }}
                                             className={`w-full text-left px-4 py-2 cursor-pointer transition-colors hover:bg-[var(--layer3)] ${font.value}
-                            ${selectedFontStyle === font.label ? 'text-[var(--nice-blue)] font-semibold' : 'text-[var(--text-muted)]'}`}
+                                        ${selectedFontStyle === font.label ? 'text-[var(--nice-blue)] font-semibold' : 'text-[var(--text-muted)]'}`}
                                         >
                                             {font.label}
                                         </button>
@@ -441,7 +451,7 @@ export default function NotePage() {
                             className={`flex items-center justify-center gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1
                                 ${isTextBold ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
                             >
-                            <Bold size={16} />
+                            <Bold size={18} />
                         </button>
                     </li>
 
@@ -478,9 +488,7 @@ export default function NotePage() {
                     onMouseUp={handleSelectionChange}
                     onSelect={handleSelectionChange}
                     data-placeholder="Start writing..."
-                    className={`w-full flex-1 min-h-[60vh] bg-transparent text-[var(--text)] outline-none border-none leading-relaxed font-medium
-                        ${FONT_SIZES.find(f => f.label === selectedFontSize)?.value || 'text-base'}
-                        ${FONT_STYLES.find(f => f.label === selectedFontStyle)?.value || 'font-sans'}`}
+                    className={`w-full flex-1 min-h-[60vh] bg-transparent text-[var(--text)] outline-none border-none leading-relaxed font-medium`}
                 />
             </div>
         </main>
