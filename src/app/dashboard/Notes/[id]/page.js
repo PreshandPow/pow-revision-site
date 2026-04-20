@@ -165,15 +165,24 @@ export default function NotePage() {
 
             setTitle(note.title || '');
             setTags(note.tags || []);
-            if (editorRef.current) {
-                editorRef.current.innerHTML = note.content || '';
-            }
+
+            setContent(note.content || '');
             lastSavedContent.current = note.content || '';
+
+
             setLoading(false);
         };
 
         fetchNote();
     }, [id]);
+
+    useEffect(() => {
+        if (!loading && editorRef.current) {
+            if (editorRef.current.innerHTML === '') {
+                editorRef.current.innerHTML = lastSavedContent.current;
+            }
+        }
+    }, [loading]);
 
     const save = useCallback(async (newTitle, newContent, newTags) => {
         setSaveStatus('saving');
