@@ -102,3 +102,8 @@ body.light {
     transition: transform 0.3s ease-in-out;
     will-change: transform;
 }
+[contenteditable]:empty:before {
+    content: attr(data-placeholder);
+    color: var(--nice-blue);
+    pointer-events: none;
+}

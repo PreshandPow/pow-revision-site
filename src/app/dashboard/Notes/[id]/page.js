@@ -85,6 +85,23 @@ export default function NotePage() {
         },
     };
 
+    const [savedSelection, setSavedSelection] = useState(null);
+
+    const handleSelectionChange = () => {
+        setIsTextBold(document.queryCommandState('bold'));
+
+        const selection = window.getSelection();
+
+        if (selection.rangeCount > 0 && !selection.getRangeAt(0).collapsed) {
+            setSavedSelection(selection.getRangeAt(0).cloneRange())
+        }   else {
+            setSavedSelection(null);
+        }
+    };
+
+    /toolbar states/
+    const [isTextBold, setIsTextBold] = useState(false);
+
     const [isFontSizeDropdownOpen, setIsFontSizeDropdownOpen] = useState(false);
     const [selectedFontSize, setSelectedFontSize] = useState(() => {
         if (typeof window === 'undefined') return 'Medium';
@@ -130,6 +147,8 @@ export default function NotePage() {
         return () => document.removeEventListener('mousedown', handleClick);
     }, []);
 
+    const editorRef = useRef(null);
+
     useEffect(() => {
         const fetchNote = async () => {
             const { data: note, error } = await supabase
@@ -145,9 +164,11 @@ export default function NotePage() {
             }
 
             setTitle(note.title || '');
-            setContent(note.content || '');
-            lastSavedContent.current = note.content || '';
             setTags(note.tags || []);
+            if (editorRef.current) {
+                editorRef.current.innerHTML = note.content || '';
+            }
+            lastSavedContent.current = note.content || '';
             setLoading(false);
         };
 
@@ -197,9 +218,10 @@ export default function NotePage() {
         debouncedSave(e.target.value, content, tags);
     };
 
-    const handleContentChange = (e) => {
-        setContent(e.target.value);
-        debouncedSave(title, e.target.value, tags);
+    const handleContentChange = () => {
+        const newContent = editorRef.current.innerHTML;
+        setContent(newContent);
+        debouncedSave(title, newContent, tags);
     };
 
     const handleAddTag = (e) => {
@@ -399,6 +421,21 @@ export default function NotePage() {
                     </li>
 
                     <Divider />
+
+                    <li>
+                        <button
+                            onMouseDown={(e) => {
+                                e.preventDefault();
+                                document.execCommand('bold');
+                                setIsTextBold(!isTextBold);
+                            }}
+                            className={`flex items-center justify-center gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1
+                                ${isTextBold ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
+                            >
+                            <Bold size={16} />
+                        </button>
+                    </li>
+
                 </ul>
 
                 <div className="flex flex-wrap items-center gap-2">
@@ -423,14 +460,19 @@ export default function NotePage() {
 
                 <div className="h-[1px] bg-[var(--nice-blue)]" />
 
-                <textarea
-                    value={content}
-                    onChange={handleContentChange}
-                    placeholder="Start writing..."
-                    className={`w-full flex-1 min-h-[60vh] bg-transparent text-[var(--text)] placeholder:text-[var(--nice-blue)] outline-none border-none resize-none leading-relaxed font-medium
-                    ${FONT_SIZES.find(f => f.label === selectedFontSize)?.value || 'text-base'}
-                    ${FONT_STYLES.find(f => f.label === selectedFontStyle)?.value || 'font-sans'}`}
-                    />
+                <div
+                    ref={editorRef}
+                    contentEditable
+                    suppressContentEditableWarning
+                    onInput={handleContentChange}
+                    onKeyUp={handleSelectionChange}
+                    onMouseUp={handleSelectionChange}
+                    onSelect={handleSelectionChange}
+                    data-placeholder="Start writing..."
+                    className={`w-full flex-1 min-h-[60vh] bg-transparent text-[var(--text)] outline-none border-none leading-relaxed font-medium
+                        ${FONT_SIZES.find(f => f.label === selectedFontSize)?.value || 'text-base'}
+                        ${FONT_STYLES.find(f => f.label === selectedFontStyle)?.value || 'font-sans'}`}
+                />
             </div>
         </main>
     );
