@@ -441,7 +441,12 @@ export default function NotePage() {
 
                     <Divider />
 
-                    <li>
+                    <li className={'relative group'}>
+                        <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
+                            <span className="text-xs font-bold text-[var(--text)]">Bold</span>
+                            <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>
+                            <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">B</span>
+                        </div>
                         <button
                             onMouseDown={(e) => {
                                 e.preventDefault();
