@@ -148,18 +148,26 @@ export default function NotesToolbar({
                                 <p className="px-4 py-1 text-xs font-bold text-[var(--text-muted)] opacity-50 tracking-widest">
                                     {group}
                                 </p>
-                                {TEXT_TYPES.filter(t => t.group === group).map(type => (
-                                    <button
-                                        key={type.label}
-                                        type="button"
-                                        onMouseDown={(e) => {
-                                            e.preventDefault();
-                                            handleTextTypeSelect(type);
-                                        }}
-                                        className={`w-full text-left px-4 py-2 cursor-pointer transition-colors hover:bg-[var(--layer3)] flex items-center gap-3
+                                {TEXT_TYPES.filter(t => t.group === group).map(type => {
+                                    const IconComponent = type.icon;
+                                    return (
+                                        <button
+                                            key={type.label}
+                                            type="button"
+                                            onMouseDown={(e) => {
+                                                e.preventDefault();
+                                                handleTextTypeSelect(type);
+                                            }}
+                                            className={`w-full text-left px-4 py-2 cursor-pointer transition-colors hover:bg-[var(--layer3)] flex items-center gap-3
                                             ${selectedTextType === type.label ? 'text-[var(--nice-blue)] font-semibold' : 'text-[var(--text-muted)]'}`}
-                                    >
-                                        <span className="text-xs opacity-50 w-5 font-mono">{type.icon}</span>
+                                                                    >
+                                                                        <span className="text-xs opacity-50 w-5 font-mono flex items-center justify-center">
+                                            {typeof IconComponent === 'string' ? (
+                                                IconComponent
+                                            ) : (
+                                                <IconComponent size={14} />
+                                            )}
+                                        </span>
                                         <span className={
                                             type.value === 'h1' ? 'text-2xl font-bold' :
                                                 type.value === 'h2' ? 'text-xl font-bold' :
@@ -168,8 +176,9 @@ export default function NotesToolbar({
                                         }>
                                             {type.label}
                                         </span>
-                                    </button>
-                                ))}
+                                        </button>
+                                    );
+                                })}
                             </div>
                         ))}
                     </div>
