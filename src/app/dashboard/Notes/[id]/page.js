@@ -95,17 +95,139 @@ export default function NotePage() {
         }
     };
 
+    // ── block insertion utility ───────────────────────────────────────────────
+    const insertBlock = (newElement) => {
+        if (!editorRef.current) return;
+        editorRef.current.focus();
+
+        const selection = window.getSelection();
+        if (selection.rangeCount > 0) {
+            const range = selection.getRangeAt(0);
+            let currentNode = range.endContainer;
+            while (
+                currentNode &&
+                currentNode !== editorRef.current &&
+                (currentNode.nodeType === 3 || window.getComputedStyle(currentNode).display.includes('inline'))
+                ) {
+                currentNode = currentNode.parentNode;
+            }
+
+            if (currentNode && currentNode !== editorRef.current) {
+                currentNode.parentNode.insertBefore(newElement, currentNode.nextSibling);
+            } else {
+                editorRef.current.appendChild(newElement);
+            }
+        } else {
+            editorRef.current.appendChild(newElement);
+        }
+
+        // Move cursor inside the newly created element so they can start typing
+        const newRange = document.createRange();
+        newRange.selectNodeContents(newElement);
+        newRange.collapse(true); // collapse to start
+        selection.removeAllRanges();
+        selection.addRange(newRange);
+    };
+
     // ── heading insertion ─────────────────────
     const handleInsertHeading = (tag) => {
-        // TODO: add my heading insertion logic here
+        const el = document.createElement(tag);
+        const level = tag.replace('h', '');
+        el.textContent = `Heading ${level}`;
+
+        // We removed the Tailwind classes because we are now styling it via globals.css
+        el.className = `pow-heading-placeholder outline-none`;
+
+        insertBlock(el);
         handleContentChange();
     };
 
-    // ── todo insertion — implement my own logic here ────────────────────────
-    // Called by NotesToolbar when the user selects "Todo list".
+    // ── todo insertion ────────────────────────────────────────────────────────
     const handleInsertTodo = () => {
-        // TODO: add my todo block insertion logic here
+        const container = document.createElement('div');
+        container.className = 'pow-todo-item flex items-start gap-3 my-2';
+
+        // Checkbox wrapper (prevents the checkbox from being editable/deleted by accident easily)
+        const checkboxWrapper = document.createElement('span');
+        checkboxWrapper.contentEditable = "false";
+        checkboxWrapper.className = 'mt-1 flex items-center justify-center';
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'w-4 h-4 cursor-pointer accent-[var(--nice-blue)]';
+
+        checkboxWrapper.appendChild(checkbox);
+
+        // Text area for the todo item
+        const textSpan = document.createElement('div');
+        textSpan.className = 'pow-todo-text flex-1 outline-none min-w-[50px]';
+        textSpan.textContent = '\u200B'; // Zero-width space to help cursor placement
+
+        container.appendChild(checkboxWrapper);
+        container.appendChild(textSpan);
+
+        insertBlock(container);
+
+        // Focus specifically inside the text area of the todo
+        setTimeout(() => {
+            const selection = window.getSelection();
+            const newRange = document.createRange();
+            newRange.selectNodeContents(textSpan);
+            newRange.collapse(false);
+            selection.removeAllRanges();
+            selection.addRange(newRange);
+        }, 0);
+
         handleContentChange();
+    };
+
+    // ── Placeholder clear & focus utility ─────────────────────────────────────
+    const clearPlaceholderAndFocus = (node) => {
+        if (!node || !node.classList || !node.classList.contains('pow-heading-placeholder')) return;
+        node.textContent = '\u200B';
+        node.classList.remove('pow-heading-placeholder');
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        range.collapse(false);
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        handleContentChange();
+    };
+
+    // ── Event Delegation for Editor ───────────────────────────────────────────
+    const handleEditorClick = (e) => {
+        if (e.target.tagName === 'INPUT' && e.target.type === 'checkbox') {
+            const container = e.target.closest('.pow-todo-item');
+            const textNode = container?.querySelector('.pow-todo-text');
+            if (e.target.checked) {
+                e.target.setAttribute('checked', 'checked');
+                if (textNode) textNode.classList.add('line-through', 'opacity-50');
+            } else {
+                e.target.removeAttribute('checked');
+                if (textNode) textNode.classList.remove('line-through', 'opacity-50');
+            }
+            handleContentChange();
+        }
+        let node = e.target;
+        if (node && node.nodeType === 3) node = node.parentElement;
+        clearPlaceholderAndFocus(node);
+    };
+
+    const handleEditorKeyDown = (e) => {
+        handleKeyDown(e);
+        const selection = window.getSelection();
+        if (selection.rangeCount > 0) {
+            let node = selection.anchorNode;
+            if (node && node.nodeType === 3) node = node.parentElement;
+
+            if (node && node.classList && node.classList.contains('pow-heading-placeholder')) {
+                if (['Shift', 'Control', 'Alt', 'Meta', 'CapsLock'].includes(e.key)) return;
+
+                clearPlaceholderAndFocus(node);
+            }
+        }
     };
 
     // ── autosave ──────────────────────────────────────────────────────────────
@@ -308,14 +430,15 @@ export default function NotePage() {
                 <div
                     ref={editorRef}
                     contentEditable
-                    onKeyDown={handleKeyDown}
                     suppressContentEditableWarning
+                    data-placeholder="Start writing..."
+                    onKeyDown={handleEditorKeyDown}
+                    onClick={handleEditorClick}
                     onInput={handleContentChange}
                     onKeyUp={handleSelectionChange}
                     onMouseUp={handleSelectionChange}
                     onSelect={handleSelectionChange}
-                    data-placeholder="Start writing..."
-                    className="w-full flex-1 min-h-[60vh] bg-transparent text-[var(--text)] outline-none border-none leading-relaxed font-medium"
+                    className="pow-editor w-full flex-1 min-h-[60vh] bg-transparent text-[var(--text)] outline-none border-none leading-relaxed font-medium"
                 />
             </div>
         </main>
