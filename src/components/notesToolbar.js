@@ -1,0 +1,343 @@
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+import {
+    Bold, Italic, Underline, Strikethrough,
+    ChevronDown, Form, Pilcrow, Heading1, Heading2, Heading3,
+    List, ListOrdered, ListTodo
+} from 'lucide-react';
+
+const TEXT_TYPES = [
+    { group: 'HIERARCHY', label: 'Paragraph', icon: Pilcrow, command: 'formatBlock', value: 'p' },
+    { group: 'HIERARCHY', label: 'Heading 1',  icon: Heading1, command: 'formatBlock', value: 'h1' },
+    { group: 'HIERARCHY', label: 'Heading 2',  icon: Heading2, command: 'formatBlock', value: 'h2' },
+    { group: 'HIERARCHY', label: 'Heading 3',  icon: Heading3, command: 'formatBlock', value: 'h3' },
+    { group: 'LISTS',     label: 'Bullet list',   icon: List,  command: 'insertUnorderedList', value: null },
+    { group: 'LISTS',     label: 'Numbered list', icon: ListOrdered, command: 'insertOrderedList',   value: null },
+    { group: 'LISTS',     label: 'Todo list',     icon: ListTodo,  command: null,                  value: 'todo' },
+];
+
+const FONT_SIZES = [
+    { label: 'Smaller',     value: '1' },
+    { label: 'Small',       value: '2' },
+    { label: 'Medium',      value: '3' },
+    { label: 'Large',       value: '4' },
+    { label: 'Extra Large', value: '5' },
+];
+
+const FONT_STYLES = [
+    { group: 'SANS SERIF', label: 'Arial',           value: 'Arial' },
+    { group: 'SANS SERIF', label: 'Inter',           value: 'Inter, system-ui, sans-serif' },
+    { group: 'SANS SERIF', label: 'Verdana',         value: 'Verdana, sans-serif' },
+    { group: 'SERIF',      label: 'Georgia',         value: 'Georgia' },
+    { group: 'SERIF',      label: 'Garamond',        value: 'Garamond, serif' },
+    { group: 'SERIF',      label: 'Times New Roman', value: 'Times New Roman, serif' },
+    { group: 'MONOSPACE',  label: 'Courier New',     value: 'Courier New' },
+    { group: 'MONOSPACE',  label: 'Monaco',          value: 'Monaco, monospace' },
+];
+
+const Divider = () => <div className="w-[2px] h-8 bg-[var(--layer3)]" />;
+
+export default function NotesToolbar({
+                                         editorRef,
+                                         onContentChange,
+                                         // formatting active states — driven by handleSelectionChange in page.js
+                                         isTextBold,        setIsTextBold,
+                                         isTextItalic,      setIsTextItalic,
+                                         isTextUnderlined,  setIsTextUnderlined,
+                                         isTextStrikethrough, setIsTextStrikethrough,
+                                         // text type label shown in the dropdown (updated by handleSelectionChange)
+                                         selectedTextType,  setSelectedTextType,
+                                         // called when user picks a heading so page.js can run its own insertion logic
+                                         onInsertHeading,
+                                         // called when user picks todo so page.js can insert a todo block
+                                         onInsertTodo,
+                                     }) {
+    // ── font size ─────────────────────────────────────────────────────────────
+    const [isFontSizeDropdownOpen, setIsFontSizeDropdownOpen] = useState(false);
+    const [selectedFontSize, setSelectedFontSize] = useState(() => {
+        if (typeof window === 'undefined') return 'Medium';
+        return localStorage.getItem('pow_selectedFontSize') || 'Medium';
+    });
+    const fontSizeDropdownRef = useRef(null);
+
+    useEffect(() => {
+        const h = (e) => {
+            if (fontSizeDropdownRef.current && !fontSizeDropdownRef.current.contains(e.target))
+                setIsFontSizeDropdownOpen(false);
+        };
+        document.addEventListener('mousedown', h);
+        return () => document.removeEventListener('mousedown', h);
+    }, []);
+
+    // ── font style ────────────────────────────────────────────────────────────
+    const [isFontStyleDropdownOpen, setIsFontStyleDropdownOpen] = useState(false);
+    const [selectedFontStyle, setSelectedFontStyle] = useState(() => {
+        if (typeof window === 'undefined') return 'Inter';
+        return localStorage.getItem('pow_selectedFontStyle') || 'Inter';
+    });
+    const fontStyleDropdownRef = useRef(null);
+
+    useEffect(() => {
+        const h = (e) => {
+            if (fontStyleDropdownRef.current && !fontStyleDropdownRef.current.contains(e.target))
+                setIsFontStyleDropdownOpen(false);
+        };
+        document.addEventListener('mousedown', h);
+        return () => document.removeEventListener('mousedown', h);
+    }, []);
+
+    // ── text type dropdown ────────────────────────────────────────────────────
+    const [isTextTypeDropdownOpen, setIsTextTypeDropdownOpen] = useState(false);
+    const textTypeDropdownRef = useRef(null);
+
+    useEffect(() => {
+        const h = (e) => {
+            if (textTypeDropdownRef.current && !textTypeDropdownRef.current.contains(e.target))
+                setIsTextTypeDropdownOpen(false);
+        };
+        document.addEventListener('mousedown', h);
+        return () => document.removeEventListener('mousedown', h);
+    }, []);
+
+    const handleTextTypeSelect = (type) => {
+        if (type.value === 'todo') {
+            // delegate to page.js
+            onInsertTodo?.();
+        } else if (['h1', 'h2', 'h3'].includes(type.value)) {
+            // delegate to page.js so it can run its own heading insertion logic
+            onInsertHeading?.(type.value);
+        } else if (type.value) {
+            // paragraph
+            document.execCommand(type.command, false, type.value);
+            onContentChange();
+        } else {
+            // bullet / numbered list
+            document.execCommand(type.command, false, null);
+            onContentChange();
+        }
+        setSelectedTextType(type.label);
+        setIsTextTypeDropdownOpen(false);
+    };
+
+    return (
+        <ul className="sticky bg-[var(--layer2)] border-2 border-[var(--layer3)] rounded-xl px-1 md:px-2 py-1 flex flex-wrap items-center gap-1">
+
+            {/* Text formats e.g., headings and bullets */}
+            <li className="relative" ref={textTypeDropdownRef}>
+                <button
+                    onClick={() => setIsTextTypeDropdownOpen(!isTextTypeDropdownOpen)}
+                    className={`flex items-center justify-center gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1.5
+                        ${isTextTypeDropdownOpen ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
+                >
+                    {(() => {
+                        const activeType = TEXT_TYPES.find(t => t.label === selectedTextType);
+                        const Icon = activeType?.icon;
+                        if (!selectedTextType) return <Form size={18} />;
+                        if (typeof Icon === 'string') return <span className="font-bold text-xs w-5 text-center">{Icon}</span>;
+                        return Icon ? <Icon size={18} /> : <Form size={18} />;
+                    })()}
+
+                    <ChevronDown size={12} />
+                </button>
+
+                {isTextTypeDropdownOpen && (
+                    <div className="absolute top-full left-0 mt-1 bg-[var(--layer2)] border border-[var(--layer3)] rounded-sm overflow-hidden z-50 py-1 shadow-lg min-w-[200px]">
+                        {['HIERARCHY', 'LISTS'].map(group => (
+                            <div key={group}>
+                                <p className="px-4 py-1 text-xs font-bold text-[var(--text-muted)] opacity-50 tracking-widest">
+                                    {group}
+                                </p>
+                                {TEXT_TYPES.filter(t => t.group === group).map(type => (
+                                    <button
+                                        key={type.label}
+                                        type="button"
+                                        onMouseDown={(e) => {
+                                            e.preventDefault();
+                                            handleTextTypeSelect(type);
+                                        }}
+                                        className={`w-full text-left px-4 py-2 cursor-pointer transition-colors hover:bg-[var(--layer3)] flex items-center gap-3
+                                            ${selectedTextType === type.label ? 'text-[var(--nice-blue)] font-semibold' : 'text-[var(--text-muted)]'}`}
+                                    >
+                                        <span className="text-xs opacity-50 w-5 font-mono">{type.icon}</span>
+                                        <span className={
+                                            type.value === 'h1' ? 'text-2xl font-bold' :
+                                                type.value === 'h2' ? 'text-xl font-bold' :
+                                                    type.value === 'h3' ? 'text-lg font-bold' :
+                                                        'text-sm'
+                                        }>
+                                            {type.label}
+                                        </span>
+                                    </button>
+                                ))}
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </li>
+
+            {/* font size */}
+            <li className="relative" ref={fontSizeDropdownRef}>
+                <button
+                    onClick={() => setIsFontSizeDropdownOpen(!isFontSizeDropdownOpen)}
+                    className={`flex items-center justify-between gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1.5 min-w-[80px]
+                        ${isFontSizeDropdownOpen ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
+                >
+                    {selectedFontSize}
+                    <ChevronDown size={12} />
+                </button>
+
+                {isFontSizeDropdownOpen && (
+                    <div className="absolute top-full left-0 mt-1 bg-[var(--layer2)] border border-[var(--layer3)] rounded-sm overflow-hidden z-50 py-1 shadow-lg min-w-[200px]">
+                        {FONT_SIZES.map(size => (
+                            <button
+                                key={size.value}
+                                type="button"
+                                onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    document.execCommand('fontSize', false, size.value);
+                                    setSelectedFontSize(size.label);
+                                    localStorage.setItem('pow_selectedFontSize', size.label);
+                                    setIsFontSizeDropdownOpen(false);
+                                    onContentChange();
+                                }}
+                                className={`w-full text-left px-4 py-2 cursor-pointer transition-colors hover:bg-[var(--layer3)]
+                                    ${selectedFontSize === size.label ? 'text-[var(--nice-blue)] font-semibold' : 'text-[var(--text-muted)]'}`}
+                            >
+                                {size.label}
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </li>
+
+            {/* font style */}
+            <li className="relative" ref={fontStyleDropdownRef}>
+                <button
+                    onClick={() => setIsFontStyleDropdownOpen(!isFontStyleDropdownOpen)}
+                    className={`flex items-center justify-between gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1.5 min-w-[80px]
+                        ${isFontStyleDropdownOpen ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
+                >
+                    {selectedFontStyle}
+                    <ChevronDown size={12} />
+                </button>
+
+                {isFontStyleDropdownOpen && (
+                    <div className="absolute top-full left-0 mt-1 bg-[var(--layer2)] border border-[var(--layer3)] rounded-sm overflow-hidden z-50 py-1 shadow-lg min-w-[200px]">
+                        {['SANS SERIF', 'SERIF', 'MONOSPACE'].map(group => (
+                            <div key={group}>
+                                <p className="px-4 py-1 text-xs font-bold text-[var(--text-muted)] opacity-50 tracking-widest">
+                                    {group}
+                                </p>
+                                {FONT_STYLES.filter(f => f.group === group).map(font => (
+                                    <button
+                                        key={font.label}
+                                        type="button"
+                                        style={{ fontFamily: font.value }}
+                                        onMouseDown={(e) => {
+                                            e.preventDefault();
+                                            editorRef.current?.focus();
+                                            document.execCommand('fontName', false, font.value);
+                                            setSelectedFontStyle(font.label);
+                                            localStorage.setItem('pow_selectedFontStyle', font.label);
+                                            setIsFontStyleDropdownOpen(false);
+                                            onContentChange();
+                                        }}
+                                        className={`w-full text-left px-4 py-2 cursor-pointer transition-colors hover:bg-[var(--layer3)]
+                                            ${selectedFontStyle === font.label ? 'text-[var(--nice-blue)] font-semibold' : 'text-[var(--text-muted)]'}`}
+                                    >
+                                        {font.label}
+                                    </button>
+                                ))}
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </li>
+
+            <Divider />
+
+            {/* bold tool */}
+            <li className="relative group">
+                <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
+                    <span className="text-xs font-bold text-[var(--text)]">Bold</span>
+                    <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>
+                    <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">B</span>
+                </div>
+                <button
+                    onMouseDown={(e) => {
+                        e.preventDefault();
+                        document.execCommand('bold');
+                        setIsTextBold(!isTextBold);
+                    }}
+                    className={`flex items-center justify-center gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1.5
+                        ${isTextBold ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
+                >
+                    <Bold size={18} />
+                </button>
+            </li>
+
+            {/* italic tool */}
+            <li className="relative group">
+                <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
+                    <span className="text-xs font-bold text-[var(--text)]">Italic</span>
+                    <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>
+                    <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">I</span>
+                </div>
+                <button
+                    onMouseDown={(e) => {
+                        e.preventDefault();
+                        document.execCommand('italic');
+                        setIsTextItalic(!isTextItalic);
+                    }}
+                    className={`flex items-center justify-center gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1.5
+                        ${isTextItalic ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
+                >
+                    <Italic size={18} />
+                </button>
+            </li>
+
+            {/* underline tool */}
+            <li className="relative group">
+                <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
+                    <span className="text-xs font-bold text-[var(--text)]">Underline</span>
+                    <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>
+                    <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">U</span>
+                </div>
+                <button
+                    onMouseDown={(e) => {
+                        e.preventDefault();
+                        document.execCommand('underline');
+                        setIsTextUnderlined(!isTextUnderlined);
+                    }}
+                    className={`flex items-center justify-center gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1.5
+                        ${isTextUnderlined ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
+                >
+                    <Underline size={18} />
+                </button>
+            </li>
+
+            {/* strikethrough tool */}
+            <li className="relative group">
+                <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
+                    <span className="text-xs font-bold text-[var(--text)]">Strikethrough</span>
+                    <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>
+                    <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Shift</span>
+                    <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">S</span>
+                </div>
+                <button
+                    onMouseDown={(e) => {
+                        e.preventDefault();
+                        document.execCommand('strikeThrough');
+                        setIsTextStrikethrough(!isTextStrikethrough);
+                    }}
+                    className={`flex items-center justify-center gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1.5
+                        ${isTextStrikethrough ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
+                >
+                    <Strikethrough size={18} />
+                </button>
+            </li>
+
+        </ul>
+    );
+}
