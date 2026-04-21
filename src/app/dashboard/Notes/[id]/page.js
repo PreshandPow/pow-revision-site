@@ -41,7 +41,6 @@ export default function NotePage() {
     // ── sidebar logic state ────────────────────────────────────────────────────
     const [hoveredBlock, setHoveredBlock] = useState(null);
     const [sidebarTop, setSidebarTop] = useState(-9999);
-    const [isSidebarHovered, setIsSidebarHovered] = useState(false); // NEW: Sidebar hover lock
     const sidebarRef = useRef(null);
 
     // ── toolbar formatting state ──────────────────────────────────────────────
