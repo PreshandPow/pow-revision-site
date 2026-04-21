@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
-import { ArrowLeft, Tag, X } from 'lucide-react';
+import { ArrowLeft, Tag, X, Plus, GripVertical } from 'lucide-react';
 import NotesToolbar from '../../../../components/notesToolbar';
 
 export function createClient() {
@@ -38,7 +38,13 @@ export default function NotePage() {
     const lastSavedContent = useRef('');
     const editorRef = useRef(null);
 
-    // ── toolbar formatting state (driven by handleSelectionChange) ────────────
+    // ── sidebar logic state ────────────────────────────────────────────────────
+    const [hoveredBlock, setHoveredBlock] = useState(null);
+    const [sidebarTop, setSidebarTop] = useState(-9999);
+    const [isSidebarHovered, setIsSidebarHovered] = useState(false); // NEW: Sidebar hover lock
+    const sidebarRef = useRef(null);
+
+    // ── toolbar formatting state ──────────────────────────────────────────────
     const [isTextBold,          setIsTextBold]          = useState(false);
     const [isTextItalic,        setIsTextItalic]        = useState(false);
     const [isTextUnderlined,    setIsTextUnderlined]    = useState(false);
@@ -58,7 +64,7 @@ export default function NotePage() {
         },
     };
 
-    // ── selection tracking — keeps toolbar button states in sync ──────────────
+    // ── selection tracking ────────────────────────────────────────────────────
     const handleSelectionChange = () => {
         setIsTextBold(document.queryCommandState('bold'));
         setIsTextItalic(document.queryCommandState('italic'));
@@ -104,6 +110,7 @@ export default function NotePage() {
         if (selection.rangeCount > 0) {
             const range = selection.getRangeAt(0);
             let currentNode = range.endContainer;
+
             while (
                 currentNode &&
                 currentNode !== editorRef.current &&
@@ -121,10 +128,9 @@ export default function NotePage() {
             editorRef.current.appendChild(newElement);
         }
 
-        // Move cursor inside the newly created element so they can start typing
         const newRange = document.createRange();
         newRange.selectNodeContents(newElement);
-        newRange.collapse(true); // collapse to start
+        newRange.collapse(true);
         selection.removeAllRanges();
         selection.addRange(newRange);
     };
@@ -134,8 +140,6 @@ export default function NotePage() {
         const el = document.createElement(tag);
         const level = tag.replace('h', '');
         el.textContent = `Heading ${level}`;
-
-        // We removed the Tailwind classes because we are now styling it via globals.css
         el.className = `pow-heading-placeholder outline-none`;
 
         insertBlock(el);
@@ -147,7 +151,6 @@ export default function NotePage() {
         const container = document.createElement('div');
         container.className = 'pow-todo-item flex items-start gap-3 my-2';
 
-        // Checkbox wrapper (prevents the checkbox from being editable/deleted by accident easily)
         const checkboxWrapper = document.createElement('span');
         checkboxWrapper.contentEditable = "false";
         checkboxWrapper.className = 'mt-1 flex items-center justify-center';
@@ -158,17 +161,15 @@ export default function NotePage() {
 
         checkboxWrapper.appendChild(checkbox);
 
-        // Text area for the todo item
         const textSpan = document.createElement('div');
         textSpan.className = 'pow-todo-text flex-1 outline-none min-w-[50px]';
-        textSpan.textContent = '\u200B'; // Zero-width space to help cursor placement
+        textSpan.textContent = '\u200B';
 
         container.appendChild(checkboxWrapper);
         container.appendChild(textSpan);
 
         insertBlock(container);
 
-        // Focus specifically inside the text area of the todo
         setTimeout(() => {
             const selection = window.getSelection();
             const newRange = document.createRange();
@@ -184,8 +185,10 @@ export default function NotePage() {
     // ── Placeholder clear & focus utility ─────────────────────────────────────
     const clearPlaceholderAndFocus = (node) => {
         if (!node || !node.classList || !node.classList.contains('pow-heading-placeholder')) return;
+
         node.textContent = '\u200B';
         node.classList.remove('pow-heading-placeholder');
+
         const selection = window.getSelection();
         const range = document.createRange();
         range.selectNodeContents(node);
@@ -210,6 +213,7 @@ export default function NotePage() {
             }
             handleContentChange();
         }
+
         let node = e.target;
         if (node && node.nodeType === 3) node = node.parentElement;
         clearPlaceholderAndFocus(node);
@@ -217,6 +221,7 @@ export default function NotePage() {
 
     const handleEditorKeyDown = (e) => {
         handleKeyDown(e);
+
         const selection = window.getSelection();
         if (selection.rangeCount > 0) {
             let node = selection.anchorNode;
@@ -224,11 +229,52 @@ export default function NotePage() {
 
             if (node && node.classList && node.classList.contains('pow-heading-placeholder')) {
                 if (['Shift', 'Control', 'Alt', 'Meta', 'CapsLock'].includes(e.key)) return;
-
                 clearPlaceholderAndFocus(node);
             }
         }
     };
+
+    // ── Hover Tracking & Sidebar UI Logic ─────────────────────────────────────
+    const handleEditorMouseMove = (e) => {
+        if (!editorRef.current) return;
+
+        if (sidebarRef.current && sidebarRef.current.contains(e.target)) return;
+
+        let targetNode = e.target;
+        if (targetNode === editorRef.current) {
+            const mouseY = e.clientY;
+            const children = Array.from(editorRef.current.children);
+            const foundChild = children.find(child => {
+                const rect = child.getBoundingClientRect();
+                return mouseY >= rect.top && mouseY <= rect.bottom;
+            });
+            if (foundChild) {
+                setHoveredBlock(foundChild);
+                setSidebarTop(foundChild.offsetTop);
+            } else {
+                setHoveredBlock(null);
+                setSidebarTop(-9999);
+            }
+            return;
+        }
+        let node = targetNode;
+        while (node && node !== document.body) {
+            if (node.parentElement === editorRef.current) {
+                setHoveredBlock(node);
+                setSidebarTop(node.offsetTop);
+                return;
+            }
+            node = node.parentElement;
+        }
+        setHoveredBlock(null);
+        setSidebarTop(-9999);
+    };
+
+    const handleEditorMouseLeave = () => {
+        setHoveredBlock(null);
+        setSidebarTop(-9999);
+    };
+
 
     // ── autosave ──────────────────────────────────────────────────────────────
     const handleAutosaveToggle = () => {
@@ -426,20 +472,51 @@ export default function NotePage() {
 
                 <div className="h-[1px] bg-[var(--nice-blue)]" />
 
-                {/* Editor Canvas */}
+                {/* ── Relative Editor Wrapper ── */}
                 <div
-                    ref={editorRef}
-                    contentEditable
-                    suppressContentEditableWarning
-                    data-placeholder="Start writing..."
-                    onKeyDown={handleEditorKeyDown}
-                    onClick={handleEditorClick}
-                    onInput={handleContentChange}
-                    onKeyUp={handleSelectionChange}
-                    onMouseUp={handleSelectionChange}
-                    onSelect={handleSelectionChange}
-                    className="pow-editor w-full flex-1 min-h-[60vh] bg-transparent text-[var(--text)] outline-none border-none leading-relaxed font-medium"
-                />
+                    className="relative w-full group/editor"
+                    onMouseMove={handleEditorMouseMove}
+                    onMouseLeave={handleEditorMouseLeave}
+                >
+                    {/* Floating Sidebar Buttons */}
+                    <div
+                        ref={sidebarRef}
+                        className="absolute left-2 flex items-center gap-1.5 transition-opacity duration-150 z-50 py-0.5"
+                        style={{
+                            top: sidebarTop,
+                            opacity: hoveredBlock ? 1 : 0,
+                            pointerEvents: hoveredBlock ? 'auto' : 'none'
+                        }}
+                    >
+                        <button
+                            onMouseDown={(e) => { e.preventDefault(); /* TODO: Plus action */ }}
+                            className="text-[var(--text-muted)] hover:text-[var(--text)] rounded cursor-pointer transition-colors p-0.5"
+                        >
+                            <Plus size={16} strokeWidth={2.5}/>
+                        </button>
+                        <button
+                            onMouseDown={(e) => { e.preventDefault(); /* TODO: Grip action */ }}
+                            className="text-[var(--text-muted)] hover:text-[var(--text)] rounded cursor-grab transition-colors p-0.5"
+                        >
+                            <GripVertical size={16} strokeWidth={2.5}/>
+                        </button>
+                    </div>
+
+                    {/* Editor Canvas */}
+                    <div
+                        ref={editorRef}
+                        contentEditable
+                        suppressContentEditableWarning
+                        data-placeholder="Start writing..."
+                        onKeyDown={handleEditorKeyDown}
+                        onClick={handleEditorClick}
+                        onInput={handleContentChange}
+                        onKeyUp={handleSelectionChange}
+                        onMouseUp={handleSelectionChange}
+                        onSelect={handleSelectionChange}
+                        className="pow-editor w-full pl-14 pr-4 min-h-[60vh] bg-transparent text-[var(--text)] outline-none border-none leading-relaxed font-medium"
+                    />
+                </div>
             </div>
         </main>
     );
