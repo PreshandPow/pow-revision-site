@@ -121,6 +121,15 @@ export default function NotesToolbar({
     const highlighterDropdownRef = useRef(null);
     const [selectedHighlighter, setSelectedHighlighter] = useState(null);
 
+    useEffect(() => {
+        const h = (e) => {
+            if (highlighterDropdownRef.current && !highlighterDropdownRef.current.contains(e.target))
+                setIsHighlighterDropdownOpen(false);
+        };
+        document.addEventListener('mousedown', h);
+        return () => document.removeEventListener('mousedown', h);
+    }, []);
+
     const handleHighlightText = () => {
         if (typeof selectedHighlighter === 'string') {
 
@@ -370,7 +379,6 @@ export default function NotesToolbar({
 
                 {isHighlighterDropdownOpen && (
                     <div
-                        onSubmit={handleHighlightText}
                         className="absolute top-full left-0 mt-1 bg-[var(--layer2)] border border-[var(--layer3)] rounded-sm overflow-hidden z-50 px-2 py-1.5 shadow-lg min-w-[200px]">
                         <input
                             onChange={(e) => setSelectedHighlighter(e.target.value)}
@@ -378,6 +386,7 @@ export default function NotesToolbar({
                             placeholder={'Enter hex, rgb or a colour'}
                         />
                         <button
+                            onClick={handleHighlightText}
                             className={'mt-1 bg-[var(--nice-blue)] border border-[var(--layer3)] rounded-sm overflow-hidden z-50 px-2 py-1.5 shadow-lg min-w-[200px] cursor-pointer hover:scale-95 transition-transform'}
                             type={'submit'}>
                             Pick Colour
