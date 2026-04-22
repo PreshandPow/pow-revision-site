@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
     Bold, Italic, Underline, Strikethrough,
     ChevronDown, Form, Pilcrow, Heading1, Heading2, Heading3,
-    List, ListOrdered, ListTodo
+    List, ListOrdered, ListTodo, Highlighter
 } from 'lucide-react';
 
 const TEXT_TYPES = [
@@ -41,19 +41,15 @@ const Divider = () => <div className="w-[2px] h-8 bg-[var(--layer3)]" />;
 export default function NotesToolbar({
                                          editorRef,
                                          onContentChange,
-                                         // formatting active states — driven by handleSelectionChange in page.js
                                          isTextBold,        setIsTextBold,
                                          isTextItalic,      setIsTextItalic,
                                          isTextUnderlined,  setIsTextUnderlined,
                                          isTextStrikethrough, setIsTextStrikethrough,
-                                         // text type label shown in the dropdown (updated by handleSelectionChange)
                                          selectedTextType,  setSelectedTextType,
-                                         // called when user picks a heading so page.js can run its own insertion logic
                                          onInsertHeading,
-                                         // called when user picks todo so page.js can insert a todo block
                                          onInsertTodo,
                                      }) {
-    // ── font size ─────────────────────────────────────────────────────────────
+    // ── font size tool ─────────────────────────────────────────────────────────────
     const [isFontSizeDropdownOpen, setIsFontSizeDropdownOpen] = useState(false);
     const [selectedFontSize, setSelectedFontSize] = useState(() => {
         if (typeof window === 'undefined') return 'Medium';
@@ -70,7 +66,7 @@ export default function NotesToolbar({
         return () => document.removeEventListener('mousedown', h);
     }, []);
 
-    // ── font style ────────────────────────────────────────────────────────────
+    // ── font style tool ────────────────────────────────────────────────────────────
     const [isFontStyleDropdownOpen, setIsFontStyleDropdownOpen] = useState(false);
     const [selectedFontStyle, setSelectedFontStyle] = useState(() => {
         if (typeof window === 'undefined') return 'Inter';
@@ -87,7 +83,7 @@ export default function NotesToolbar({
         return () => document.removeEventListener('mousedown', h);
     }, []);
 
-    // ── text type dropdown ────────────────────────────────────────────────────
+    // ── text type tool ────────────────────────────────────────────────────
     const [isTextTypeDropdownOpen, setIsTextTypeDropdownOpen] = useState(false);
     const textTypeDropdownRef = useRef(null);
 
@@ -119,6 +115,10 @@ export default function NotesToolbar({
         setSelectedTextType(type.label);
         setIsTextTypeDropdownOpen(false);
     };
+
+    // ── highlighter tool ────────────────────────────────────────────────────
+    const [isHighlighterDropdownOpen, setIsHighlighterDropdownOpen] = useState(false);
+    const highlighterDropdownRef = useRef(null);
 
     return (
         <ul className="sticky bg-[var(--layer2)] border-2 border-[var(--layer3)] rounded-xl px-1 md:px-2 py-1 flex flex-wrap items-center gap-1">
@@ -345,6 +345,27 @@ export default function NotesToolbar({
                 >
                     <Strikethrough size={18} />
                 </button>
+            </li>
+
+            <li className={'relative group'} ref={highlighterDropdownRef}>
+                <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
+                    <span className="text-xs font-bold text-[var(--text)]">Highlighter</span>
+                    <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>
+                    <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">H</span>
+                </div>
+                <button
+                    onClick={() => setIsHighlighterDropdownOpen(!isHighlighterDropdownOpen)}
+                    className={`flex items-center justify-center gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1.5
+                        ${isHighlighterDropdownOpen ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}>
+                    <Highlighter size={18} />
+                </button>
+
+                {isHighlighterDropdownOpen && (
+                    <div
+                        className="absolute top-full left-0 mt-1 bg-[var(--layer2)] border border-[var(--layer3)] rounded-sm overflow-hidden z-50 py-1 shadow-lg min-w-[200px]">
+
+                    </div>
+                )}
             </li>
 
         </ul>

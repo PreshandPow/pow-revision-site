@@ -98,6 +98,10 @@ export default function NotePage() {
             e.preventDefault();
             handleAutosaveToggle();
         }
+
+        if (isMod && e.key.toLowerCase() === 'h') {
+            e.preventDefault();
+        }
     };
 
     // ── block insertion utility ───────────────────────────────────────────────
