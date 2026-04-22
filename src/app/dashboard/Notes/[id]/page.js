@@ -44,11 +44,13 @@ export default function NotePage() {
     const sidebarRef = useRef(null);
 
     // ── toolbar formatting state ──────────────────────────────────────────────
+    const [isUserFocused, setIsUserFocused] = useState(false);
     const [isTextBold,          setIsTextBold]          = useState(false);
     const [isTextItalic,        setIsTextItalic]        = useState(false);
     const [isTextUnderlined,    setIsTextUnderlined]    = useState(false);
     const [isTextStrikethrough, setIsTextStrikethrough] = useState(false);
     const [selectedTextType,    setSelectedTextType]    = useState('Paragraph');
+    const [selectedHighlighter, setSelectedHighlighter] = useState(null);
 
     const toastStyle = {
         style: {
@@ -78,6 +80,8 @@ export default function NotePage() {
             const labelMap = { h1: 'Heading 1', h2: 'Heading 2', h3: 'Heading 3', p: 'Paragraph', li: 'Bullet list' };
             if (tag && labelMap[tag]) setSelectedTextType(labelMap[tag]);
         }
+
+        setIsUserFocused(document.activeElement!=null);
     };
 
     // ── keyboard shortcuts ────────────────────────────────────────────────────
@@ -454,8 +458,9 @@ export default function NotePage() {
                     isTextUnderlined={isTextUnderlined}   setIsTextUnderlined={setIsTextUnderlined}
                     isTextStrikethrough={isTextStrikethrough} setIsTextStrikethrough={setIsTextStrikethrough}
                     selectedTextType={selectedTextType}   setSelectedTextType={setSelectedTextType}
-                    onInsertHeading={handleInsertHeading}
-                    onInsertTodo={handleInsertTodo}
+                    onInsertHeading={handleInsertHeading} selectedHighlighter={selectedHighlighter}
+                    onInsertTodo={handleInsertTodo}       setSelectedHighlighter={setSelectedHighlighter}
+                    onSelectionChange={handleSelectionChange} isUserFocused={isUserFocused}
                 />
 
                 {/* Tags */}

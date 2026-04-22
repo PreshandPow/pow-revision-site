@@ -6,6 +6,7 @@ import {
     ChevronDown, Form, Pilcrow, Heading1, Heading2, Heading3,
     List, ListOrdered, ListTodo, Highlighter
 } from 'lucide-react';
+import toast from "react-hot-toast";
 
 const TEXT_TYPES = [
     { group: 'HIERARCHY', label: 'Paragraph', icon: Pilcrow, command: 'formatBlock', value: 'p' },
@@ -46,8 +47,9 @@ export default function NotesToolbar({
                                          isTextUnderlined,  setIsTextUnderlined,
                                          isTextStrikethrough, setIsTextStrikethrough,
                                          selectedTextType,  setSelectedTextType,
-                                         onInsertHeading,
-                                         onInsertTodo,
+                                         onInsertHeading,   selectedHighlighter,
+                                         onInsertTodo,      setSelectedHighlighter,
+                                         onSelectionChange, isUserFocused
                                      }) {
     // ── font size tool ─────────────────────────────────────────────────────────────
     const [isFontSizeDropdownOpen, setIsFontSizeDropdownOpen] = useState(false);
@@ -98,17 +100,13 @@ export default function NotesToolbar({
 
     const handleTextTypeSelect = (type) => {
         if (type.value === 'todo') {
-            // delegate to page.js
             onInsertTodo?.();
         } else if (['h1', 'h2', 'h3'].includes(type.value)) {
-            // delegate to page.js so it can run its own heading insertion logic
             onInsertHeading?.(type.value);
         } else if (type.value) {
-            // paragraph
             document.execCommand(type.command, false, type.value);
             onContentChange();
         } else {
-            // bullet / numbered list
             document.execCommand(type.command, false, null);
             onContentChange();
         }
@@ -119,7 +117,7 @@ export default function NotesToolbar({
     // ── highlighter tool ────────────────────────────────────────────────────
     const [isHighlighterDropdownOpen, setIsHighlighterDropdownOpen] = useState(false);
     const highlighterDropdownRef = useRef(null);
-    const [selectedHighlighter, setSelectedHighlighter] = useState(null);
+    const [isTextFocused, setIsTextFocused] = useState(false);
 
     useEffect(() => {
         const h = (e) => {
@@ -130,8 +128,27 @@ export default function NotesToolbar({
         return () => document.removeEventListener('mousedown', h);
     }, []);
 
+    const isValidColor = (value) => {
+        if (!value) return false;
+        const s = new Option().style;
+        s.color = value;
+        return s.color !== '';
+    };
+
     const handleHighlightText = () => {
-        if (typeof selectedHighlighter === 'string') {
+        if (!isValidColor(selectedHighlighter)) {
+            toast.error('Please select a valid color.');
+            return;
+        }
+        document.execCommand('hiliteColor', false, selectedHighlighter);
+        setIsHighlighterDropdownOpen(false);
+        onContentChange();
+
+        onSelectionChange;
+
+        if (isUserFocused) {
+            document.execCommand('hiliteColor', false, selectedHighlighter);
+        }   else {
 
         }
     };
@@ -372,9 +389,13 @@ export default function NotesToolbar({
                 </div>
                 <button
                     onClick={() => setIsHighlighterDropdownOpen(!isHighlighterDropdownOpen)}
-                    className={`flex items-center justify-center gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1.5
+                    className={`flex items-center justify-center flex-col gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1.5
                         ${isHighlighterDropdownOpen ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}>
                     <Highlighter size={18} />
+                    <div
+                        className="w-5 h-1 rounded-sm border border-[var(--layer3)]"
+                        style={{ backgroundColor: selectedHighlighter || 'transparent' }}
+                    />
                 </button>
 
                 {isHighlighterDropdownOpen && (
