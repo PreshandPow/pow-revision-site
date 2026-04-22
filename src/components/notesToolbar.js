@@ -119,6 +119,13 @@ export default function NotesToolbar({
     // ── highlighter tool ────────────────────────────────────────────────────
     const [isHighlighterDropdownOpen, setIsHighlighterDropdownOpen] = useState(false);
     const highlighterDropdownRef = useRef(null);
+    const [selectedHighlighter, setSelectedHighlighter] = useState(null);
+
+    const handleHighlightText = () => {
+        if (typeof selectedHighlighter === 'string') {
+
+        }
+    };
 
     return (
         <ul className="sticky bg-[var(--layer2)] border-2 border-[var(--layer3)] rounded-xl px-1 md:px-2 py-1 flex flex-wrap items-center gap-1">
@@ -347,6 +354,7 @@ export default function NotesToolbar({
                 </button>
             </li>
 
+            {/* highlighter tool */}
             <li className={'relative group'} ref={highlighterDropdownRef}>
                 <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
                     <span className="text-xs font-bold text-[var(--text)]">Highlighter</span>
@@ -362,8 +370,18 @@ export default function NotesToolbar({
 
                 {isHighlighterDropdownOpen && (
                     <div
-                        className="absolute top-full left-0 mt-1 bg-[var(--layer2)] border border-[var(--layer3)] rounded-sm overflow-hidden z-50 py-1 shadow-lg min-w-[200px]">
-
+                        onSubmit={handleHighlightText}
+                        className="absolute top-full left-0 mt-1 bg-[var(--layer2)] border border-[var(--layer3)] rounded-sm overflow-hidden z-50 px-2 py-1.5 shadow-lg min-w-[200px]">
+                        <input
+                            onChange={(e) => setSelectedHighlighter(e.target.value)}
+                            type="text"
+                            placeholder={'Enter hex, rgb or a colour'}
+                        />
+                        <button
+                            className={'mt-1 bg-[var(--nice-blue)] border border-[var(--layer3)] rounded-sm overflow-hidden z-50 px-2 py-1.5 shadow-lg min-w-[200px] cursor-pointer hover:scale-95 transition-transform'}
+                            type={'submit'}>
+                            Pick Colour
+                        </button>
                     </div>
                 )}
             </li>
