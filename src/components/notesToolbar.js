@@ -117,6 +117,7 @@ export default function NotesToolbar({
     // ── highlighter tool ────────────────────────────────────────────────────
     const [isHighlighterDropdownOpen, setIsHighlighterDropdownOpen] = useState(false);
     const highlighterDropdownRef = useRef(null);
+    const savedRangeRef = useRef(null);
     const [isTextFocused, setIsTextFocused] = useState(false);
 
     useEffect(() => {
@@ -135,22 +136,45 @@ export default function NotesToolbar({
         return s.color !== '';
     };
 
-    const handleHighlightText = () => {
+    // handle clicking the main Highlighter icon
+    const handleHighlighterButtonClick = (e) => {
+        e.preventDefault();
+        const selection = window.getSelection();
+
+        if (selection && selection.rangeCount > 0 && selection.toString().length > 0) {
+            if (isValidColor(selectedHighlighter)) {
+                document.execCommand('hiliteColor', false, selectedHighlighter);
+                onContentChange();
+                return;
+            }
+        }
+
+        if (selection && selection.rangeCount > 0) {
+            savedRangeRef.current = selection.getRangeAt(0).cloneRange();
+        }
+
+        setIsHighlighterDropdownOpen(!isHighlighterDropdownOpen);
+    };
+
+    const handleHighlightText = (e) => {
+        e.preventDefault();
+
         if (!isValidColor(selectedHighlighter)) {
             toast.error('Please select a valid color.');
             return;
         }
+
+        editorRef.current?.focus();
+        const selection = window.getSelection();
+        if (savedRangeRef.current) {
+            selection.removeAllRanges();
+            selection.addRange(savedRangeRef.current);
+        }
+
         document.execCommand('hiliteColor', false, selectedHighlighter);
+
         setIsHighlighterDropdownOpen(false);
         onContentChange();
-
-        onSelectionChange;
-
-        if (isUserFocused) {
-            document.execCommand('hiliteColor', false, selectedHighlighter);
-        }   else {
-
-        }
     };
 
     return (
@@ -160,7 +184,7 @@ export default function NotesToolbar({
             <li className="relative" ref={textTypeDropdownRef}>
                 <button
                     onClick={() => setIsTextTypeDropdownOpen(!isTextTypeDropdownOpen)}
-                    className={`flex items-center justify-center gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1.5
+                    className={`flex items-center justify-center gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-2
                         ${isTextTypeDropdownOpen ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
                 >
                     {(() => {
@@ -222,7 +246,7 @@ export default function NotesToolbar({
             <li className="relative" ref={fontSizeDropdownRef}>
                 <button
                     onClick={() => setIsFontSizeDropdownOpen(!isFontSizeDropdownOpen)}
-                    className={`flex items-center justify-between gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1.5 min-w-[80px]
+                    className={`flex items-center justify-between gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-2 min-w-[80px]
                         ${isFontSizeDropdownOpen ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
                 >
                     {selectedFontSize}
@@ -257,7 +281,7 @@ export default function NotesToolbar({
             <li className="relative" ref={fontStyleDropdownRef}>
                 <button
                     onClick={() => setIsFontStyleDropdownOpen(!isFontStyleDropdownOpen)}
-                    className={`flex items-center justify-between gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1.5 min-w-[80px]
+                    className={`flex items-center justify-between gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-2 min-w-[80px]
                         ${isFontStyleDropdownOpen ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
                 >
                     {selectedFontStyle}
@@ -312,7 +336,7 @@ export default function NotesToolbar({
                         document.execCommand('bold');
                         setIsTextBold(!isTextBold);
                     }}
-                    className={`flex items-center justify-center gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1.5
+                    className={`flex items-center justify-center gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-2
                         ${isTextBold ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
                 >
                     <Bold size={18} />
@@ -332,7 +356,7 @@ export default function NotesToolbar({
                         document.execCommand('italic');
                         setIsTextItalic(!isTextItalic);
                     }}
-                    className={`flex items-center justify-center gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1.5
+                    className={`flex items-center justify-center gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-2
                         ${isTextItalic ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
                 >
                     <Italic size={18} />
@@ -352,7 +376,7 @@ export default function NotesToolbar({
                         document.execCommand('underline');
                         setIsTextUnderlined(!isTextUnderlined);
                     }}
-                    className={`flex items-center justify-center gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1.5
+                    className={`flex items-center justify-center gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-2
                         ${isTextUnderlined ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
                 >
                     <Underline size={18} />
@@ -373,7 +397,7 @@ export default function NotesToolbar({
                         document.execCommand('strikeThrough');
                         setIsTextStrikethrough(!isTextStrikethrough);
                     }}
-                    className={`flex items-center justify-center gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1.5
+                    className={`flex items-center justify-center gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-2
                         ${isTextStrikethrough ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
                 >
                     <Strikethrough size={18} />
@@ -388,12 +412,13 @@ export default function NotesToolbar({
                     <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">H</span>
                 </div>
                 <button
-                    onClick={() => setIsHighlighterDropdownOpen(!isHighlighterDropdownOpen)}
+                    id={'highlighter-btn'}
+                    onClick={handleHighlighterButtonClick}
                     className={`flex items-center justify-center flex-col gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1.5
                         ${isHighlighterDropdownOpen ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}>
                     <Highlighter size={18} />
                     <div
-                        className="w-5 h-1 rounded-sm border border-[var(--layer3)]"
+                        className="w-6 h-1.5 rounded-sm border border-[var(--layer3)]"
                         style={{ backgroundColor: selectedHighlighter || 'transparent' }}
                     />
                 </button>
@@ -407,7 +432,7 @@ export default function NotesToolbar({
                             placeholder={'Enter hex, rgb or a colour'}
                         />
                         <button
-                            onClick={handleHighlightText}
+                            onClick={(e) => handleHighlightText(e)}
                             className={'mt-1 bg-[var(--nice-blue)] border border-[var(--layer3)] rounded-sm overflow-hidden z-50 px-2 py-1.5 shadow-lg min-w-[200px] cursor-pointer hover:scale-95 transition-transform'}
                             type={'submit'}>
                             Pick Colour

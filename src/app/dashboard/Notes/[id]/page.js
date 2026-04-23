@@ -105,6 +105,8 @@ export default function NotePage() {
 
         if (isMod && e.key.toLowerCase() === 'h') {
             e.preventDefault();
+            const highlighterBtn = document.getElementById('highlighter-btn');
+            if (highlighterBtn) highlighterBtn.click();
         }
     };
 
