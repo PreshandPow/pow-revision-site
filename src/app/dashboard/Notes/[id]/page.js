@@ -452,18 +452,20 @@ export default function NotePage() {
                        className="w-full bg-transparent text-3xl md:text-4xl font-bold text-[var(--text)] placeholder:text-[var(--layer3)] outline-none border-none resize-none" />
 
                 {/* ── toolbar ── */}
-                <NotesToolbar
-                    editorRef={editorRef}
-                    onContentChange={handleContentChange}
-                    isTextBold={isTextBold}               setIsTextBold={setIsTextBold}
-                    isTextItalic={isTextItalic}           setIsTextItalic={setIsTextItalic}
-                    isTextUnderlined={isTextUnderlined}   setIsTextUnderlined={setIsTextUnderlined}
-                    isTextStrikethrough={isTextStrikethrough} setIsTextStrikethrough={setIsTextStrikethrough}
-                    selectedTextType={selectedTextType}   setSelectedTextType={setSelectedTextType}
-                    onInsertHeading={handleInsertHeading} selectedHighlighter={selectedHighlighter}
-                    onInsertTodo={handleInsertTodo}       setSelectedHighlighter={setSelectedHighlighter}
-                    onSelectionChange={handleSelectionChange} isUserFocused={isUserFocused}
-                />
+                <div className={'relative z-[60]'}>
+                    <NotesToolbar
+                        editorRef={editorRef}
+                        onContentChange={handleContentChange}
+                        isTextBold={isTextBold}               setIsTextBold={setIsTextBold}
+                        isTextItalic={isTextItalic}           setIsTextItalic={setIsTextItalic}
+                        isTextUnderlined={isTextUnderlined}   setIsTextUnderlined={setIsTextUnderlined}
+                        isTextStrikethrough={isTextStrikethrough} setIsTextStrikethrough={setIsTextStrikethrough}
+                        selectedTextType={selectedTextType}   setSelectedTextType={setSelectedTextType}
+                        onInsertHeading={handleInsertHeading} selectedHighlighter={selectedHighlighter}
+                        onInsertTodo={handleInsertTodo}       setSelectedHighlighter={setSelectedHighlighter}
+                        onSelectionChange={handleSelectionChange} isUserFocused={isUserFocused}
+                    />
+                </div>
 
                 {/* Tags */}
                 <div className="flex flex-wrap items-center gap-2">
@@ -491,7 +493,7 @@ export default function NotePage() {
                     {/* Floating Sidebar Buttons */}
                     <div
                         ref={sidebarRef}
-                        className="absolute left-2 flex items-center gap-1.5 transition-opacity duration-150 z-50 py-0.5"
+                        className="absolute z-50 left-2 flex items-center gap-1.5 transition-opacity duration-150 py-0.5"
                         style={{
                             top: sidebarTop,
                             opacity: hoveredBlock ? 1 : 0,
