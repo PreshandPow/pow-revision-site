@@ -449,7 +449,7 @@ export default function NotePage() {
             <div className="flex-1 w-full max-w-3xl mx-auto px-4 md:px-0 py-10 flex flex-col gap-6">
 
                 <input type="text" value={title} onChange={handleTitleChange} placeholder="Untitled"
-                       className="w-full bg-transparent text-3xl md:text-4xl font-bold text-[var(--text)] placeholder:text-[var(--layer3)] outline-none border-none resize-none" />
+                       className="w-full bg-transparent text-3xl md:text-4xl font-main text-[var(--text)] placeholder:text-[var(--layer3)] outline-none border-none resize-none" />
 
                 {/* ── toolbar ── */}
                 <div className={'relative z-[60]'}>

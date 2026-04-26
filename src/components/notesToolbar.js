@@ -61,6 +61,14 @@ const hueToHex = (hue) => {
     return `#${f(0)}${f(8)}${f(4)}`;
 };
 
+const hsvToHex = (h, s, v) => {
+    s /= 100;
+    v /= 100;
+    const f = (n, k = (n + h / 60) % 6) => v - v * s * Math.max(Math.min(k, 4 - k, 1), 0);
+    const toHex = (x) => Math.round(x * 255).toString(16).padStart(2, '0');
+    return `#${toHex(f(5))}${toHex(f(3))}${toHex(f(1))}`;
+};
+
 export default function NotesToolbar({
                                          editorRef,
                                          onContentChange,
@@ -142,6 +150,11 @@ export default function NotesToolbar({
     const savedRangeRef = useRef(null);
     const [isTextFocused, setIsTextFocused] = useState(false);
     const [sliderHue, setSliderHue] = useState(0);
+    const [boxSat, setBoxSat] = useState(100);
+    const [boxVal, setBoxVal] = useState(100);
+    const [isDraggingBox, setIsDraggingBox] = useState(false);
+
+    const colorBoxRef = useRef(null);
 
     useEffect(() => {
         const h = (e) => {
@@ -192,6 +205,45 @@ export default function NotesToolbar({
         setIsHighlighterDropdownOpen(false);
         onContentChange();
     };
+
+    const handleBoxDrag = (e) => {
+        if (!colorBoxRef.current) return;
+
+        const { left, top, width, height } = colorBoxRef.current.getBoundingClientRect();
+
+        let x = Math.max(0, Math.min((e.clientX - left) / width, 1));
+        let y = Math.max(0, Math.min((e.clientY - top) / height, 1));
+
+        const newSat = Math.round(x * 100);
+        const newVal = Math.round((1 - y) * 100);
+
+        setBoxSat(newSat);
+        setBoxVal(newVal);
+
+        const newHex = hsvToHex(sliderHue, newSat, newVal);
+        setSelectedHighlighter(newHex);
+    };
+
+    // ── Drag and Hold Logic ──
+    useEffect(() => {
+        if (!isDraggingBox) return;
+
+        const handleMouseMove = (e) => {
+            handleBoxDrag(e);
+        };
+
+        const handleMouseUp = () => {
+            setIsDraggingBox(false);
+        };
+
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('mouseup', handleMouseUp);
+
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isDraggingBox, sliderHue]);
 
     return (
         <ul className="sticky bg-[var(--layer2)] border-2 border-[var(--layer3)] rounded-xl px-1 md:px-2 py-1 flex flex-wrap items-center gap-1">
@@ -440,31 +492,51 @@ export default function NotesToolbar({
                 </button>
 
                 {isHighlighterDropdownOpen && (
-                    <div
-                        className="absolute top-full left-0 mt-1 bg-[var(--layer2)] border border-[var(--layer3)] rounded-sm overflow-hidden z-50 px-2 py-1.5 shadow-lg min-w-[200px]">
+                    <div className="absolute top-full left-0 mt-1 bg-[var(--layer2)] border border-[var(--layer3)] rounded-sm z-[100] p-2 shadow-xl w-70 flex flex-col gap-3 cursor-grab">
+                        <div
+                            ref={colorBoxRef}
+                            onMouseDown={(e) => {
+                                handleBoxDrag(e);
+                                setIsDraggingBox(true);
+                            }}
+                            className="w-full h-32 rounded-md relative overflow-hidden border border-[var(--layer3)] cursor-pointer"
+                            style={{
+                                backgroundColor: `hsl(${sliderHue}, 100%, 50%)`
+                            }}
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-r from-white to-transparent pointer-events-none" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent pointer-events-none" />
+                            <div
+                                className="absolute w-[36px] h-[36px] rounded-full border-[5px] border-white shadow-[0_0_2px_rgba(0,0,0,0.5)] pointer-events-none"
+                                style={{
+                                    left: `${boxSat}%`,
+                                    top: `${100 - boxVal}%`,
+                                    transform: 'translate(-50%, -50%)',
+                                    backgroundColor: hsvToHex(sliderHue, boxSat, boxVal)
+                                }}
+                            />
+                        </div>
                         <input
-                            type={'range'}
-                            min={'0'}
-                            max={'360'}
+                            type="range" min="0" max="360"
                             value={sliderHue}
                             onChange={(e) => {
                                 const newHue = Number(e.target.value);
                                 setSliderHue(newHue);
-                                const newHex = hueToHex(newHue);
-                                setSelectedHighlighter(newHex);
+                                setSelectedHighlighter(hsvToHex(newHue, boxSat, boxVal));
                             }}
-                            className={'pow-hue-slider'}
+                            className="pow-hue-slider w-full"
                         />
                         <input
                             onChange={(e) => setSelectedHighlighter(e.target.value)}
+                            value={selectedHighlighter || ''}
                             type="text"
-                            placeholder={'Enter hex, rgb or a colour'}
-                            value={selectedHighlighter}
+                            placeholder="Enter hex..."
+                            className="w-full text-xl p-1.5 border border-[var(--layer3)] rounded outline-none text-[var(--text)] bg-[var(--layer1)] font-main uppercase"
                         />
                         <button
                             onClick={(e) => handleHighlightText(e)}
-                            className={'mt-1 bg-[var(--nice-blue)] border border-[var(--layer3)] rounded-sm overflow-hidden z-50 px-2 py-1.5 shadow-lg min-w-[200px] cursor-pointer hover:scale-95 transition-transform'}
-                            type={'submit'}>
+                            className="w-full bg-[var(--nice-blue)] text-white border border-[var(--layer3)] rounded-sm px-2 py-1.5 shadow font-semibold cursor-pointer hover:scale-[0.98] transition-transform"
+                            type="button">
                             Pick Colour
                         </button>
                     </div>
