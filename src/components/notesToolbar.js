@@ -39,6 +39,28 @@ const FONT_STYLES = [
 
 const Divider = () => <div className="w-[2px] h-8 bg-[var(--layer3)]" />;
 
+const isValidColor = (value) => {
+    if (!value) return false;
+    const s = new Option().style;
+    s.color = value;
+    return s.color !== '';
+};
+
+const hueToHex = (hue) => {
+    const saturation = 100;
+    const lightness = 50;
+
+    const lightRatio = lightness / 100;
+    const a = (saturation * Math.min(lightRatio, 1 - lightRatio)) / 100;
+
+    const f = (n) => {
+        const k = (n + hue /  30) % 12;
+        const color = lightRatio - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+        return Math.round(255 * color).toString(16).padStart(2, '0');
+    };
+    return `#${f(0)}${f(8)}${f(4)}`;
+};
+
 export default function NotesToolbar({
                                          editorRef,
                                          onContentChange,
@@ -119,6 +141,7 @@ export default function NotesToolbar({
     const highlighterDropdownRef = useRef(null);
     const savedRangeRef = useRef(null);
     const [isTextFocused, setIsTextFocused] = useState(false);
+    const [sliderHue, setSliderHue] = useState(0);
 
     useEffect(() => {
         const h = (e) => {
@@ -128,13 +151,6 @@ export default function NotesToolbar({
         document.addEventListener('mousedown', h);
         return () => document.removeEventListener('mousedown', h);
     }, []);
-
-    const isValidColor = (value) => {
-        if (!value) return false;
-        const s = new Option().style;
-        s.color = value;
-        return s.color !== '';
-    };
 
     // handle clicking the main Highlighter icon
     const handleHighlighterButtonClick = (e) => {
@@ -418,7 +434,7 @@ export default function NotesToolbar({
                         ${isHighlighterDropdownOpen ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}>
                     <Highlighter size={18} />
                     <div
-                        className="w-6 h-1.5 rounded-sm border border-[var(--layer3)]"
+                        className="w-full h-1 rounded-sm border border-[var(--layer3)]"
                         style={{ backgroundColor: selectedHighlighter || 'transparent' }}
                     />
                 </button>
@@ -427,9 +443,23 @@ export default function NotesToolbar({
                     <div
                         className="absolute top-full left-0 mt-1 bg-[var(--layer2)] border border-[var(--layer3)] rounded-sm overflow-hidden z-50 px-2 py-1.5 shadow-lg min-w-[200px]">
                         <input
+                            type={'range'}
+                            min={'0'}
+                            max={'360'}
+                            value={sliderHue}
+                            onChange={(e) => {
+                                const newHue = Number(e.target.value);
+                                setSliderHue(newHue);
+                                const newHex = hueToHex(newHue);
+                                setSelectedHighlighter(newHex);
+                            }}
+                            className={'pow-hue-slider'}
+                        />
+                        <input
                             onChange={(e) => setSelectedHighlighter(e.target.value)}
                             type="text"
                             placeholder={'Enter hex, rgb or a colour'}
+                            value={selectedHighlighter}
                         />
                         <button
                             onClick={(e) => handleHighlightText(e)}
@@ -439,6 +469,10 @@ export default function NotesToolbar({
                         </button>
                     </div>
                 )}
+            </li>
+
+            <li>
+
             </li>
 
         </ul>
