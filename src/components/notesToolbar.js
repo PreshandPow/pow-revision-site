@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
     Bold, Italic, Underline, Strikethrough,
     ChevronDown, Form, Pilcrow, Heading1, Heading2, Heading3,
-    List, ListOrdered, ListTodo, Highlighter
+    List, ListOrdered, ListTodo, Highlighter, Palette
 } from 'lucide-react';
 import toast from "react-hot-toast";
 
@@ -198,7 +198,7 @@ export default function NotesToolbar({
     const [boxSat, setBoxSat] = useState(100);
     const [boxVal, setBoxVal] = useState(100);
     const [isDraggingBox, setIsDraggingBox] = useState(false);
-    const  [boxBackground, setBoxBackground] = useState(hsvToHex(sliderHue, boxSat, boxVal));
+    const [colourHistory, setColourHistory] = useState([]);
 
     const colorBoxRef = useRef(null);
 
@@ -268,6 +268,14 @@ export default function NotesToolbar({
 
         const newHex = hsvToHex(sliderHue, newSat, newVal);
         setSelectedHighlighter(newHex);
+    };
+
+    const addColourToHistory = (hexColour) => {
+        setColourHistory((prevHistory) => {
+            const filteredHistory = prevHistory.filter((colour) => colour !== hexColour);
+            const newHistory = [hexColour, ...filteredHistory];
+            return newHistory.slice(0, 5);
+        });
     };
 
     // ── Drag and Hold Logic ──
@@ -539,6 +547,24 @@ export default function NotesToolbar({
 
                 {isHighlighterDropdownOpen && (
                     <div className="absolute top-full left-0 mt-1 bg-[var(--layer2)] border border-[var(--layer3)] rounded-sm z-[100] p-2 shadow-xl w-70 flex flex-col gap-3 cursor-grab">
+                        {colourHistory.length > 0 && (
+                            <div className="flex items-center gap-2 mb-1">
+                                {colourHistory.map((colour, index) => (
+                                    <button
+                                        key={index}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            const newHue = parseColorToHue(colour);
+                                            setSliderHue(newHue);
+                                            setSelectedHighlighter(colour);
+                                        }}
+                                        className="w-6 h-6 rounded-md border border-[var(--layer3)] shadow-sm cursor-pointer hover:scale-110 transition-transform"
+                                        style={{ backgroundColor: colour }}
+                                        title={colour}
+                                    />
+                                ))}
+                            </div>
+                        )}
                         <div
                             ref={colorBoxRef}
                             onMouseDown={(e) => {
@@ -587,7 +613,10 @@ export default function NotesToolbar({
                             className="w-full text-xl p-1.5 border border-[var(--layer3)] rounded outline-none text-[var(--text)] bg-[var(--layer1)] font-main uppercase"
                         />
                         <button
-                            onClick={(e) => handleHighlightText(e)}
+                            onClick={(e) => {
+                                handleHighlightText(e);
+                                addColourToHistory(selectedHighlighter);
+                            }}
                             className="w-full bg-[var(--nice-blue)] text-white border border-[var(--layer3)] rounded-sm px-2 py-1.5 shadow font-semibold cursor-pointer hover:scale-[0.98] transition-transform"
                             type="button">
                             Pick Colour
@@ -596,8 +625,15 @@ export default function NotesToolbar({
                 )}
             </li>
 
-            <li>
-
+            <li className={'relative group'}>
+                <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
+                    <span className="text-xs font-bold text-[var(--text)]">Colour Palette</span>
+                </div>
+                <button
+                    className={`flex items-center justify-center flex-col gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1.5
+                        ${isHighlighterDropdownOpen ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}>
+                    <Palette size={18} />
+                </button>
             </li>
 
         </ul>
