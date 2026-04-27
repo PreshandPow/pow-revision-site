@@ -69,6 +69,52 @@ const hsvToHex = (h, s, v) => {
     return `#${toHex(f(5))}${toHex(f(3))}${toHex(f(1))}`;
 };
 
+const getRgbFromAnyColor = (colorString) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1;
+    canvas.height = 1;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+    ctx.fillStyle = colorString;
+    ctx.fillRect(0, 0, 1, 1);
+
+    const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+
+    return { r, g, b };
+};
+
+const rgbToHue = (r, g, b) => {
+    r /= 255;
+    g /= 255;
+    b /= 255;
+
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const delta = max - min;
+
+    let hue = 0;
+
+    if (delta === 0) {
+        hue = 0;
+    } else if (max === r) {
+        hue = ((g - b) / delta) % 6;
+    } else if (max === g) {
+        hue = (b - r) / delta + 2;
+    } else {
+        hue = (r - g) / delta + 4;
+    }
+
+    hue = Math.round(hue * 60);
+    if (hue < 0) hue += 360;
+
+    return hue;
+};
+
+export const parseColorToHue = (colorString) => {
+    const { r, g, b } = getRgbFromAnyColor(colorString);
+    return rgbToHue(r, g, b);
+};
+
 export default function NotesToolbar({
                                          editorRef,
                                          onContentChange,
@@ -148,11 +194,11 @@ export default function NotesToolbar({
     const [isHighlighterDropdownOpen, setIsHighlighterDropdownOpen] = useState(false);
     const highlighterDropdownRef = useRef(null);
     const savedRangeRef = useRef(null);
-    const [isTextFocused, setIsTextFocused] = useState(false);
     const [sliderHue, setSliderHue] = useState(0);
     const [boxSat, setBoxSat] = useState(100);
     const [boxVal, setBoxVal] = useState(100);
     const [isDraggingBox, setIsDraggingBox] = useState(false);
+    const  [boxBackground, setBoxBackground] = useState(hsvToHex(sliderHue, boxSat, boxVal));
 
     const colorBoxRef = useRef(null);
 
@@ -512,7 +558,7 @@ export default function NotesToolbar({
                                     left: `${boxSat}%`,
                                     top: `${100 - boxVal}%`,
                                     transform: 'translate(-50%, -50%)',
-                                    backgroundColor: hsvToHex(sliderHue, boxSat, boxVal)
+                                    backgroundColor: 'transparent'
                                 }}
                             />
                         </div>
@@ -527,7 +573,14 @@ export default function NotesToolbar({
                             className="pow-hue-slider w-full"
                         />
                         <input
-                            onChange={(e) => setSelectedHighlighter(e.target.value)}
+                            onChange={(e) => {
+                                const newString = e.target.value;
+                                setSelectedHighlighter(newString);
+                                if (isValidColor(newString)) {
+                                    const newHue = parseColorToHue(newString);
+                                    setSliderHue(newHue);
+                                }
+                            }}
                             value={selectedHighlighter || ''}
                             type="text"
                             placeholder="Enter hex..."
