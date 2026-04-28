@@ -7,7 +7,7 @@ import {
     List, ListOrdered, ListTodo, Highlighter, Palette
 } from 'lucide-react';
 import toast from "react-hot-toast";
-import coloringTool from '../components/coloringTools';
+import ColorPickerDropdown, { isValidColor } from '../components/coloringTools';
 
 const TEXT_TYPES = [
     { group: 'HIERARCHY', label: 'Paragraph', icon: Pilcrow, command: 'formatBlock', value: 'p' },
@@ -136,7 +136,6 @@ export default function NotesToolbar({
         return () => document.removeEventListener('mousedown', h);
     }, []);
 
-    // handle clicking the main Highlighter icon
     const handleHighlighterButtonClick = (e) => {
         e.preventDefault();
         const selection = window.getSelection();
@@ -458,12 +457,26 @@ export default function NotesToolbar({
             <li className={'relative group'} ref={highlighterDropdownRef}>
                 <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
                     <span className="text-xs font-bold text-[var(--text)]">Highlighter</span>
-                    <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>
-                    <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">H</span>
                 </div>
                 <button
                     id={'highlighter-btn'}
-                    onClick={handleHighlighterButtonClick}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        const selection = window.getSelection();
+
+                        if (selection && selection.rangeCount > 0 && selection.toString().length > 0) {
+                            if (isValidColor(selectedHighlighter)) {
+                                document.execCommand('hiliteColor', false, selectedHighlighter);
+                                onContentChange();
+                                return;
+                            }
+                        }
+
+                        if (selection && selection.rangeCount > 0) {
+                            savedRangeRef.current = selection.getRangeAt(0).cloneRange();
+                        }
+                        setIsHighlighterDropdownOpen(!isHighlighterDropdownOpen);
+                    }}
                     className={`flex items-center justify-center flex-col gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1.5
                         ${isHighlighterDropdownOpen ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}>
                     <Highlighter size={18} />
@@ -474,82 +487,21 @@ export default function NotesToolbar({
                 </button>
 
                 {isHighlighterDropdownOpen && (
-                    <div className="absolute top-full left-0 mt-1 bg-[var(--layer2)] border border-[var(--layer3)] rounded-sm z-[100] p-2 shadow-xl w-70 flex flex-col gap-3 cursor-grab">
-                        {colourHistory.length > 0 && (
-                            <div className="flex items-center gap-2 mb-1">
-                                {colourHistory.map((colour, index) => (
-                                    <button
-                                        key={index}
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            const newHue = parseColorToHue(colour);
-                                            setSliderHue(newHue);
-                                            setSelectedHighlighter(colour);
-                                        }}
-                                        className="w-6 h-6 rounded-md border border-[var(--layer3)] shadow-sm cursor-pointer hover:scale-110 transition-transform"
-                                        style={{ backgroundColor: colour }}
-                                        title={colour}
-                                    />
-                                ))}
-                            </div>
-                        )}
-                        <div
-                            ref={colorBoxRef}
-                            onMouseDown={(e) => {
-                                handleBoxDrag(e);
-                                setIsDraggingBox(true);
-                            }}
-                            className="w-full h-32 rounded-md relative overflow-hidden border border-[var(--layer3)] cursor-pointer"
-                            style={{
-                                backgroundColor: `hsl(${sliderHue}, 100%, 50%)`
-                            }}
-                        >
-                            <div className="absolute inset-0 bg-gradient-to-r from-white to-transparent pointer-events-none" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent pointer-events-none" />
-                            <div
-                                className="absolute w-[36px] h-[36px] rounded-full border-[5px] border-white shadow-[0_0_2px_rgba(0,0,0,0.5)] pointer-events-none"
-                                style={{
-                                    left: `${boxSat}%`,
-                                    top: `${100 - boxVal}%`,
-                                    transform: 'translate(-50%, -50%)',
-                                    backgroundColor: 'transparent'
-                                }}
-                            />
-                        </div>
-                        <input
-                            type="range" min="0" max="360"
-                            value={sliderHue}
-                            onChange={(e) => {
-                                const newHue = Number(e.target.value);
-                                setSliderHue(newHue);
-                                setSelectedHighlighter(hsvToHex(newHue, boxSat, boxVal));
-                            }}
-                            className="pow-hue-slider w-full"
-                        />
-                        <input
-                            onChange={(e) => {
-                                const newString = e.target.value;
-                                setSelectedHighlighter(newString);
-                                if (isValidColor(newString)) {
-                                    const newHue = parseColorToHue(newString);
-                                    setSliderHue(newHue);
-                                }
-                            }}
-                            value={selectedHighlighter || ''}
-                            type="text"
-                            placeholder="Enter hex..."
-                            className="w-full text-xl p-1.5 border border-[var(--layer3)] rounded outline-none text-[var(--text)] bg-[var(--layer1)] font-main uppercase"
-                        />
-                        <button
-                            onClick={(e) => {
-                                handleHighlightText(e);
-                                addColourToHistory(selectedHighlighter);
-                            }}
-                            className="w-full bg-[var(--nice-blue)] text-white border border-[var(--layer3)] rounded-sm px-2 py-1.5 shadow font-semibold cursor-pointer hover:scale-[0.98] transition-transform"
-                            type="button">
-                            Pick Colour
-                        </button>
-                    </div>
+                    <ColorPickerDropdown
+                        activeColor={selectedHighlighter}
+                        setActiveColor={setSelectedHighlighter}
+                        onApplyColor={() => {
+                            editorRef.current?.focus();
+                            const selection = window.getSelection();
+                            if (savedRangeRef.current) {
+                                selection.removeAllRanges();
+                                selection.addRange(savedRangeRef.current);
+                            }
+                            document.execCommand('hiliteColor', false, selectedHighlighter);
+                            setIsHighlighterDropdownOpen(false);
+                            onContentChange();
+                        }}
+                    />
                 )}
             </li>
 
@@ -559,7 +511,7 @@ export default function NotesToolbar({
                 </div>
                 <button
                     className={`flex items-center justify-center flex-col gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1.5
-                        ${isHighlighterDropdownOpen ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}>
+                        ${isColourPickerDropdownOpen ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}>
                     <Palette size={18} />
                 </button>
 
