@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
     Bold, Italic, Underline, Strikethrough,
     ChevronDown, Form, Pilcrow, Heading1, Heading2, Heading3,
-    List, ListOrdered, ListTodo, Highlighter, Palette
+    List, ListOrdered, ListTodo, Highlighter, Palette, Eraser
 } from 'lucide-react';
 import toast from "react-hot-toast";
 import ColorPickerDropdown, { isValidColor } from '../components/coloringTools';
@@ -124,6 +124,7 @@ export default function NotesToolbar({
     const [boxVal, setBoxVal] = useState(100);
     const [isDraggingBox, setIsDraggingBox] = useState(false);
     const [colourHistory, setColourHistory] = useState([]);
+    const [isHighlightingTextMode, setIsHighlightingTextMode] = useState(false);
 
     const colorBoxRef = useRef(null);
 
@@ -460,25 +461,32 @@ export default function NotesToolbar({
                 </div>
                 <button
                     id={'highlighter-btn'}
-                    onClick={(e) => {
+                    onMouseDown={(e) => {
                         e.preventDefault();
                         const selection = window.getSelection();
+                        const hasSelection = selection && selection.rangeCount > 0 && selection.toString().length > 0;
 
-                        if (selection && selection.rangeCount > 0 && selection.toString().length > 0) {
+                        if (hasSelection) {
                             if (isValidColor(selectedHighlighter)) {
                                 document.execCommand('hiliteColor', false, selectedHighlighter);
                                 onContentChange();
-                                return;
+                            }
+                        } else {
+                            if (isHighlightingTextMode) {
+                                document.execCommand('hiliteColor', false, 'transparent');
+                                setIsHighlightingTextMode(false);
+                                setIsHighlighterDropdownOpen(false);
+                                onContentChange();
+                            } else {
+                                if (selection && selection.rangeCount > 0) {
+                                    savedRangeRef.current = selection.getRangeAt(0).cloneRange();
+                                }
+                                setIsHighlighterDropdownOpen(!isHighlighterDropdownOpen);
                             }
                         }
-
-                        if (selection && selection.rangeCount > 0) {
-                            savedRangeRef.current = selection.getRangeAt(0).cloneRange();
-                        }
-                        setIsHighlighterDropdownOpen(!isHighlighterDropdownOpen);
                     }}
                     className={`flex items-center justify-center flex-col gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1.5
-                        ${isHighlighterDropdownOpen ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}>
+                        ${isHighlightingTextMode || isHighlighterDropdownOpen ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}>
                     <Highlighter size={18} />
                     <div
                         className="w-full h-1 rounded-sm border border-[var(--layer3)]"
@@ -497,7 +505,14 @@ export default function NotesToolbar({
                                 selection.removeAllRanges();
                                 selection.addRange(savedRangeRef.current);
                             }
+
                             document.execCommand('hiliteColor', false, selectedHighlighter);
+
+                            // If they applied color without selecting text, turn ON the toggle mode
+                            if (!savedRangeRef.current || savedRangeRef.current.toString().length === 0) {
+                                setIsHighlightingTextMode(true);
+                            }
+
                             setIsHighlighterDropdownOpen(false);
                             onContentChange();
                         }}

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import toast from "react-hot-toast";
+import {Eraser} from "lucide-react";
 
 export const isValidColor = (value) => {
     if (!value) return false;
@@ -47,17 +48,24 @@ export const parseColorToHue = (colorString) => {
     return rgbToHue(r, g, b);
 };
 
-// --- THE COMPONENT ---
 export default function ColorPickerDropdown({
                                                 activeColor,
                                                 setActiveColor,
-                                                onApplyColor
+                                                onApplyColor,
                                             }) {
     const [sliderHue, setSliderHue] = useState(0);
     const [boxSat, setBoxSat] = useState(100);
     const [boxVal, setBoxVal] = useState(100);
     const [isDraggingBox, setIsDraggingBox] = useState(false);
-    const [colourHistory, setColourHistory] = useState([]);
+    const [colourHistory, setColourHistory] = useState(() => {
+        if (typeof window === 'undefined') return [];
+        try {
+            const saved = localStorage.getItem('pow_color_history');
+            return saved ? JSON.parse(saved) : [];
+        } catch (e) {
+            return [];
+        }
+    });
 
     const colorBoxRef = useRef(null);
 
@@ -78,7 +86,11 @@ export default function ColorPickerDropdown({
     const addColourToHistory = (hexColour) => {
         setColourHistory((prev) => {
             const filtered = prev.filter((c) => c !== hexColour);
-            return [hexColour, ...filtered].slice(0, 5);
+            const newHistory = [hexColour, ...filtered].slice(0, 5);
+
+            localStorage.setItem('pow_color_history', JSON.stringify(newHistory));
+
+            return newHistory;
         });
     };
 
