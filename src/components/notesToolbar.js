@@ -226,6 +226,10 @@ export default function NotesToolbar({
 
     // ── Colour Palette tool ────────────────────────────────────────────────────
     const [isColourPickerDropdownOpen, setIsColourPickerDropdownOpen] = useState(false);
+    const [isColouringTextMode, setIsColouringTextMode] = useState(false);
+    const [selectedTextColor, setSelectedTextColor] = useState(null);
+
+    const textColorDropdownRef = useRef(null);
 
     return (
         <ul className="sticky bg-[var(--layer2)] border-2 border-[var(--layer3)] rounded-xl px-1 md:px-2 py-1 flex flex-wrap items-center gap-1">
@@ -458,6 +462,8 @@ export default function NotesToolbar({
             <li className={'relative group'} ref={highlighterDropdownRef}>
                 <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
                     <span className="text-xs font-bold text-[var(--text)]">Highlighter</span>
+                    <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>
+                    <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">H</span>
                 </div>
                 <button
                     id={'highlighter-btn'}
@@ -508,7 +514,6 @@ export default function NotesToolbar({
 
                             document.execCommand('hiliteColor', false, selectedHighlighter);
 
-                            // If they applied color without selecting text, turn ON the toggle mode
                             if (!savedRangeRef.current || savedRangeRef.current.toString().length === 0) {
                                 setIsHighlightingTextMode(true);
                             }
@@ -520,17 +525,68 @@ export default function NotesToolbar({
                 )}
             </li>
 
-            <li className={'relative group'}>
+            {/* Colour palette tool */}
+            <li className={'relative group'} ref={textColorDropdownRef}>
                 <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
                     <span className="text-xs font-bold text-[var(--text)]">Colour Palette</span>
                 </div>
                 <button
+                    onMouseDown={(e) => {
+                        e.preventDefault();
+                        const selection = window.getSelection();
+                        const hasSelection = selection && selection.rangeCount > 0 && selection.toString().length > 0;
+
+                        if (hasSelection) {
+                            if (isValidColor(selectedTextColor)) {
+                                document.execCommand('foreColor', false, selectedTextColor);
+                                onContentChange();
+                            }
+                        } else {
+                            if (isColouringTextMode) {
+                                document.execCommand('foreColor', false, 'inherit');
+                                setIsColouringTextMode(false);
+                                setIsColourPickerDropdownOpen(false);
+                                onContentChange();
+                            } else {
+                                if (selection && selection.rangeCount > 0) {
+                                    savedRangeRef.current = selection.getRangeAt(0).cloneRange();
+                                }
+                                setIsColourPickerDropdownOpen(!isColourPickerDropdownOpen);
+                            }
+                        }
+                    }}
                     className={`flex items-center justify-center flex-col gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1.5
-                        ${isColourPickerDropdownOpen ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}>
+                        ${isColouringTextMode || isColourPickerDropdownOpen ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}>
                     <Palette size={18} />
+                    <div
+                        className="w-full h-1 rounded-sm border border-[var(--layer3)]"
+                        style={{ backgroundColor: selectedTextColor || 'transparent' }}
+                    />
                 </button>
 
-                {}
+                {isColourPickerDropdownOpen && (
+                    <ColorPickerDropdown
+                        activeColor={selectedTextColor}
+                        setActiveColor={setSelectedTextColor}
+                        onApplyColor={() => {
+                            editorRef.current?.focus();
+                            const selection = window.getSelection();
+                            if (savedRangeRef.current) {
+                                selection.removeAllRanges();
+                                selection.addRange(savedRangeRef.current);
+                            }
+
+                            document.execCommand('foreColor', false, selectedTextColor);
+
+                            if (!savedRangeRef.current || savedRangeRef.current.toString().length === 0) {
+                                setIsColouringTextMode(true);
+                            }
+
+                            setIsColourPickerDropdownOpen(false);
+                            onContentChange();
+                        }}
+                    />
+                )}
             </li>
 
         </ul>
