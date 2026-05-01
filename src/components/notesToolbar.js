@@ -231,6 +231,17 @@ export default function NotesToolbar({
 
     const textColorDropdownRef = useRef(null);
 
+    useEffect(() => {
+        const h = (e) => {
+            if (textColorDropdownRef.current && !textColorDropdownRef.current.contains(e.target))
+                setIsColourPickerDropdownOpen(false);
+        };
+        document.addEventListener('mousedown', h);
+        return () => document.removeEventListener('mousedown', h);
+    }, []);
+
+    // ── Alignments tool ────────────────────────────────────────────────────
+
     return (
         <ul className="sticky bg-[var(--layer2)] border-2 border-[var(--layer3)] rounded-xl px-1 md:px-2 py-1 flex flex-wrap items-center gap-1">
 
