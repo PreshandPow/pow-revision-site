@@ -264,7 +264,7 @@ export default function NotesToolbar({
     }, []);
 
     return (
-        <ul className="sticky bg-[var(--layer2)] border-2 border-[var(--layer3)] rounded-xl px-1 md:px-2 py-1 flex flex-wrap items-center gap-1">
+        <ul className="sticky bg-[var(--layer2)] border-2 border-[var(--layer3)] rounded-xl px-1 md:px-2 py-1 flex flex-nowrap overflow-x-auto items-center gap-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
 
             {/* Text formats e.g., headings and bullets */}
             <li className="relative" ref={textTypeDropdownRef}>
