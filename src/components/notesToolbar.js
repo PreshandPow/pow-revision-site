@@ -5,7 +5,7 @@ import {
     Bold, Italic, Underline, Strikethrough,
     ChevronDown, Form, Pilcrow, Heading1, Heading2, Heading3,
     List, ListOrdered, ListTodo, Highlighter, Palette, Eraser,
-    AlignCenter, AlignRight, AlignLeft, TextAlignJustify
+    AlignCenter, AlignRight, AlignLeft, AlignJustify
 } from 'lucide-react';
 import toast from "react-hot-toast";
 import ColorPickerDropdown, { isValidColor } from '../components/coloringTools';
@@ -43,7 +43,7 @@ const TEXT_ALIGNMENTS = [
     {  label: 'left',    icon: AlignLeft, command: 'justifyLeft' },
     { label: 'center',    icon: AlignCenter, command: 'justifyCenter' },
     { label: 'right',     icon: AlignRight, command: 'justifyRight' },
-    { label: 'Justify',     icon: TextAlignJustify, command: 'justifyFull' }
+    { label: 'Justify',     icon: AlignJustify, command: 'justifyFull' }
 ]
 
 const Divider = () => <div className="w-[2px] h-8 bg-[var(--layer3)]" />;
@@ -254,6 +254,15 @@ export default function NotesToolbar({
 
     const alignmentsDropdownRef = useRef(null);
 
+    useEffect(() => {
+        const h = (e) => {
+            if (alignmentsDropdownRef.current && !alignmentsDropdownRef.current.contains(e.target))
+                setIsAlignmentsDropdownOpen(false);
+        };
+        document.addEventListener('mousedown', h);
+        return () => document.removeEventListener('mousedown', h);
+    }, []);
+
     return (
         <ul className="sticky bg-[var(--layer2)] border-2 border-[var(--layer3)] rounded-xl px-1 md:px-2 py-1 flex flex-wrap items-center gap-1">
 
@@ -401,9 +410,15 @@ export default function NotesToolbar({
             <Divider />
 
             {/* alignments */}
-            <li className="relative" ref={alignmentsDropdownRef}>
+            <li className="relative group" ref={alignmentsDropdownRef}>
+                <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
+                    <span className="text-xs font-bold text-[var(--text)]">Alignments</span>
+                </div>
                 <button
-                    onClick={() => setIsAlignmentsDropdownOpen(!isAlignmentsDropdownOpen)}
+                    onMouseDown={(e) => {
+                        e.preventDefault();
+                        setIsAlignmentsDropdownOpen(!isAlignmentsDropdownOpen);
+                    }}
                     className={`flex items-center justify-between gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-2 min-w-[80px]
                         ${isAlignmentsDropdownOpen ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
                 >
@@ -429,7 +444,14 @@ export default function NotesToolbar({
                                     <button
                                         key={alignment.label}
                                         type="button"
-                                        className={`flex  w-full text-left px-4 py-2 cursor-pointer transition-colors hover:bg-[var(--layer3)]
+                                        onMouseDown={(e) => {
+                                            e.preventDefault();
+                                            document.execCommand(alignment.command, false, null);
+                                            setAlignmentType(alignment.label);
+                                            setIsAlignmentsDropdownOpen(false);
+                                            onContentChange();
+                                        }}
+                                        className={`flex gap-2 w-full text-left px-4 py-2 cursor-pointer transition-colors hover:bg-[var(--layer3)]
                                     ${alignmentType === alignment.label ? 'text-[var(--nice-blue)] font-semibold' : 'text-[var(--text-muted)]'}`}
                                     >
                                     <span
@@ -564,7 +586,7 @@ export default function NotesToolbar({
                     }}
                     className={`flex items-center justify-center flex-col gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1.5
                         ${isHighlightingTextMode || isHighlighterDropdownOpen ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}>
-                    <Highlighter size={18} />
+                    <Highlighter size={16} />
                     <div
                         className="w-full h-1 rounded-sm border border-[var(--layer3)]"
                         style={{ backgroundColor: selectedHighlighter || 'transparent' }}
@@ -628,7 +650,7 @@ export default function NotesToolbar({
                     }}
                     className={`flex items-center justify-center flex-col gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1.5
                         ${isColouringTextMode || isColourPickerDropdownOpen ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}>
-                    <Palette size={18} />
+                    <Palette size={16} />
                     <div
                         className="w-full h-1 rounded-sm border border-[var(--layer3)]"
                         style={{ backgroundColor: selectedTextColor || 'transparent' }}
