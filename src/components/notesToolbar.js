@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import {
     Bold, Italic, Underline, Strikethrough,
     ChevronDown, Form, Pilcrow, Heading1, Heading2, Heading3,
-    List, ListOrdered, ListTodo, Highlighter, Palette, Eraser
+    List, ListOrdered, ListTodo, Highlighter, Palette, Eraser,
+    AlignCenter, AlignRight, AlignLeft, TextAlignJustify
 } from 'lucide-react';
 import toast from "react-hot-toast";
 import ColorPickerDropdown, { isValidColor } from '../components/coloringTools';
@@ -37,6 +38,13 @@ const FONT_STYLES = [
     { group: 'MONOSPACE',  label: 'Courier New',     value: 'Courier New' },
     { group: 'MONOSPACE',  label: 'Monaco',          value: 'Monaco, monospace' },
 ];
+
+const TEXT_ALIGNMENTS = [
+    {  label: 'left',    icon: AlignLeft, command: 'justifyLeft' },
+    { label: 'center',    icon: AlignCenter, command: 'justifyCenter' },
+    { label: 'right',     icon: AlignRight, command: 'justifyRight' },
+    { label: 'Justify',     icon: TextAlignJustify, command: 'justifyFull' }
+]
 
 const Divider = () => <div className="w-[2px] h-8 bg-[var(--layer3)]" />;
 
@@ -241,6 +249,10 @@ export default function NotesToolbar({
     }, []);
 
     // ── Alignments tool ────────────────────────────────────────────────────
+    const [isAlignmentsDropdownOpen, setIsAlignmentsDropdownOpen] = useState(false);
+    const [alignmentType, setAlignmentType] = useState('left');
+
+    const alignmentsDropdownRef = useRef(null);
 
     return (
         <ul className="sticky bg-[var(--layer2)] border-2 border-[var(--layer3)] rounded-xl px-1 md:px-2 py-1 flex flex-wrap items-center gap-1">
@@ -387,6 +399,34 @@ export default function NotesToolbar({
             </li>
 
             <Divider />
+
+            {/* alignments e */}
+            <li className="relative" ref={alignmentsDropdownRef}>
+                <button
+                    onClick={() => setIsAlignmentsDropdownOpen(!isAlignmentsDropdownOpen)}
+                    className={`flex items-center justify-between gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-2 min-w-[80px]
+                        ${isAlignmentsDropdownOpen ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
+                >
+                    {alignmentType}
+                    <ChevronDown size={12} />
+                </button>
+
+                {isAlignmentsDropdownOpen && (
+                    <div className="absolute top-full left-0 mt-1 bg-[var(--layer2)] border border-[var(--layer3)] rounded-sm overflow-hidden z-50 py-1 shadow-lg min-w-[200px]">
+                        {TEXT_ALIGNMENTS.map(alignment => (
+                            const Icon = alignment.icon;
+                            <button
+                                key={alignment.label}
+                                type="button"
+                                className={`w-full text-left px-4 py-2 cursor-pointer transition-colors hover:bg-[var(--layer3)]
+                                    ${alignmentType === alignment.label ? 'text-[var(--nice-blue)] font-semibold' : 'text-[var(--text-muted)]'}`}
+                            >
+                                <span className="font-bold text-xs w-5 text-center">{alignment.icon}</span> {alignment.label}
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </li>
 
             {/* bold tool */}
             <li className="relative group">
