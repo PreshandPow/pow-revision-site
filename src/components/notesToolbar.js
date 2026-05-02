@@ -400,30 +400,50 @@ export default function NotesToolbar({
 
             <Divider />
 
-            {/* alignments e */}
+            {/* alignments */}
             <li className="relative" ref={alignmentsDropdownRef}>
                 <button
                     onClick={() => setIsAlignmentsDropdownOpen(!isAlignmentsDropdownOpen)}
                     className={`flex items-center justify-between gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-2 min-w-[80px]
                         ${isAlignmentsDropdownOpen ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
                 >
-                    {alignmentType}
+                    {(() => {
+                        const activeType = TEXT_ALIGNMENTS.find(t => t.label === alignmentType);
+                        const Icon = activeType?.icon;
+                        if (!alignmentType) return <AlignLeft size={18} />;
+                        if (typeof Icon === 'string') return <span className="font-bold text-xs w-5 text-center">{Icon}</span>;
+                        return Icon ? <Icon size={18} /> : <AlignLeft size={18} />;
+                    })()}
+                    <span>
+                        {alignmentType}
+                    </span>
                     <ChevronDown size={12} />
                 </button>
 
                 {isAlignmentsDropdownOpen && (
-                    <div className="absolute top-full left-0 mt-1 bg-[var(--layer2)] border border-[var(--layer3)] rounded-sm overflow-hidden z-50 py-1 shadow-lg min-w-[200px]">
-                        {TEXT_ALIGNMENTS.map(alignment => (
+                    <div className="absolute top-full left-0 mt-1 bg-[var(--layer2)] border border-[var(--layer3)] rounded-sm overflow-hidden z-50 py-1 shadow-lg min-w-[180px]">
+                        {TEXT_ALIGNMENTS.map(alignment => {
                             const Icon = alignment.icon;
-                            <button
-                                key={alignment.label}
-                                type="button"
-                                className={`w-full text-left px-4 py-2 cursor-pointer transition-colors hover:bg-[var(--layer3)]
+                            return (
+                                <div>
+                                    <button
+                                        key={alignment.label}
+                                        type="button"
+                                        className={`flex  w-full text-left px-4 py-2 cursor-pointer transition-colors hover:bg-[var(--layer3)]
                                     ${alignmentType === alignment.label ? 'text-[var(--nice-blue)] font-semibold' : 'text-[var(--text-muted)]'}`}
-                            >
-                                <span className="font-bold text-xs w-5 text-center">{alignment.icon}</span> {alignment.label}
-                            </button>
-                        ))}
+                                    >
+                                    <span
+                                        className="font-bold text-xs w-5 text-center">
+                                        <Icon size={18}/>
+                                    </span>
+                                        <span
+                                            className="text-sm">
+                                        {alignment.label}
+                                    </span>
+                                    </button>
+                                </div>
+                            );
+                        })}
                     </div>
                 )}
             </li>
