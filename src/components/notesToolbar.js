@@ -264,7 +264,7 @@ export default function NotesToolbar({
     }, []);
 
     return (
-        <ul className="sticky bg-[var(--layer2)] border-2 border-[var(--layer3)] rounded-xl px-1 md:px-2 py-1 flex flex-nowrap overflow-x-auto items-center gap-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <ul className="sticky bg-[var(--layer2)] border-2 border-[var(--layer3)] rounded-xl px-1 md:px-2 py-1 flex flex-wrap items-center gap-1">
 
             {/* Text formats e.g., headings and bullets */}
             <li className="relative" ref={textTypeDropdownRef}>
@@ -410,7 +410,7 @@ export default function NotesToolbar({
             <Divider />
 
             {/* alignments */}
-            <li className="relative group" ref={alignmentsDropdownRef}>
+            <li className="relative md:group" ref={alignmentsDropdownRef}>
                 <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
                     <span className="text-xs font-bold text-[var(--text)]">Alignments</span>
                 </div>
@@ -471,27 +471,30 @@ export default function NotesToolbar({
             </li>
 
             {/* bold tool */}
-            <li className="relative group">
+            <li className="relative md:group">
                 <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
                     <span className="text-xs font-bold text-[var(--text)]">Bold</span>
                     <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>
                     <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">B</span>
                 </div>
                 <button
-                    onMouseDown={(e) => {
+                    onPointerDown={(e) => {
                         e.preventDefault();
                         document.execCommand('bold');
                         setIsTextBold(!isTextBold);
                     }}
-                    className={`flex items-center justify-center gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-2
+                    className={`flex items-center justify-center gap-1 text-sm font-semibold 
+                        md:hover:text-[var(--text)] md:hover:bg-[var(--layer3)] 
+                        active:bg-[var(--layer3)] active:scale-95 
+                        rounded-sm cursor-pointer transition-all px-2 py-2
                         ${isTextBold ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
-                >
+                    >
                     <Bold size={18} />
                 </button>
             </li>
 
             {/* italic tool */}
-            <li className="relative group">
+            <li className="relative md:group">
                 <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
                     <span className="text-xs font-bold text-[var(--text)]">Italic</span>
                     <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>
@@ -503,7 +506,8 @@ export default function NotesToolbar({
                         document.execCommand('italic');
                         setIsTextItalic(!isTextItalic);
                     }}
-                    className={`flex items-center justify-center gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-2
+                    className={`flex items-center justify-center gap-1 text-sm font-semibold hover:text-[var(--text)] 
+                        md:hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-2 
                         ${isTextItalic ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
                 >
                     <Italic size={18} />
@@ -511,7 +515,7 @@ export default function NotesToolbar({
             </li>
 
             {/* underline tool */}
-            <li className="relative group">
+            <li className="relative md:group">
                 <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
                     <span className="text-xs font-bold text-[var(--text)]">Underline</span>
                     <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>
@@ -531,7 +535,7 @@ export default function NotesToolbar({
             </li>
 
             {/* strikethrough tool */}
-            <li className="relative group">
+            <li className="relative md:group">
                 <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
                     <span className="text-xs font-bold text-[var(--text)]">Strikethrough</span>
                     <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>
@@ -552,7 +556,7 @@ export default function NotesToolbar({
             </li>
 
             {/* highlighter tool */}
-            <li className={'relative group'} ref={highlighterDropdownRef}>
+            <li className={'relative md:group'} ref={highlighterDropdownRef}>
                 <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
                     <span className="text-xs font-bold text-[var(--text)]">Highlighter</span>
                     <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>
@@ -619,7 +623,7 @@ export default function NotesToolbar({
             </li>
 
             {/* Colour palette tool */}
-            <li className={'relative group'} ref={textColorDropdownRef}>
+            <li className={'relative md:group'} ref={textColorDropdownRef}>
                 <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
                     <span className="text-xs font-bold text-[var(--text)]">Colour Palette</span>
                 </div>
