@@ -381,6 +381,18 @@ export default function NotePage() {
         debouncedSave(title, content, newTags);
     };
 
+    useEffect(() => {
+        if (loading) {
+            document.body.style.overflow = 'hidden'
+        } else {
+            document.body.style.overflow = ''
+        }
+
+        return () => {
+            document.body.style.overflow = '';
+        }
+    }, [loading]);
+
     // ── loading screen ────────────────────────────────────────────────────────
     if (loading) return (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--layer1)] backdrop-blur-xl p-6">
@@ -411,7 +423,7 @@ export default function NotePage() {
                 <li>
                     <Link href="/" className="font-brand font-black tracking-tighter z-20 text-2xl text-[var(--nice-blue)]">POW</Link>
                 </li>
-                <li className="relative group">
+                <li className="relative md:group">
                     <div className="absolute top-8 bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
                         <span className="text-xs font-bold text-[var(--text)]">Toggle Autosave</span>
                         <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>
@@ -424,7 +436,7 @@ export default function NotePage() {
                     </button>
                 </li>
                 {!isAutosave && hasChanged && (
-                    <div className="relative group">
+                    <div className="relative md:group">
                         <div className="absolute top-8 bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
                             <span className="text-xs font-bold text-[var(--text)]">Save</span>
                             <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>

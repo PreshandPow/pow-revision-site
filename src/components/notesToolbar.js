@@ -263,14 +263,27 @@ export default function NotesToolbar({
         return () => document.removeEventListener('mousedown', h);
     }, []);
 
+    useEffect(() => {
+       if (isHighlighterDropdownOpen || isColourPickerDropdownOpen) {
+           document.body.style.overflow = 'hidden'
+       } else {
+           document.body.style.overflow = ''
+       }
+
+        return () => {
+            document.body.style.overflow = '';
+        }
+    }, [isHighlighterDropdownOpen, isColourPickerDropdownOpen]);
+
     return (
-        <ul className="sticky bg-[var(--layer2)] border-2 border-[var(--layer3)] rounded-xl px-1 md:px-2 py-1 flex flex-wrap items-center gap-1">
+        <ul className="sticky bg-[var(--layer2)] border-2 border-[var(--layer3)] rounded-xl px-1 md:px-2 py-1 flex items-center gap-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
 
             {/* Text formats e.g., headings and bullets */}
             <li className="relative" ref={textTypeDropdownRef}>
                 <button
-                    onClick={() => setIsTextTypeDropdownOpen(!isTextTypeDropdownOpen)}
-                    className={`flex items-center justify-center gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-2
+                    onPointerDown={() => setIsTextTypeDropdownOpen(!isTextTypeDropdownOpen)}
+                    className={`flex items-center justify-center gap-1 text-sm font-semibold md:hover:text-[var(--text)] md:hover:bg-[var(--layer3)] 
+                        active:bg-[var(--layer3)] active:scale-95 rounded-sm cursor-pointer transition-all px-2 py-2
                         ${isTextTypeDropdownOpen ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
                 >
                     {(() => {
@@ -331,8 +344,9 @@ export default function NotesToolbar({
             {/* font size */}
             <li className="relative" ref={fontSizeDropdownRef}>
                 <button
-                    onClick={() => setIsFontSizeDropdownOpen(!isFontSizeDropdownOpen)}
-                    className={`flex items-center justify-between gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-2 min-w-[80px]
+                    onPointerDown={() => setIsFontSizeDropdownOpen(!isFontSizeDropdownOpen)}
+                    className={`flex items-center justify-between gap-1 text-sm font-semibold md:hover:text-[var(--text)] md:hover:bg-[var(--layer3)] 
+                        active:bg-[var(--layer3)] active:scale-95 rounded-sm cursor-pointer transition-all px-2 py-2 min-w-[80px]
                         ${isFontSizeDropdownOpen ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
                 >
                     {selectedFontSize}
@@ -366,8 +380,9 @@ export default function NotesToolbar({
             {/* font style */}
             <li className="relative" ref={fontStyleDropdownRef}>
                 <button
-                    onClick={() => setIsFontStyleDropdownOpen(!isFontStyleDropdownOpen)}
-                    className={`flex items-center justify-between gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-2 min-w-[80px]
+                    onPointerDown={() => setIsFontStyleDropdownOpen(!isFontStyleDropdownOpen)}
+                    className={`flex items-center justify-between gap-1 text-sm font-semibold md:hover:text-[var(--text)] md:hover:bg-[var(--layer3)] 
+                        active:bg-[var(--layer3)] active:scale-95 rounded-sm cursor-pointer transition-all px-2 py-2 min-w-[80px]
                         ${isFontStyleDropdownOpen ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
                 >
                     {selectedFontStyle}
@@ -415,11 +430,12 @@ export default function NotesToolbar({
                     <span className="text-xs font-bold text-[var(--text)]">Alignments</span>
                 </div>
                 <button
-                    onMouseDown={(e) => {
+                    onPointerDown={(e) => {
                         e.preventDefault();
                         setIsAlignmentsDropdownOpen(!isAlignmentsDropdownOpen);
                     }}
-                    className={`flex items-center justify-between gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-2 min-w-[80px]
+                    className={`flex items-center justify-between gap-1 text-sm font-semibold md:hover:text-[var(--text)] md:hover:bg-[var(--layer3)] 
+                        active:bg-[var(--layer3)] active:scale-95 rounded-sm cursor-pointer transition-all px-2 py-2 min-w-[80px]
                         ${isAlignmentsDropdownOpen ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
                 >
                     {(() => {
@@ -501,13 +517,13 @@ export default function NotesToolbar({
                     <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">I</span>
                 </div>
                 <button
-                    onMouseDown={(e) => {
+                    onPointerDown={(e) => {
                         e.preventDefault();
                         document.execCommand('italic');
                         setIsTextItalic(!isTextItalic);
                     }}
-                    className={`flex items-center justify-center gap-1 text-sm font-semibold hover:text-[var(--text)] 
-                        md:hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-2 
+                    className={`flex items-center justify-center gap-1 text-sm font-semibold md:hover:text-[var(--text)] md:hover:bg-[var(--layer3)] 
+                        active:bg-[var(--layer3)] active:scale-95 rounded-sm cursor-pointer transition-all px-2 py-2 
                         ${isTextItalic ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
                 >
                     <Italic size={18} />
@@ -522,12 +538,13 @@ export default function NotesToolbar({
                     <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">U</span>
                 </div>
                 <button
-                    onMouseDown={(e) => {
+                    onPointerDown={(e) => {
                         e.preventDefault();
                         document.execCommand('underline');
                         setIsTextUnderlined(!isTextUnderlined);
                     }}
-                    className={`flex items-center justify-center gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-2
+                    className={`flex items-center justify-center gap-1 text-sm font-semibold md:hover:text-[var(--text)] md:hover:bg-[var(--layer3)] 
+                           active:bg-[var(--layer3)] active:scale-95 rounded-sm cursor-pointer transition-all px-2 py-2
                         ${isTextUnderlined ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
                 >
                     <Underline size={18} />
@@ -543,12 +560,13 @@ export default function NotesToolbar({
                     <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">S</span>
                 </div>
                 <button
-                    onMouseDown={(e) => {
+                    onPointerDown={(e) => {
                         e.preventDefault();
                         document.execCommand('strikeThrough');
                         setIsTextStrikethrough(!isTextStrikethrough);
                     }}
-                    className={`flex items-center justify-center gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-2
+                    className={`flex items-center justify-center gap-1 text-sm font-semibold md:hover:text-[var(--text)] md:hover:bg-[var(--layer3)] 
+                        active:bg-[var(--layer3)] active:scale-95 rounded-sm cursor-pointer transition-all px-2 py-2
                         ${isTextStrikethrough ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
                 >
                     <Strikethrough size={18} />
@@ -564,7 +582,7 @@ export default function NotesToolbar({
                 </div>
                 <button
                     id={'highlighter-btn'}
-                    onMouseDown={(e) => {
+                    onPointerDown={(e) => {
                         e.preventDefault();
                         const selection = window.getSelection();
                         const hasSelection = selection && selection.rangeCount > 0 && selection.toString().length > 0;
@@ -588,7 +606,8 @@ export default function NotesToolbar({
                             }
                         }
                     }}
-                    className={`flex items-center justify-center flex-col gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1.5
+                    className={`flex items-center justify-center flex-col gap-1 text-sm font-semibold md:hover:text-[var(--text)] md:hover:bg-[var(--layer3)] 
+                        active:bg-[var(--layer3)] active:scale-95 rounded-sm cursor-pointer transition-all px-2 py-1.5
                         ${isHighlightingTextMode || isHighlighterDropdownOpen ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}>
                     <Highlighter size={16} />
                     <div
@@ -628,7 +647,7 @@ export default function NotesToolbar({
                     <span className="text-xs font-bold text-[var(--text)]">Colour Palette</span>
                 </div>
                 <button
-                    onMouseDown={(e) => {
+                    onPointerDown={(e) => {
                         e.preventDefault();
                         const selection = window.getSelection();
                         const hasSelection = selection && selection.rangeCount > 0 && selection.toString().length > 0;
@@ -652,7 +671,8 @@ export default function NotesToolbar({
                             }
                         }
                     }}
-                    className={`flex items-center justify-center flex-col gap-1 text-sm font-semibold hover:text-[var(--text)] hover:bg-[var(--layer3)] rounded-sm cursor-pointer transition-colors px-2 py-1.5
+                    className={`flex items-center justify-center flex-col gap-1 text-sm font-semibold md:hover:text-[var(--text)] md:hover:bg-[var(--layer3)] 
+                        active:bg-[var(--layer3)] active:scale-95 rounded-sm cursor-pointer transition-all px-2 py-1.5
                         ${isColouringTextMode || isColourPickerDropdownOpen ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}>
                     <Palette size={16} />
                     <div

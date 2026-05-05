@@ -96,10 +96,10 @@ export default function Home() {
         if (isNavOpen || authMode === 'signup' || authMode === 'login' || authMode ===  'resetpassword') {
             document.body.style.overflow = 'hidden';
         } else {
-            document.body.style.overflow = 'unset';
+            document.body.style.overflow = '';
         }
         return () => {
-            document.body.style.overflow = 'unset';
+            document.body.style.overflow = '';
         }
     }, [isNavOpen, authMode]);
 
