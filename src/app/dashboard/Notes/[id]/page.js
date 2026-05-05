@@ -413,9 +413,7 @@ export default function NotePage() {
         <main className="min-h-screen bg-[var(--layer2)] flex flex-col">
 
             {/* Top Navbar */}
-            <ul className="sticky bg-[var(--layer2)] border-2 border-[var(--layer3)] rounded-xl px-1 md:px-2 py-1
-            flex flex-nowrap md:flex-wrap overflow-x-auto md:overflow-visible items-center gap-1 [&::-webkit-scrollbar]:hidden
-             [-ms-overflow-style:none] [scrollbar-width:none]">
+            <ul className="sticky top-0 z-10 bg-[var(--layer1)] border-b border-[var(--layer3)] px-4 md:px-10 py-3 flex items-center justify-between gap-4">
                 <li>
                     <button onClick={() => router.push('/dashboard/Notes')}
                             className="flex items-center gap-2 text-[var(--text-muted)] hover:text-[var(--text)] transition-colors cursor-pointer font-semibold text-sm">

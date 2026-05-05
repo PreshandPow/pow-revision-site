@@ -112,7 +112,7 @@ export default function ColorPickerDropdown({
     }, [isDraggingBox, sliderHue]);
 
     return (
-        <div className="fixed bottom-0 left-0 w-full pb-8 md:pb-2 md:fixed md:bottom-auto md:top-full md:right-0
+        <div className="fixed md:absolute bottom-0 left-0 w-full pb-8 md:pb-2 md:fixed md:bottom-auto md:top-full md:right-0
                 md:left-auto md:w-70 mt-1 bg-[var(--layer2)] border-t md:border border-[var(--layer3)] rounded-t-2xl
                 md:rounded-sm z-[100] p-5 md:p-2 shadow-[0_-10px_40px_rgba(0,0,0,0.15)] md:shadow-xl flex flex-col gap-4
                 md:gap-3 cursor-default">
