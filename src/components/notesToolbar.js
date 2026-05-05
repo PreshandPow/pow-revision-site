@@ -276,7 +276,7 @@ export default function NotesToolbar({
     }, [isHighlighterDropdownOpen, isColourPickerDropdownOpen]);
 
     return (
-        <ul className="sticky bg-[var(--layer2)] border-2 border-[var(--layer3)] rounded-xl px-1 md:px-2 py-1 flex items-center gap-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <ul className="sticky bg-[var(--layer2)] border-2 border-[var(--layer3)] rounded-xl px-1 md:px-2 py-1 flex items-center gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
 
             {/* Text formats e.g., headings and bullets */}
             <li className="relative" ref={textTypeDropdownRef}>
@@ -298,7 +298,7 @@ export default function NotesToolbar({
                 </button>
 
                 {isTextTypeDropdownOpen && (
-                    <div className="absolute top-full left-0 mt-1 bg-[var(--layer2)] border border-[var(--layer3)] rounded-sm overflow-hidden z-50 py-1 shadow-lg min-w-[200px]">
+                    <div className="fixed top-full left-0 mt-1 bg-[var(--layer2)] border border-[var(--layer3)] rounded-sm overflow-hidden z-50 py-1 shadow-lg min-w-[200px]">
                         {['HIERARCHY', 'LISTS'].map(group => (
                             <div key={group}>
                                 <p className="px-4 py-1 text-xs font-bold text-[var(--text-muted)] opacity-50 tracking-widest">
