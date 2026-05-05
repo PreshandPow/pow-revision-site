@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import toast from "react-hot-toast";
 import {Eraser} from "lucide-react";
+import {body} from "framer-motion/m";
 
 export const isValidColor = (value) => {
     if (!value) return false;
@@ -96,14 +97,17 @@ export default function ColorPickerDropdown({
 
     useEffect(() => {
         if (!isDraggingBox) return;
-        const handleMouseMove = (e) => handleBoxDrag(e);
-        const handleMouseUp = () => setIsDraggingBox(false);
+        const handlePointerMove = (e) => handleBoxDrag(e);
+        const handlePointerUp = () => setIsDraggingBox(false);
 
-        window.addEventListener('mousemove', handleMouseMove);
-        window.addEventListener('mouseup', handleMouseUp);
+        window.addEventListener('pointermove', handlePointerMove);
+        window.addEventListener('pointerup', handlePointerUp);
+        document.body.style.overflow = 'hidden';
+
         return () => {
-            window.removeEventListener('mousemove', handleMouseMove);
-            window.removeEventListener('mouseup', handleMouseUp);
+            window.removeEventListener('pointermove', handlePointerMove);
+            window.removeEventListener('pointerup', handlePointerUp);
+            document.body.style.overflow = '';
         };
     }, [isDraggingBox, sliderHue]);
 
@@ -135,11 +139,12 @@ export default function ColorPickerDropdown({
             {/* 2D Box */}
             <div
                 ref={colorBoxRef}
-                onMouseDown={(e) => {
+                onPointerDown={(e) => {
+                    e.currentTarget.setPointerCapture(e.pointerId);
                     handleBoxDrag(e);
                     setIsDraggingBox(true);
                 }}
-                className="w-full h-32 rounded-md relative overflow-hidden border border-[var(--layer3)] cursor-pointer"
+                className="w-full h-32 rounded-md relative overflow-hidden border border-[var(--layer3)] cursor-pointer touch-none"
                 style={{ backgroundColor: `hsl(${sliderHue}, 100%, 50%)` }}
             >
                 <div className="absolute inset-0 bg-gradient-to-r from-white to-transparent pointer-events-none" />
