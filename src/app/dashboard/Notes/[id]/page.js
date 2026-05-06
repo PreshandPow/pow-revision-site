@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import Link from 'next/link';
 import { ArrowLeft, Tag, X, Plus, GripVertical } from 'lucide-react';
 import NotesToolbar from '../../../../components/notesToolbar';
-
+import CanvasLayoutModal from '../../../../components/canvasLayoutModal';
 export function createClient() {
     return createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -393,6 +393,10 @@ export default function NotePage() {
         }
     }, [loading]);
 
+    // ── floating buttons ────────────────────────────────────
+    const [isCanvasLayoutModalOpen, setIsCanvasLayoutModalOpen] = useState(false);
+
+
     // ── loading screen ────────────────────────────────────────────────────────
     if (loading) return (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--layer1)] backdrop-blur-xl p-6">
@@ -503,7 +507,7 @@ export default function NotePage() {
                     onMouseLeave={handleEditorMouseLeave}
                 >
                     {/* Floating Sidebar Buttons */}
-                    <div
+                    <ul
                         ref={sidebarRef}
                         className="absolute z-50 left-2 flex items-center gap-1.5 transition-opacity duration-150 py-0.5"
                         style={{
@@ -512,19 +516,31 @@ export default function NotePage() {
                             pointerEvents: hoveredBlock ? 'auto' : 'none'
                         }}
                     >
-                        <button
-                            onMouseDown={(e) => { e.preventDefault(); /* TODO: Plus action */ }}
-                            className="text-[var(--text-muted)] hover:text-[var(--text)] rounded cursor-pointer transition-colors p-0.5"
-                        >
-                            <Plus size={16} strokeWidth={2.5}/>
-                        </button>
-                        <button
-                            onMouseDown={(e) => { e.preventDefault(); /* TODO: Grip action */ }}
-                            className="text-[var(--text-muted)] hover:text-[var(--text)] rounded cursor-grab transition-colors p-0.5"
-                        >
-                            <GripVertical size={16} strokeWidth={2.5}/>
-                        </button>
-                    </div>
+                        <li>
+                            <button
+                                onMouseDown={(e) => { e.preventDefault(); /* TODO: Plus action */ }}
+                                className="text-[var(--text-muted)] hover:text-[var(--text)] rounded cursor-pointer transition-colors p-0.5"
+                            >
+                                <Plus size={16} strokeWidth={2.5}/>
+                            </button>
+                        </li>
+
+                        <li>
+                            <button
+                                onMouseDown={(e) => {
+                                    e.preventDefault()
+                                    setIsCanvasLayoutModalOpen(!isCanvasLayoutModalOpen);
+                                }}
+                                className="text-[var(--text-muted)] hover:text-[var(--text)] rounded cursor-grab transition-colors p-0.5"
+                            >
+                                <GripVertical size={16} strokeWidth={2.5}/>
+                            </button>
+                            {isCanvasLayoutModalOpen && (
+                                <CanvasLayoutModal />
+                            )}
+                        </li>
+
+                    </ul>
 
                     {/* Editor Canvas */}
                     <div
