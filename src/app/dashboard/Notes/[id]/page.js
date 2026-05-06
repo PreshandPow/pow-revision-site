@@ -396,6 +396,15 @@ export default function NotePage() {
     // ── floating buttons ────────────────────────────────────
     const [isCanvasLayoutModalOpen, setIsCanvasLayoutModalOpen] = useState(false);
 
+    useEffect(() => {
+        const h = (e) => {
+            if (isCanvasLayoutModalOpen.current && !isCanvasLayoutModalOpen.current.contains(e.target))
+                isCanvasLayoutModalOpen(false);
+        };
+        document.addEventListener('mousedown', h);
+        return () => document.removeEventListener('mousedown', h);
+    }, []);
+
 
     // ── loading screen ────────────────────────────────────────────────────────
     if (loading) return (
@@ -519,9 +528,9 @@ export default function NotePage() {
                         <li>
                             <button
                                 onMouseDown={(e) => { e.preventDefault(); /* TODO: Plus action */ }}
-                                className="text-[var(--text-muted)] hover:text-[var(--text)] rounded cursor-pointer transition-colors p-0.5"
+                                className="text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--nice-blue)] rounded cursor-pointer transition-all p-2"
                             >
-                                <Plus size={16} strokeWidth={2.5}/>
+                                <Plus size={20} strokeWidth={2.5}/>
                             </button>
                         </li>
 
@@ -531,9 +540,9 @@ export default function NotePage() {
                                     e.preventDefault()
                                     setIsCanvasLayoutModalOpen(!isCanvasLayoutModalOpen);
                                 }}
-                                className="text-[var(--text-muted)] hover:text-[var(--text)] rounded cursor-grab transition-colors p-0.5"
+                                className="text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--nice-blue)] rounded cursor-pointer transition-all p-0.5"
                             >
-                                <GripVertical size={16} strokeWidth={2.5}/>
+                                <GripVertical size={20} strokeWidth={2.5}/>
                             </button>
                             {isCanvasLayoutModalOpen && (
                                 <CanvasLayoutModal />
