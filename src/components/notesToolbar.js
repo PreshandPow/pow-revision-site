@@ -264,11 +264,11 @@ export default function NotesToolbar({
     }, []);
 
     useEffect(() => {
-       if (isHighlighterDropdownOpen || isColourPickerDropdownOpen) {
-           document.body.style.overflow = 'hidden'
-       } else {
-           document.body.style.overflow = ''
-       }
+        if (isHighlighterDropdownOpen || isColourPickerDropdownOpen) {
+            document.body.style.overflow = 'hidden'
+        } else {
+            document.body.style.overflow = ''
+        }
 
         return () => {
             document.body.style.overflow = '';
@@ -303,7 +303,8 @@ export default function NotesToolbar({
                     <div className="fixed bottom-0 left-0 w-full pb-8 md:pb-1 md:absolute md:bottom-auto md:top-full
                             md:left-0 md:w-auto mt-1 bg-[var(--layer2)] border-t md:border border-[var(--layer3)]
                             rounded-t-2xl md:rounded-sm overflow-hidden z-[100] py-4 md:py-1
-                            shadow-[0_-10px_40px_rgba(0,0,0,0.15)] md:shadow-lg min-w-[180px]">
+                            shadow-[0_-10px_40px_rgba(0,0,0,0.15)] md:shadow-lg min-w-[180px]"
+                    >
                         {['HIERARCHY', 'LISTS'].map(group => (
                             <div key={group}>
                                 <p className="px-4 py-1 text-xs font-bold text-[var(--text-muted)] opacity-50 tracking-widest">
@@ -321,7 +322,7 @@ export default function NotesToolbar({
                                             }}
                                             className={`w-full text-left px-4 py-2 cursor-pointer transition-colors hover:bg-[var(--layer3)] flex items-center gap-3
                                             ${selectedTextType === type.label ? 'text-[var(--nice-blue)] font-semibold' : 'text-[var(--text-muted)]'}`}
-                                                                    >
+                                        >
                                                                         <span className="text-xs opacity-50 w-5 font-mono flex items-center justify-center">
                                             {typeof IconComponent === 'string' ? (
                                                 IconComponent
@@ -329,12 +330,12 @@ export default function NotesToolbar({
                                                 <IconComponent size={14} />
                                             )}
                                         </span>
-                                        <span className={
-                                            type.value === 'h1' ? 'text-2xl font-bold' :
-                                                type.value === 'h2' ? 'text-xl font-bold' :
-                                                    type.value === 'h3' ? 'text-lg font-bold' :
-                                                        'text-sm'
-                                        }>
+                                            <span className={
+                                                type.value === 'h1' ? 'text-2xl font-bold' :
+                                                    type.value === 'h2' ? 'text-xl font-bold' :
+                                                        type.value === 'h3' ? 'text-lg font-bold' :
+                                                            'text-sm'
+                                            }>
                                             {type.label}
                                         </span>
                                         </button>
@@ -359,7 +360,11 @@ export default function NotesToolbar({
                 </button>
 
                 {isFontSizeDropdownOpen && (
-                    <div className="absolute top-full left-0 mt-1 bg-[var(--layer2)] border border-[var(--layer3)] rounded-sm overflow-hidden z-50 py-1 shadow-lg min-w-[200px]">
+                    <div className="fixed bottom-0 left-0 w-full pb-8 md:pb-1 md:absolute md:bottom-auto md:top-full
+                            md:left-0 md:w-auto mt-1 bg-[var(--layer2)] border-t md:border border-[var(--layer3)]
+                            rounded-t-2xl md:rounded-sm overflow-hidden z-[100] py-4 md:py-1
+                            shadow-[0_-10px_40px_rgba(0,0,0,0.15)] md:shadow-lg min-w-[180px]"
+                    >
                         {FONT_SIZES.map(size => (
                             <button
                                 key={size.value}
@@ -395,7 +400,11 @@ export default function NotesToolbar({
                 </button>
 
                 {isFontStyleDropdownOpen && (
-                    <div className="absolute top-full left-0 mt-1 bg-[var(--layer2)] border border-[var(--layer3)] rounded-sm overflow-hidden z-50 py-1 shadow-lg min-w-[200px]">
+                    <div className="fixed bottom-0 left-0 w-full pb-8 md:pb-1 md:absolute md:bottom-auto md:top-full
+                            md:left-0 md:w-auto mt-1 bg-[var(--layer2)] border-t md:border border-[var(--layer3)]
+                            rounded-t-2xl md:rounded-sm overflow-hidden z-[100] py-4 md:py-1
+                            shadow-[0_-10px_40px_rgba(0,0,0,0.15)] md:shadow-lg min-w-[180px]"
+                    >
                         {['SANS SERIF', 'SERIF', 'MONOSPACE'].map(group => (
                             <div key={group}>
                                 <p className="px-4 py-1 text-xs font-bold text-[var(--text-muted)] opacity-50 tracking-widest">
@@ -430,7 +439,7 @@ export default function NotesToolbar({
             <Divider />
 
             {/* alignments */}
-            <li className="relative md:group" ref={alignmentsDropdownRef}>
+            <li className="md:relative group" ref={alignmentsDropdownRef}>
                 <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
                     <span className="text-xs font-bold text-[var(--text)]">Alignments</span>
                 </div>
@@ -457,7 +466,11 @@ export default function NotesToolbar({
                 </button>
 
                 {isAlignmentsDropdownOpen && (
-                    <div className="absolute top-full left-0 mt-1 bg-[var(--layer2)] border border-[var(--layer3)] rounded-sm overflow-hidden z-50 py-1 shadow-lg min-w-[180px]">
+                    <div className="fixed bottom-0 left-0 w-full pb-8 md:pb-1 md:absolute md:bottom-auto md:top-full
+                            md:left-0 md:w-auto mt-1 bg-[var(--layer2)] border-t md:border border-[var(--layer3)]
+                            rounded-t-2xl md:rounded-sm overflow-hidden z-[100] py-4 md:py-1
+                            shadow-[0_-10px_40px_rgba(0,0,0,0.15)] md:shadow-lg min-w-[180px]"
+                    >
                         {TEXT_ALIGNMENTS.map(alignment => {
                             const Icon = alignment.icon;
                             return (
@@ -492,7 +505,7 @@ export default function NotesToolbar({
             </li>
 
             {/* bold tool */}
-            <li className="relative md:group">
+            <li className="md:relative group">
                 <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
                     <span className="text-xs font-bold text-[var(--text)]">Bold</span>
                     <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>
@@ -509,13 +522,13 @@ export default function NotesToolbar({
                         active:bg-[var(--layer3)] active:scale-95 
                         rounded-sm cursor-pointer transition-all px-2 py-2
                         ${isTextBold ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
-                    >
+                >
                     <Bold size={18} />
                 </button>
             </li>
 
             {/* italic tool */}
-            <li className="relative md:group">
+            <li className="md:relative group">
                 <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
                     <span className="text-xs font-bold text-[var(--text)]">Italic</span>
                     <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>
@@ -536,7 +549,7 @@ export default function NotesToolbar({
             </li>
 
             {/* underline tool */}
-            <li className="relative md:group">
+            <li className="md:relative group">
                 <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
                     <span className="text-xs font-bold text-[var(--text)]">Underline</span>
                     <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>
@@ -557,7 +570,7 @@ export default function NotesToolbar({
             </li>
 
             {/* strikethrough tool */}
-            <li className="relative md:group">
+            <li className="md:relative group">
                 <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
                     <span className="text-xs font-bold text-[var(--text)]">Strikethrough</span>
                     <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>
@@ -579,7 +592,7 @@ export default function NotesToolbar({
             </li>
 
             {/* highlighter tool */}
-            <li className={'relative md:group'} ref={highlighterDropdownRef}>
+            <li className={'md:relative group'} ref={highlighterDropdownRef}>
                 <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
                     <span className="text-xs font-bold text-[var(--text)]">Highlighter</span>
                     <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>
@@ -647,7 +660,7 @@ export default function NotesToolbar({
             </li>
 
             {/* Colour palette tool */}
-            <li className={'relative md:group'} ref={textColorDropdownRef}>
+            <li className={'md:relative group'} ref={textColorDropdownRef}>
                 <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
                     <span className="text-xs font-bold text-[var(--text)]">Colour Palette</span>
                 </div>

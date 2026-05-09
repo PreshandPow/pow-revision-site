@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { Type, Clipboard, Copy, Trash2 } from 'lucide-react';
 
-const CanvasLayoutModal = ({ position }) => {
+export default function CanvasLayoutModal ({ position })  {
 
     return (
         <div
@@ -37,5 +37,3 @@ const CanvasLayoutModal = ({ position }) => {
         </div>
     );
 };
-
-export default CanvasLayoutModal;
