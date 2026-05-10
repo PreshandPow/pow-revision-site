@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { Type, Clipboard, Copy, Trash2 } from 'lucide-react';
 
-export default function CanvasLayoutModal ({})  {
+export default function CanvasLayoutModal ({ editorRef })  {
 
     return (
         <div
@@ -16,11 +16,37 @@ export default function CanvasLayoutModal ({})  {
                      cursor-pointer text-sm"
                     onPointerDown={(e) => {
                         e.preventDefault();
-                        document.execCommand('foreColor', false, 'inherit');
-                        document.execCommand('hiliteColor', false, 'transparent');
-                        document.execCommand('removeFormat', false, null);
+                        const selection = window.getSelection();
+                        let node = selection.anchorNode;
+                        if (node.nodeType === 3) node = node.parentNode;
+
+                        let blockElement = node.closest('p, h1, h2, h3, li, .pow-todo-item') || node;
+
+                        if (editorRef.current && editorRef.current.contains(blockElement)) {
+
+                            const range = document.createRange();
+                            range.selectNodeContents(blockElement);
+                            selection.removeAllRanges();
+                            selection.addRange(range);
+
+                            document.execCommand('removeFormat', false, null);
+                            document.execCommand('foreColor', false, 'inherit');
+                            document.execCommand('hiliteColor', false, 'transparent');
+
+                            selection.collapseToEnd();
+                        } else {
+                            document.execCommand('removeFormat', false, null);
+                            document.execCommand('foreColor', false, 'inherit');
+                            document.execCommand('hiliteColor', false, 'transparent');
+                        }
 
                         setSelectedHighlighter(null);
+                        setSelectedTextColor(null);
+                        setIsTextBold(false);
+                        setIsTextItalic(false);
+                        setIsTextUnderlined(false);
+                        setIsTextStrikethrough(false);
+
                         onContentChange();
                     }}
                 >

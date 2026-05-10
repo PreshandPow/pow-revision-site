@@ -561,7 +561,9 @@ export default function NotePage() {
                                     onMouseLeave={() => setIsCanvasLayoutModalOpen(false)}
                                     className="absolute top-0 left-8 z-50"
                                 >
-                                    <CanvasLayoutModal />
+                                    <CanvasLayoutModal
+                                        editorRef={editorRef}
+                                    />
                                 </div>
                             )}
                         </li>
