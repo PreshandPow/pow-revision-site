@@ -724,6 +724,29 @@ export default function NotesToolbar({
                 )}
             </li>
 
+            {/* Eraser / Clear Formatting tool */}
+            <li className="md:relative group">
+                <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
+                    <span className="text-xs font-bold text-[var(--text)]">Clear Formatting</span>
+                </div>
+                <button
+                    onPointerDown={(e) => {
+                        e.preventDefault();
+                        document.execCommand('foreColor', false, 'inherit');
+                        document.execCommand('hiliteColor', false, 'transparent');
+                        document.execCommand('removeFormat', false, null);
+
+                        setSelectedHighlighter(null);
+                        setSelectedTextColor(null);
+                        onContentChange();
+                    }}
+                    className={`flex items-center justify-center gap-1 text-sm font-semibold md:hover:text-[var(--text)] md:hover:bg-[var(--layer3)] 
+            active:bg-[var(--layer3)] active:scale-95 rounded-sm cursor-pointer transition-all px-2 py-2 bg-transparent text-[var(--text-muted)]`}
+                >
+                    <Eraser size={18} />
+                </button>
+            </li>
+
         </ul>
     );
 }

@@ -155,7 +155,7 @@ export default function NotePage() {
         handleContentChange();
     };
 
-    // ── todo insertion ────────────────────────────────────────────────────────
+    // ── insertion ────────────────────────────────────────────────────────
     const handleInsertTodo = () => {
         const container = document.createElement('div');
         container.className = 'pow-todo-item flex items-start gap-3 my-2';
@@ -396,15 +396,21 @@ export default function NotePage() {
     // ── floating buttons ────────────────────────────────────
     const [isCanvasLayoutModalOpen, setIsCanvasLayoutModalOpen] = useState(false);
 
-    useEffect(() => {
-        const h = (e) => {
-            if (isCanvasLayoutModalOpen.current && !isCanvasLayoutModalOpen.current.contains(e.target))
-                isCanvasLayoutModalOpen(false);
-        };
-        document.addEventListener('mousedown', h);
-        return () => document.removeEventListener('mousedown', h);
-    }, []);
+    // 1. Create a dedicated ref for the modal to detect outside clicks
+    const modalRef = useRef(null);
 
+// 2. Fix the click-outside logic
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            // If modal is open, and the click target is NOT inside the modalRef, close it
+            if (isCanvasLayoutModalOpen && modalRef.current && !modalRef.current.contains(e.target)) {
+                setIsCanvasLayoutModalOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isCanvasLayoutModalOpen]); // Crucial: add state to dependency array
 
     // ── loading screen ────────────────────────────────────────────────────────
     if (loading) return (
@@ -518,23 +524,27 @@ export default function NotePage() {
                     {/* Floating Sidebar Buttons */}
                     <ul
                         ref={sidebarRef}
-                        className="absolute z-50 left-2 flex items-center gap-1.5 transition-opacity duration-150 py-0.5"
+                        className={`absolute z-50 md:flex items-center gap-1.5 transition-all duration-150
+                            md:opacity-0 md:pointer-events-none hidden
+                            md:top-[var(--dynamic-top)] md:left-2
+                            ${hoveredBlock ? 'md:!opacity-100 md:!pointer-events-auto' : ''}
+                        `}
                         style={{
-                            top: sidebarTop,
-                            opacity: hoveredBlock ? 1 : 0,
-                            pointerEvents: hoveredBlock ? 'auto' : 'none'
+                            '--dynamic-top': sidebarTop !== -9999 ? `${sidebarTop}px` : '0px',
+                            left: 4,
                         }}
                     >
                         <li>
                             <button
                                 onMouseDown={(e) => { e.preventDefault(); /* TODO: Plus action */ }}
-                                className="text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--nice-blue)] rounded cursor-pointer transition-all p-2"
+                                className="text-[var(--text-muted)] md:hover:text-[var(--text)] md:hover:bg-[var(--nice-blue)]
+                                 rounded cursor-pointer transition-all p-1 active:bg-[var(--nice-blue)] active:scale-95"
                             >
-                                <Plus size={20} strokeWidth={2.5}/>
+                                <Plus size={16} strokeWidth={2.5}/>
                             </button>
                         </li>
 
-                        <li>
+                        <li className="relative">
                             <button
                                 onMouseDown={(e) => {
                                     e.preventDefault()
@@ -542,10 +552,17 @@ export default function NotePage() {
                                 }}
                                 className="text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--nice-blue)] rounded cursor-pointer transition-all p-0.5"
                             >
-                                <GripVertical size={20} strokeWidth={2.5}/>
+                                <GripVertical size={16} strokeWidth={2.5}/>
                             </button>
+
                             {isCanvasLayoutModalOpen && (
-                                <CanvasLayoutModal />
+                                <div
+                                    ref={modalRef}
+                                    onMouseLeave={() => setIsCanvasLayoutModalOpen(false)}
+                                    className="absolute top-0 left-8 z-50"
+                                >
+                                    <CanvasLayoutModal />
+                                </div>
                             )}
                         </li>
 
