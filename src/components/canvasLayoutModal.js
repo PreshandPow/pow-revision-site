@@ -16,46 +16,91 @@ export default function CanvasLayoutModal ({ editorRef })  {
                      cursor-pointer text-sm"
                     onPointerDown={(e) => {
                         e.preventDefault();
+
                         const selection = window.getSelection();
-                        let node = selection.anchorNode;
-                        if (node.nodeType === 3) node = node.parentNode;
 
-                        let blockElement = node.closest('p, h1, h2, h3, li, .pow-todo-item') || node;
+                        if (selection && selection.rangeCount > 0 && selection.isCollapsed) {
+                            let node = selection.anchorNode;
+                            let blockNode = node;
+                            const blockTags = ['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'LI'];
 
-                        if (editorRef.current && editorRef.current.contains(blockElement)) {
-
-                            const range = document.createRange();
-                            range.selectNodeContents(blockElement);
-                            selection.removeAllRanges();
-                            selection.addRange(range);
-
-                            document.execCommand('removeFormat', false, null);
-                            document.execCommand('foreColor', false, 'inherit');
-                            document.execCommand('hiliteColor', false, 'transparent');
-
-                            selection.collapseToEnd();
-                        } else {
-                            document.execCommand('removeFormat', false, null);
-                            document.execCommand('foreColor', false, 'inherit');
-                            document.execCommand('hiliteColor', false, 'transparent');
+                            while (blockNode && blockNode !== editorRef.current) {
+                                if (blockNode.nodeType === 1 && blockTags.includes(blockNode.tagName.toUpperCase())) {
+                                    break;
+                                }
+                                blockNode = blockNode.parentNode;
+                            }
+                            if (!blockNode || blockNode === editorRef.current) {
+                                blockNode = node;
+                                while (blockNode && blockNode.parentNode !== editorRef.current && blockNode.parentNode) {
+                                    blockNode = blockNode.parentNode;
+                                }
+                            }
+                            if (blockNode && blockNode !== editorRef.current) {
+                                const range = document.createRange();
+                                range.selectNodeContents(blockNode);
+                                selection.removeAllRanges();
+                                selection.addRange(range);
+                            }
                         }
 
-                        setSelectedHighlighter(null);
-                        setSelectedTextColor(null);
-                        setIsTextBold(false);
-                        setIsTextItalic(false);
-                        setIsTextUnderlined(false);
-                        setIsTextStrikethrough(false);
+                        document.execCommand('foreColor', false, 'inherit');
+                        document.execCommand('hiliteColor', false, 'transparent');
+                        document.execCommand('removeFormat', false, null);
 
                         onContentChange();
+
+                        if (selection && selection.rangeCount > 0) {
+                            selection.collapseToEnd();
+                        }
                     }}
                 >
                     <Type size={16} className="text-gray-400" />
                     <span>Clear formatting</span>
                 </button>
 
-                <button className="flex items-center gap-3 w-full p-2 hover:bg-[#2a2a2a] rounded-md transition-colors
-                text-sm cursor-pointer">
+                <button
+                    className="flex items-center gap-3 w-full p-2 hover:bg-[#2a2a2a] rounded-md transition-colors
+                    text-sm cursor-pointer"
+                    onPointerDown={(e) => {
+                        e.preventDefault();
+
+                        const selection = window.getSelection();
+
+                        if (selection && selection.rangeCount > 0 && selection.isCollapsed) {
+                            let node = selection.anchorNode;
+                            let blockNode = node;
+                            const blockTags = ['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'LI'];
+
+                            while (blockNode && blockNode !== editorRef.current) {
+                                if (blockNode.nodeType === 1 && blockTags.includes(blockNode.tagName.toUpperCase())) {
+                                    break;
+                                }
+                                blockNode = blockNode.parentNode;
+                            }
+                            if (!blockNode || blockNode === editorRef.current) {
+                                blockNode = node;
+                                while (blockNode && blockNode.parentNode !== editorRef.current && blockNode.parentNode) {
+                                    blockNode = blockNode.parentNode;
+                                }
+                            }
+                            if (blockNode && blockNode !== editorRef.current) {
+                                const range = document.createRange();
+                                range.selectNodeContents(blockNode);
+                                selection.removeAllRanges();
+                                selection.addRange(range);
+                            }
+                        }
+
+                        document.execCommand('copy');
+
+                        onContentChange();
+
+                        if (selection && selection.rangeCount > 0) {
+                            selection.collapseToEnd();
+                        }
+                    }}
+                >
                     <Clipboard size={16} className="text-gray-400" />
                     <span>Copy to clipboard</span>
                 </button>
