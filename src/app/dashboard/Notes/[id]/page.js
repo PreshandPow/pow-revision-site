@@ -245,6 +245,9 @@ export default function NotePage() {
 
     // ── Hover Tracking & Sidebar UI Logic ─────────────────────────────────────
     const handleEditorMouseMove = (e) => {
+
+        if (isCanvasLayoutModalOpen) return;
+
         if (!editorRef.current) return;
 
         if (sidebarRef.current && sidebarRef.current.contains(e.target)) return;
@@ -563,6 +566,7 @@ export default function NotePage() {
                                 >
                                     <CanvasLayoutModal
                                         editorRef={editorRef}
+                                        hoveredBlock={hoveredBlock}
                                     />
                                 </div>
                             )}

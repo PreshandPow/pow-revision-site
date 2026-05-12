@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { Type, Clipboard, Copy, Trash2 } from 'lucide-react';
 
-export default function CanvasLayoutModal ({ editorRef })  {
+export default function CanvasLayoutModal ({ editorRef, hoveredBlock })  {
 
     return (
         <div
@@ -105,16 +105,65 @@ export default function CanvasLayoutModal ({ editorRef })  {
                     <span>Copy to clipboard</span>
                 </button>
 
-                <button className="flex items-center gap-3 w-full p-2 hover:bg-[#2a2a2a] rounded-md transition-colors
-                text-sm cursor-pointer">
+                <button
+                    className="flex items-center gap-3 w-full p-2 hover:bg-[#2a2a2a] rounded-md transition-colors
+                    text-sm cursor-pointer"
+                    onPointerDown={(e) => {
+                        e.preventDefault();
+                        const clonedNode = hoveredBlock.cloneNode(true);
+                        hoveredBlock.parentNode.insertBefore(clonedNode, hoveredBlock.nextSibling);
+
+                        onContentChange();
+                    }}
+                >
                     <Copy size={16} className="text-gray-400" />
                     <span>Duplicate</span>
                 </button>
 
                 <div className="h-[1px] bg-[#333] my-1 mx-1" />
 
-                <button className="flex items-center gap-3 w-full p-2 hover:bg-[#2a2a2a] rounded-md transition-colors
-                text-sm text-[#f87171] hover:text-red-400  cursor-pointer">
+                <button
+                    className="flex items-center gap-3 w-full p-2 hover:bg-[#2a2a2a] rounded-md transition-colors
+                    text-sm text-[#f87171] hover:text-red-400  cursor-pointer"
+                    onPointerDown={(e) => {
+                        e.preventDefault();
+
+                        const selection = window.getSelection();
+
+                        if (selection && selection.rangeCount > 0 && selection.isCollapsed) {
+                            let node = selection.anchorNode;
+                            let blockNode = node;
+                            const blockTags = ['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'LI'];
+
+                            while (blockNode && blockNode !== editorRef.current) {
+                                if (blockNode.nodeType === 1 && blockTags.includes(blockNode.tagName.toUpperCase())) {
+                                    break;
+                                }
+                                blockNode = blockNode.parentNode;
+                            }
+                            if (!blockNode || blockNode === editorRef.current) {
+                                blockNode = node;
+                                while (blockNode && blockNode.parentNode !== editorRef.current && blockNode.parentNode) {
+                                    blockNode = blockNode.parentNode;
+                                }
+                            }
+                            if (blockNode && blockNode !== editorRef.current) {
+                                const range = document.createRange();
+                                range.selectNodeContents(blockNode);
+                                selection.removeAllRanges();
+                                selection.addRange(range);
+                            }
+                        }
+
+                        document.execCommand('delete');
+
+                        onContentChange();
+
+                        if (selection && selection.rangeCount > 0) {
+                            selection.collapseToEnd();
+                        }
+                    }}
+                >
                     <Trash2 size={16} />
                     <span>Delete</span>
                 </button>
