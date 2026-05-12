@@ -210,6 +210,7 @@ export default function NotePage() {
 
     // ── Event Delegation for Editor ───────────────────────────────────────────
     const handleEditorClick = (e) => {
+        // 1. Existing Todo logic...
         if (e.target.tagName === 'INPUT' && e.target.type === 'checkbox') {
             const container = e.target.closest('.pow-todo-item');
             const textNode = container?.querySelector('.pow-todo-text');
@@ -221,6 +222,40 @@ export default function NotePage() {
                 if (textNode) textNode.classList.remove('line-through', 'opacity-50');
             }
             handleContentChange();
+        }
+
+        const imageBox = e.target.closest('.pow-image-placeholder');
+        if (imageBox) {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'image/*';
+
+            fileInput.onchange = (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (readerEvent) => {
+                    const imgWrapper = document.createElement('div');
+                    imgWrapper.contentEditable = "false";
+                    imgWrapper.className = "my-4 relative";
+
+                    const img = document.createElement('img');
+                    img.src = readerEvent.target.result;
+                    img.className = "max-w-full rounded-lg border border-[var(--layer3)]";
+
+                    imgWrapper.appendChild(img);
+
+                    if (imageBox.parentNode) {
+                        imageBox.parentNode.replaceChild(imgWrapper, imageBox);
+                        handleContentChange();
+                    }
+                };
+                reader.readAsDataURL(file);
+            };
+
+            fileInput.click();
+            return;
         }
 
         let node = e.target;
@@ -399,13 +434,10 @@ export default function NotePage() {
     // ── floating buttons ────────────────────────────────────
     const [isCanvasLayoutModalOpen, setIsCanvasLayoutModalOpen] = useState(false);
 
-    // 1. Create a dedicated ref for the modal to detect outside clicks
     const modalRef = useRef(null);
 
-// 2. Fix the click-outside logic
     useEffect(() => {
         const handleClickOutside = (e) => {
-            // If modal is open, and the click target is NOT inside the modalRef, close it
             if (isCanvasLayoutModalOpen && modalRef.current && !modalRef.current.contains(e.target)) {
                 setIsCanvasLayoutModalOpen(false);
             }
@@ -413,7 +445,7 @@ export default function NotePage() {
 
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [isCanvasLayoutModalOpen]); // Crucial: add state to dependency array
+    }, [isCanvasLayoutModalOpen]);
 
     // ── loading screen ────────────────────────────────────────────────────────
     if (loading) return (
@@ -498,6 +530,7 @@ export default function NotePage() {
                         onInsertHeading={handleInsertHeading} selectedHighlighter={selectedHighlighter}
                         onInsertTodo={handleInsertTodo}       setSelectedHighlighter={setSelectedHighlighter}
                         onSelectionChange={handleSelectionChange} isUserFocused={isUserFocused}
+                        hoveredBlock={hoveredBlock}
                     />
                 </div>
 
