@@ -59,7 +59,7 @@ export default function NotesToolbar({
                                          selectedTextType,  setSelectedTextType,
                                          onInsertHeading,   selectedHighlighter,
                                          onInsertTodo,      setSelectedHighlighter,
-                                         hoveredBlock
+                                         hoveredBlock,      handleInsertImagePlaceholder
                                      }) {
     // ── font size tool ─────────────────────────────────────────────────────────────
     const [isFontSizeDropdownOpen, setIsFontSizeDropdownOpen] = useState(false);
@@ -275,40 +275,6 @@ export default function NotesToolbar({
             document.body.style.overflow = '';
         }
     }, [isHighlighterDropdownOpen, isColourPickerDropdownOpen]);
-
-    // ── Image Block Insertion ────────────────────────────────────────────────
-    const handleInsertImagePlaceholder = () => {
-        if (!editorRef.current) return;
-
-        const container = document.createElement('div');
-        container.contentEditable = "false";
-        container.className = 'pow-image-placeholder my-4 p-8 border-2 border-dashed border-[var(--layer3)] bg-[var(--layer1)] rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-[var(--layer3)] transition-all select-none group';
-
-        container.innerHTML = `
-            <div class="pointer-events-none flex flex-col items-center">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mb-2 text-[var(--text-muted)] group-hover:text-[var(--nice-blue)] transition-colors"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                <span class="text-sm font-bold text-[var(--text-muted)] group-hover:text-[var(--text)] transition-colors">Add an image</span>
-                <span class="text-xs text-[var(--text-muted)] opacity-70 mt-1">Click to browse files</span>
-            </div>
-        `;
-
-        if (hoveredBlock && hoveredBlock.parentNode === editorRef.current) {
-            hoveredBlock.parentNode.insertBefore(container, hoveredBlock.nextSibling);
-        } else {
-            editorRef.current.appendChild(container);
-        }
-
-        const p = document.createElement('p');
-        p.innerHTML = '<br>';
-        container.parentNode.insertBefore(p, container.nextSibling);
-
-        const selection = window.getSelection();
-        const range = document.createRange();
-        range.selectNodeContents(p);
-        range.collapse(true);
-        selection.removeAllRanges();
-        selection.addRange(range);
-    };
 
     return (
         <ul className="sticky bg-[var(--layer2)] border-2 border-[var(--layer3)] rounded-xl px-1 md:px-2 py-1

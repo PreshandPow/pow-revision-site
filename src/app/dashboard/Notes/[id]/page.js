@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { ArrowLeft, Tag, X, Plus, GripVertical } from 'lucide-react';
 import NotesToolbar from '../../../../components/notesToolbar';
 import CanvasLayoutModal from '../../../../components/canvasLayoutModal';
+import CanvasInsertModal from '../../../../components/canvasInsertModal';
 export function createClient() {
     return createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -281,7 +282,7 @@ export default function NotePage() {
     // ── Hover Tracking & Sidebar UI Logic ─────────────────────────────────────
     const handleEditorMouseMove = (e) => {
 
-        if (isCanvasLayoutModalOpen) return;
+        if (isCanvasLayoutModalOpen || isCanvasInsertModalOpen) return;
 
         if (!editorRef.current) return;
 
@@ -433,12 +434,15 @@ export default function NotePage() {
 
     // ── floating buttons ────────────────────────────────────
     const [isCanvasLayoutModalOpen, setIsCanvasLayoutModalOpen] = useState(false);
+    const [isCanvasInsertModalOpen, setIsCanvasInsertModalOpen] = useState(false);
 
-    const modalRef = useRef(null);
+
+    const layoutModalRef = useRef(null);
+    const insertModalRef = useRef(null);
 
     useEffect(() => {
         const handleClickOutside = (e) => {
-            if (isCanvasLayoutModalOpen && modalRef.current && !modalRef.current.contains(e.target)) {
+            if (isCanvasLayoutModalOpen && layoutModalRef.current && !layoutModalRef.current.contains(e.target)) {
                 setIsCanvasLayoutModalOpen(false);
             }
         };
@@ -446,6 +450,51 @@ export default function NotePage() {
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isCanvasLayoutModalOpen]);
+
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (isCanvasInsertModalOpen && insertModalRef.current && !insertModalRef.current.contains(e.target)) {
+                setIsCanvasInsertModalOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isCanvasInsertModalOpen]);
+
+    // ── Image Block Insertion ────────────────────────────────────────────────
+    const handleInsertImagePlaceholder = () => {
+        if (!editorRef.current) return;
+
+        const container = document.createElement('div');
+        container.contentEditable = "false";
+        container.className = 'pow-image-placeholder my-4 p-8 border-2 border-dashed border-[var(--layer3)] bg-[var(--layer1)] rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-[var(--layer3)] transition-all select-none group';
+
+        container.innerHTML = `
+            <div class="pointer-events-none flex flex-col items-center">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mb-2 text-[var(--text-muted)] group-hover:text-[var(--nice-blue)] transition-colors"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                <span class="text-sm font-bold text-[var(--text-muted)] group-hover:text-[var(--text)] transition-colors">Add an image</span>
+                <span class="text-xs text-[var(--text-muted)] opacity-70 mt-1">Click to browse files</span>
+            </div>
+        `;
+
+        if (hoveredBlock && hoveredBlock.parentNode === editorRef.current) {
+            hoveredBlock.parentNode.insertBefore(container, hoveredBlock.nextSibling);
+        } else {
+            editorRef.current.appendChild(container);
+        }
+
+        const p = document.createElement('p');
+        p.innerHTML = '<br>';
+        container.parentNode.insertBefore(p, container.nextSibling);
+
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(p);
+        range.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(range);
+    };
 
     // ── loading screen ────────────────────────────────────────────────────────
     if (loading) return (
@@ -467,7 +516,7 @@ export default function NotePage() {
         <main className="min-h-screen bg-[var(--layer2)] flex flex-col">
 
             {/* Top Navbar */}
-            <ul className="sticky top-0 z-10 bg-[var(--layer1)] border-b border-[var(--layer3)] px-4 md:px-10 py-3 flex items-center justify-between gap-4">
+            <ul className="sticky top-0 z-10 bg-[var(--layer1)] border-b border-[var(--layer3)] px-4 md:px-10 py-1.5 flex items-center justify-between gap-4">
                 <li>
                     <button onClick={() => router.push('/dashboard/Notes')}
                             className="flex items-center gap-2 text-[var(--text-muted)] hover:text-[var(--text)] transition-colors cursor-pointer font-semibold text-sm">
@@ -530,7 +579,7 @@ export default function NotePage() {
                         onInsertHeading={handleInsertHeading} selectedHighlighter={selectedHighlighter}
                         onInsertTodo={handleInsertTodo}       setSelectedHighlighter={setSelectedHighlighter}
                         onSelectionChange={handleSelectionChange} isUserFocused={isUserFocused}
-                        hoveredBlock={hoveredBlock}
+                        hoveredBlock={hoveredBlock}           handleInsertImagePlaceholder={handleInsertImagePlaceholder}
                     />
                 </div>
 
@@ -570,14 +619,30 @@ export default function NotePage() {
                             left: 4,
                         }}
                     >
-                        <li>
+                        <li className="relative">
                             <button
-                                onMouseDown={(e) => { e.preventDefault(); /* TODO: Plus action */ }}
-                                className="text-[var(--text-muted)] md:hover:text-[var(--text)] md:hover:bg-[var(--nice-blue)]
-                                 rounded cursor-pointer transition-all p-1 active:bg-[var(--nice-blue)] active:scale-95"
+                                onMouseDown={(e) => {
+                                    e.preventDefault()
+                                    setIsCanvasInsertModalOpen(!isCanvasInsertModalOpen);
+                                }}
+                                className="text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--nice-blue)] rounded cursor-pointer transition-all p-0.5"
                             >
                                 <Plus size={16} strokeWidth={2.5}/>
                             </button>
+
+                            {isCanvasInsertModalOpen && (
+                                <div
+                                    ref={insertModalRef}
+                                    onMouseLeave={() => setIsCanvasInsertModalOpen(false)}
+                                    className="absolute top-0 left-8 z-50"
+                                >
+                                    <CanvasInsertModal
+                                        editorRef={editorRef}
+                                        hoveredBlock={hoveredBlock}
+                                        handleInsertImagePlaceholder={handleInsertImagePlaceholder}
+                                    />
+                                </div>
+                            )}
                         </li>
 
                         <li className="relative">
@@ -593,7 +658,7 @@ export default function NotePage() {
 
                             {isCanvasLayoutModalOpen && (
                                 <div
-                                    ref={modalRef}
+                                    ref={layoutModalRef}
                                     onMouseLeave={() => setIsCanvasLayoutModalOpen(false)}
                                     className="absolute top-0 left-8 z-50"
                                 >
