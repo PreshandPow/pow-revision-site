@@ -5,7 +5,8 @@ import {
     Bold, Italic, Underline, Strikethrough,
     ChevronDown, Form, Pilcrow, Heading1, Heading2, Heading3,
     List, ListOrdered, ListTodo, Highlighter, Palette, Eraser,
-    AlignCenter, AlignRight, AlignLeft, AlignJustify, Image
+    AlignCenter, AlignRight, AlignLeft, AlignJustify, Image,
+    Undo, Redo
 } from 'lucide-react';
 import toast from "react-hot-toast";
 import ColorPickerDropdown, { isValidColor } from '../components/coloringTools';
@@ -311,7 +312,7 @@ export default function NotesToolbar({
 
     return (
         <ul className="sticky bg-[var(--layer2)] border-2 border-[var(--layer3)] rounded-xl px-1 md:px-2 py-1
-            flex flex-nowrap md:flex-wrap overflow-x-auto md:overflow-visible items-center gap-1 [&::-webkit-scrollbar]:hidden
+            flex flex-nowrap md:flex-wrap overflow-x-auto z-[60] md:overflow-visible items-center gap-1 [&::-webkit-scrollbar]:hidden
              [-ms-overflow-style:none] [scrollbar-width:none]">
 
             {/* Text formats e.g., headings and bullets */}
@@ -796,6 +797,42 @@ export default function NotesToolbar({
                         ${isTextItalic ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
                 >
                     <Image size={18} />
+                </button>
+            </li>
+
+            {/* undo tool */}
+            <li className="md:relative group">
+                <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
+                    <span className="text-xs font-bold text-[var(--text)]">Undo</span>
+                </div>
+                <button
+                    onPointerDown={(e) => {
+                        e.preventDefault();
+                        document.execCommand('undo');
+                    }}
+                    className={`flex items-center justify-center gap-1 text-sm font-semibold md:hover:text-[var(--text)] md:hover:bg-[var(--layer3)] 
+                        active:bg-[var(--layer3)] active:scale-95 rounded-sm cursor-pointer transition-all px-2 py-2 
+                        ${isTextItalic ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
+                >
+                    <Undo size={18} />
+                </button>
+            </li>
+
+            {/* redo tool */}
+            <li className="md:relative group">
+                <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
+                    <span className="text-xs font-bold text-[var(--text)]">Redo</span>
+                </div>
+                <button
+                    onPointerDown={(e) => {
+                        e.preventDefault();
+                        document.execCommand('redo');
+                    }}
+                    className={`flex items-center justify-center gap-1 text-sm font-semibold md:hover:text-[var(--text)] md:hover:bg-[var(--layer3)] 
+                        active:bg-[var(--layer3)] active:scale-95 rounded-sm cursor-pointer transition-all px-2 py-2 
+                        ${isTextItalic ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
+                >
+                    <Redo size={18} />
                 </button>
             </li>
 
