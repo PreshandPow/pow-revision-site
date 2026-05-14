@@ -759,10 +759,11 @@ export default function NotesToolbar({
                         handleInsertImagePlaceholder();
                     }}
                     className={`flex items-center justify-center gap-1 text-sm font-semibold md:hover:text-[var(--text)] md:hover:bg-[var(--layer3)] 
-                        active:bg-[var(--layer3)] active:scale-95 rounded-sm cursor-pointer transition-all px-2 py-2 
-                        ${isTextItalic ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
+                        active:bg-[var(--layer3)] active:scale-95 rounded-sm cursor-pointer transition-all px-2 py-2`}
                 >
-                    <Image size={18} />
+                    <span>
+                        <Image size={18} />
+                    </span>
                 </button>
             </li>
 
@@ -777,8 +778,7 @@ export default function NotesToolbar({
                         document.execCommand('undo');
                     }}
                     className={`flex items-center justify-center gap-1 text-sm font-semibold md:hover:text-[var(--text)] md:hover:bg-[var(--layer3)] 
-                        active:bg-[var(--layer3)] active:scale-95 rounded-sm cursor-pointer transition-all px-2 py-2 
-                        ${isTextItalic ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
+                        active:bg-[var(--layer3)] active:scale-95 rounded-sm cursor-pointer transition-all px-2 py-2`}
                 >
                     <Undo size={18} />
                 </button>
@@ -795,8 +795,7 @@ export default function NotesToolbar({
                         document.execCommand('redo');
                     }}
                     className={`flex items-center justify-center gap-1 text-sm font-semibold md:hover:text-[var(--text)] md:hover:bg-[var(--layer3)] 
-                        active:bg-[var(--layer3)] active:scale-95 rounded-sm cursor-pointer transition-all px-2 py-2 
-                        ${isTextItalic ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
+                        active:bg-[var(--layer3)] active:scale-95 rounded-sm cursor-pointer transition-all px-2 py-2`}
                 >
                     <Redo size={18} />
                 </button>

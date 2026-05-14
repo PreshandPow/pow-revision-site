@@ -26,7 +26,7 @@ export default function CanvasInsertModal ({ handleInsertImagePlaceholder  })  {
                             e.preventDefault();
                         }}
                     >
-                        <Heading1 size={16} className="text-gray-400" />
+                        <Heading1 size={16} className="text-gray-400" /> 
                         <span>Heading 1</span>
                     </button>
 
