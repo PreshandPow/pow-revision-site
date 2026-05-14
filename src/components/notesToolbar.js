@@ -479,7 +479,7 @@ export default function NotesToolbar({
                                     <button
                                         key={alignment.label}
                                         type="button"
-                                        onMouseDown={(e) => {
+                                        onPointerDown={(e) => {
                                             e.preventDefault();
                                             document.execCommand(alignment.command, false, null);
                                             setAlignmentType(alignment.label);

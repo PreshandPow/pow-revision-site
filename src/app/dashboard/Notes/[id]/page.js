@@ -640,6 +640,8 @@ export default function NotePage() {
                                         editorRef={editorRef}
                                         hoveredBlock={hoveredBlock}
                                         handleInsertImagePlaceholder={handleInsertImagePlaceholder}
+                                        onInsertTodo={handleInsertTodo}
+                                        onInsertHeading={handleInsertHeading}
                                     />
                                 </div>
                             )}
