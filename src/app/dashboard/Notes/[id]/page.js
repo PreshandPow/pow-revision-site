@@ -642,6 +642,7 @@ export default function NotePage() {
                                         handleInsertImagePlaceholder={handleInsertImagePlaceholder}
                                         onInsertTodo={handleInsertTodo}
                                         onInsertHeading={handleInsertHeading}
+                                        onContentChange={handleContentChange}
                                     />
                                 </div>
                             )}

@@ -17,17 +17,19 @@ const TEXT_TYPES = [
     { group: 'LISTS',     label: 'Todo list',     icon: ListTodo,  command: null,                  value: 'todo' },
 ];
 
-export default function CanvasInsertModal ({ handleInsertImagePlaceholder, onInsertTodo, onInsertHeading  })  {
+export default function CanvasInsertModal ({ handleInsertImagePlaceholder, onInsertTodo, onInsertHeading, onContentChange })  {
 
     const handleTextTypeSelect = (type) => {
-        if (type === 'todo') {
+        if (type.value === 'todo') {
             onInsertTodo?.();
-        } else if (['h1', 'h2', 'h3'].includes(type)) {
-            onInsertHeading?.(type);
-        } else if (type) {
-            document.execCommand(type.command, false, type);
+        } else if (['h1', 'h2', 'h3'].includes(type.value)) {
+            onInsertHeading?.(type.value);
+        } else if (type.value) {
+            document.execCommand(type.command, false, type.value);
+            onContentChange?.();
         } else {
             document.execCommand(type.command, false, null);
+            onContentChange?.();
         }
     };
 
@@ -90,6 +92,7 @@ export default function CanvasInsertModal ({ handleInsertImagePlaceholder, onIns
                         onPointerDown={(e) => {
                             e.preventDefault();
                             handleInsertImagePlaceholder();
+                            onContentChange?.();
                         }}
                     >
                         <Image size={16} className="text-gray-400" />
