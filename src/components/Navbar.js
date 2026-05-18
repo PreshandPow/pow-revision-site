@@ -98,19 +98,35 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                                 if (session) {
                                     router.push(`/dashboard/Notes`);
                                 }}}>
-                            <span className="text-xl grayscale group-hover:grayscale-0">📝</span>
+
+                                <span className="text-xl w-6 text-center">
+                                    <span className="inline group-hover:hidden">📁</span>
+                                    <span className="hidden group-hover:inline">📂</span>
+                                </span>
+
+                            <span className="text-[var(--text)]">Folders</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button
+                            className="flex items-center gap-3 p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group"
+                            onClick={() => {
+                                if (session) {
+                                    router.push(`/dashboard/Notes`);
+                                }}}>
+                            <span className="text-xl">📝</span>
                             <span className="text-[var(--text)]">Notes</span>
                         </button>
                     </li>
                     <li>
                         <button className="flex items-center gap-3 p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group">
-                            <span className="text-xl grayscale group-hover:grayscale-0">🗃️</span>
+                            <span className="text-xl">🗃️</span>
                             <span className="text-[var(--text)]">Flashcards</span>
                         </button>
                     </li>
                     <li>
                         <button className="flex items-center gap-3 p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group">
-                            <span className="text-xl grayscale group-hover:grayscale-0">❓</span>
+                            <span className="text-xl">❓</span>
                             <span className="text-[var(--text)]">Support</span>
                         </button>
                     </li>
@@ -192,9 +208,9 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                                             )
                                         ) : (
                                             <div className="w-[48px] h-[48px] bg-white rounded-full shadow-md border border-[var(--layer3)] flex items-center justify-center">
-        <span className="text-[var(--nice-blue)] text-xs font-black">
-            {userProfile?.username?.charAt(0).toUpperCase() || "P"}
-        </span>
+                                                <span className="text-[var(--nice-blue)] text-xs font-black">
+                                                    {userProfile?.username?.charAt(0).toUpperCase() || "P"}
+                                                </span>
                                             </div>
                                         )}
                                         <div>
@@ -264,7 +280,7 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                     )}
                 </div>
             </div>
-            <div className="relative w-full max-w-4xl mx-auto">
+            <div className="relative w-full max-w-4xl mx-auto -mt-5">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] w-5 h-5" />
                 <input
                     type="text"

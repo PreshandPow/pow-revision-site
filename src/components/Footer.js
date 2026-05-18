@@ -31,7 +31,7 @@ export default function Footer() {
                         <p className="font-bold text-[var(--text)] uppercase text-xs tracking-widest">Product</p>
                         <ul className="flex flex-col gap-3 text-sm text-[var(--text-muted)]">
                             <li><a href="#" className="hover:text-[var(--nice-blue)] transition-colors">Flashcards</a></li>
-                            <li><a href="#" className="hover:text-[var(--nice-blue)] transition-colors">Note Maker</a></li>
+                            <li><a href="https://edacious-isaura-descendingly.ngrok-free.dev/dashboard/Notes" className="hover:text-[var(--nice-blue)] transition-colors">Note Maker</a></li>
                             <li><a href="#" className="hover:text-[var(--nice-blue)] transition-colors">POWER bot AI</a></li>
                         </ul>
                     </div>
