@@ -93,10 +93,21 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                 <ul className="hidden md:flex items-center gap-4 font-semibold">
                     <li>
                         <button
-                            className="flex items-center gap-3 p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group"
+                            className="flex items-center gap-3 p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group"
                             onClick={() => {
                                 if (session) {
                                     router.push(`/dashboard/Notes`);
+                                }}}>
+                            <span className="text-xl">🗃️</span>
+                            <span className="text-[var(--text)]">Materials</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button
+                            className="flex items-center gap-3 p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group"
+                            onClick={() => {
+                                if (session) {
+                                    router.push(`/dashboard/Folders`);
                                 }}}>
 
                                 <span className="text-xl w-6 text-center">
@@ -109,23 +120,34 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                     </li>
                     <li>
                         <button
-                            className="flex items-center gap-3 p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group"
+                            className="flex items-center gap-3 p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group"
                             onClick={() => {
                                 if (session) {
                                     router.push(`/dashboard/Notes`);
                                 }}}>
-                            <span className="text-xl">📝</span>
+                            <span className="text-xl">📓</span>
                             <span className="text-[var(--text)]">Notes</span>
                         </button>
                     </li>
                     <li>
-                        <button className="flex items-center gap-3 p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group">
-                            <span className="text-xl">🗃️</span>
+                        <button className="flex items-center gap-3 p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group">
+                            <span className="text-xl">📝</span>
                             <span className="text-[var(--text)]">Flashcards</span>
                         </button>
                     </li>
                     <li>
-                        <button className="flex items-center gap-3 p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group">
+                        <button
+                            className="flex items-center gap-3 p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group"
+                            onClick={() => {
+                                if (session) {
+                                    router.push(`/dashboard/Notes`);
+                                }}}>
+                            <span className="text-xl">🗑️</span>
+                            <span className="text-[var(--text)]">Trash</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button className="flex items-center gap-3 p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group">
                             <span className="text-xl">❓</span>
                             <span className="text-[var(--text)]">Support</span>
                         </button>
@@ -133,7 +155,7 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                     <li>
                         <button
                             onClick={handleThemeChange}
-                            className="p-2 hover:bg-[var(--layer2)] rounded-full text-2xl cursor-pointer"
+                            className="p-2 hover:bg-[var(--layer3)] rounded-full text-2xl cursor-pointer"
                             aria-label="Toggle theme"
                         >
                             {theme === 'light' ? '☀️' : '🌙'}
