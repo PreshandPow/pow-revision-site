@@ -567,7 +567,7 @@ export default function NotePage() {
                        className="w-full bg-transparent text-3xl md:text-4xl font-main text-[var(--text)] placeholder:text-[var(--layer3)] outline-none border-none resize-none"/>
 
                 {/* ── toolbar ── */}
-                <div className={'relative z-[40]'}>
+                <div className={'sticky top-[60px] z-[60] pb-2'}>
                     <NotesToolbar
                         editorRef={editorRef}
                         onContentChange={handleContentChange}
