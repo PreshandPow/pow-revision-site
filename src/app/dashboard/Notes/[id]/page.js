@@ -564,10 +564,10 @@ export default function NotePage() {
             <div className="flex-1 w-full max-w-3xl mx-auto px-4 md:px-0 py-10 flex flex-col gap-6">
 
                 <input type="text" value={title} onChange={handleTitleChange} placeholder="Untitled"
-                       className="w-full bg-transparent text-3xl md:text-4xl font-main text-[var(--text)] placeholder:text-[var(--layer3)] outline-none border-none resize-none" />
+                       className="w-full bg-transparent text-3xl md:text-4xl font-main text-[var(--text)] placeholder:text-[var(--layer3)] outline-none border-none resize-none"/>
 
                 {/* ── toolbar ── */}
-                <div className={'relative z-[60]'}>
+                <div className={'relative z-[40]'}>
                     <NotesToolbar
                         editorRef={editorRef}
                         onContentChange={handleContentChange}
@@ -616,7 +616,6 @@ export default function NotePage() {
                         `}
                         style={{
                             '--dynamic-top': sidebarTop !== -9999 ? `${sidebarTop}px` : '0px',
-                            left: 4,
                         }}
                     >
                         <li className="relative">
@@ -625,7 +624,7 @@ export default function NotePage() {
                                     e.preventDefault()
                                     setIsCanvasInsertModalOpen(!isCanvasInsertModalOpen);
                                 }}
-                                className="text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--nice-blue)] rounded cursor-pointer transition-all p-0.5"
+                                className="text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--nice-blue)] rounded cursor-pointer transition-all p-1.5"
                             >
                                 <Plus size={16} strokeWidth={2.5}/>
                             </button>
@@ -654,7 +653,7 @@ export default function NotePage() {
                                     e.preventDefault()
                                     setIsCanvasLayoutModalOpen(!isCanvasLayoutModalOpen);
                                 }}
-                                className="text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--nice-blue)] rounded cursor-pointer transition-all p-0.5"
+                                className="text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--nice-blue)] rounded cursor-pointer transition-all p-1.5"
                             >
                                 <GripVertical size={16} strokeWidth={2.5}/>
                             </button>
@@ -687,7 +686,7 @@ export default function NotePage() {
                         onKeyUp={handleSelectionChange}
                         onMouseUp={handleSelectionChange}
                         onSelect={handleSelectionChange}
-                        className="pow-editor w-full pl-14 pr-4 min-h-[60vh] bg-transparent text-[var(--text)] outline-none border-none leading-relaxed font-medium"
+                        className="pow-editor w-full pl-14 pr-4 ml-6 min-h-[60vh] min-w-[40vw] bg-transparent text-[var(--text)] outline-none border-none leading-relaxed font-medium"
                     />
                 </div>
             </div>

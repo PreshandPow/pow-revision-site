@@ -277,8 +277,8 @@ export default function NotesToolbar({
     }, [isHighlighterDropdownOpen, isColourPickerDropdownOpen]);
 
     return (
-        <ul className="sticky bg-[var(--layer2)] border-2 border-[var(--layer3)] rounded-xl px-1 md:px-2 py-1
-            flex flex-nowrap md:flex-wrap overflow-x-auto z-[60] md:overflow-visible items-center gap-1 [&::-webkit-scrollbar]:hidden
+        <ul className="sticky top-[80px] z-[40] bg-[var(--layer1)] border-2 border-[var(--layer3)] rounded-xl px-1 md:px-2 py-1
+            flex flex-nowrap md:flex-wrap overflow-x-auto md:overflow-visible items-center gap-1 [&::-webkit-scrollbar]:hidden
              [-ms-overflow-style:none] [scrollbar-width:none]">
 
             {/* Text formats e.g., headings and bullets */}
