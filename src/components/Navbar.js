@@ -97,6 +97,7 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                             onClick={() => {
                                 if (session) {
                                     router.push(`/dashboard/Notes`);
+                                    setIsNavOpen(false)
                                 }}}>
                             <span className="text-xl">🗃️</span>
                             <span className="text-[var(--text)]">Materials</span>
@@ -125,7 +126,7 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                                 if (session) {
                                     router.push(`/dashboard/Notes`);
                                 }}}>
-                            <span className="text-xl">📓</span>
+                            <span className="text-xl">📖</span>
                             <span className="text-[var(--text)]">Notes</span>
                         </button>
                     </li>

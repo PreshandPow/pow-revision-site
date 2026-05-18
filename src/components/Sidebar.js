@@ -72,16 +72,34 @@ export default function Sidebar({ isNavOpen, setIsNavOpen, isOptionsOpen, setIsO
                                 onClick={() => {
                                     if (session) {
                                         setIsNavOpen(false);
-                                        router.push(`/dashboard/Notes`);
+                                        router.push(`/dashboard/Folders`);
                                     }}}>
-                                <span className="text-2xl">📝</span>
-                                <span className="font-bold text-[var(--text)]">Notes</span>
+                                <span className="text-xl">🗃️</span>
+                                <span className="font-bold text-[var(--text)]">Materials</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                className="flex items-center gap-4 w-full p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group"
+                                onClick={() => {
+                                    if (session) {
+                                        setIsNavOpen(false);
+                                        router.push(`/dashboard/Folders`);
+                                    }}}>
+                                <span className="text-xl">📁</span>
+                                <span className="font-bold text-[var(--text)]">Folders</span>
                             </button>
                         </li>
                         <li>
                             <button className="flex items-center gap-4 w-full p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group">
-                                <span className="text-2xl">🗃️</span>
+                                <span className="text-xl">📝</span>
                                 <span className="font-bold text-[var(--text)]">Flashcards</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button className="flex items-center gap-4 w-full p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group">
+                                <span className="text-xl">🗑️</span>
+                                <span className="font-bold text-[var(--text)]">Trash</span>
                             </button>
                         </li>
                         <li>
@@ -91,7 +109,7 @@ export default function Sidebar({ isNavOpen, setIsNavOpen, isOptionsOpen, setIsO
                                 className="flex items-center justify-between w-full p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group"
                             >
                                 <div className="flex items-center gap-4">
-                                    <span className="text-2xl">⚙️</span>
+                                    <span className="text-xl w-6">⚙️</span>
                                     <span className="font-bold text-[var(--text)]">Options</span>
                                 </div>
                                 <ChevronDown
@@ -120,7 +138,7 @@ export default function Sidebar({ isNavOpen, setIsNavOpen, isOptionsOpen, setIsO
                                         </li>
                                         <li>
                                             <button className="cursor-pointer flex items-center gap-2 w-full p-3 hover:bg-[var(--layer2)] rounded-lg transition-colors group text-left">
-                                                <span className="text-xl grayscale group-hover:grayscale-0 transition-all">❓</span>
+                                                <span className="text-xl transition-all">❓</span>
                                                 <span className="font-semibold text-[var(--text-muted)] group-hover:text-[var(--text)] transition-colors">Support Center</span>
                                             </button>
                                         </li>
