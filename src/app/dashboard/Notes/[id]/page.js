@@ -533,7 +533,7 @@ export default function NotePage() {
                         <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Shift</span>
                         <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">A</span>
                     </div>
-                    <button className="text-sm font-semibold text-[var(--text-muted)] hover:text-[var(--text)] transition-colors cursor-pointer"
+                    <button className="text-sm font-semibold text-[var(--text-muted)] hover:text-[var(--text)] transition-colors cursor-pointer whitespace-nowrap"
                             onClick={handleAutosaveToggle}>
                         {isAutosave ? 'Autosave On' : 'Autosave Off'}
                     </button>
@@ -552,7 +552,7 @@ export default function NotePage() {
                     </div>
                 )}
                 <li>
-                    <span className={`text-sm font-semibold transition-colors ${
+                    <span className={`text-sm font-semibold transition-colors whitespace-nowrap ${
                         saveStatus === 'saving'  ? 'text-[var(--nice-blue)]' :
                             saveStatus === 'unsaved' ? 'text-yellow-500' :
                                 'text-[var(--text-muted)]'}`}>
@@ -667,6 +667,9 @@ export default function NotePage() {
                                     <CanvasLayoutModal
                                         editorRef={editorRef}
                                         hoveredBlock={hoveredBlock}
+                                        onContentChange={handleContentChange}
+                                        toast={toast}
+                                        toastStyle={toastStyle}
                                     />
                                 </div>
                             )}
@@ -686,7 +689,7 @@ export default function NotePage() {
                         onKeyUp={handleSelectionChange}
                         onMouseUp={handleSelectionChange}
                         onSelect={handleSelectionChange}
-                        className="pow-editor w-full pl-14 pr-4 ml-6 min-h-[60vh] min-w-[40vw] bg-transparent text-[var(--text)] outline-none border-none leading-relaxed font-medium"
+                        className="pow-editor w-full pl-14 pr-4 md:ml-6 min-h-[55vh] min-w-[40vw] bg-transparent text-[var(--text)] outline-none border-none leading-relaxed font-medium"
                     />
                 </div>
             </div>

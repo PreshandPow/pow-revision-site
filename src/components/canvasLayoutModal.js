@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { Type, Clipboard, Copy, Trash2 } from 'lucide-react';
 
-export default function CanvasLayoutModal ({ editorRef, hoveredBlock })  {
+export default function CanvasLayoutModal ({ editorRef, hoveredBlock, onContentChange, toast, toastStyle })  {
 
     return (
         <div
@@ -17,41 +17,25 @@ export default function CanvasLayoutModal ({ editorRef, hoveredBlock })  {
                     onPointerDown={(e) => {
                         e.preventDefault();
 
-                        const selection = window.getSelection();
+                        if (hoveredBlock && editorRef.current.contains(hoveredBlock)) {
 
-                        if (selection && selection.rangeCount > 0 && selection.isCollapsed) {
-                            let node = selection.anchorNode;
-                            let blockNode = node;
-                            const blockTags = ['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'LI'];
+                            const selection = window.getSelection();
+                            const range = document.createRange();
+                            range.selectNodeContents(hoveredBlock);
+                            selection.removeAllRanges();
+                            selection.addRange(range);
 
-                            while (blockNode && blockNode !== editorRef.current) {
-                                if (blockNode.nodeType === 1 && blockTags.includes(blockNode.tagName.toUpperCase())) {
-                                    break;
-                                }
-                                blockNode = blockNode.parentNode;
+                            document.execCommand('foreColor', false, 'inherit');
+                            document.execCommand('hiliteColor', false, 'transparent');
+                            document.execCommand('removeFormat', false, null);
+
+                            hoveredBlock.removeAttribute('style');
+
+                            selection.removeAllRanges();
+
+                            if (onContentChange) {
+                                onContentChange();
                             }
-                            if (!blockNode || blockNode === editorRef.current) {
-                                blockNode = node;
-                                while (blockNode && blockNode.parentNode !== editorRef.current && blockNode.parentNode) {
-                                    blockNode = blockNode.parentNode;
-                                }
-                            }
-                            if (blockNode && blockNode !== editorRef.current) {
-                                const range = document.createRange();
-                                range.selectNodeContents(blockNode);
-                                selection.removeAllRanges();
-                                selection.addRange(range);
-                            }
-                        }
-
-                        document.execCommand('foreColor', false, 'inherit');
-                        document.execCommand('hiliteColor', false, 'transparent');
-                        document.execCommand('removeFormat', false, null);
-
-                        onContentChange();
-
-                        if (selection && selection.rangeCount > 0) {
-                            selection.collapseToEnd();
                         }
                     }}
                 >
@@ -65,39 +49,17 @@ export default function CanvasLayoutModal ({ editorRef, hoveredBlock })  {
                     onPointerDown={(e) => {
                         e.preventDefault();
 
-                        const selection = window.getSelection();
+                        if (hoveredBlock && editorRef.current.contains(hoveredBlock)) {
 
-                        if (selection && selection.rangeCount > 0 && selection.isCollapsed) {
-                            let node = selection.anchorNode;
-                            let blockNode = node;
-                            const blockTags = ['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'LI'];
+                            const textToCopy = hoveredBlock.innerText;
 
-                            while (blockNode && blockNode !== editorRef.current) {
-                                if (blockNode.nodeType === 1 && blockTags.includes(blockNode.tagName.toUpperCase())) {
-                                    break;
-                                }
-                                blockNode = blockNode.parentNode;
-                            }
-                            if (!blockNode || blockNode === editorRef.current) {
-                                blockNode = node;
-                                while (blockNode && blockNode.parentNode !== editorRef.current && blockNode.parentNode) {
-                                    blockNode = blockNode.parentNode;
-                                }
-                            }
-                            if (blockNode && blockNode !== editorRef.current) {
-                                const range = document.createRange();
-                                range.selectNodeContents(blockNode);
-                                selection.removeAllRanges();
-                                selection.addRange(range);
-                            }
-                        }
-
-                        document.execCommand('copy');
-
-                        onContentChange();
-
-                        if (selection && selection.rangeCount > 0) {
-                            selection.collapseToEnd();
+                            navigator.clipboard.writeText(textToCopy)
+                                .then(() => {
+                                    toast.success('Block copied to clipboard!', toastStyle);
+                                })
+                                .catch(err => {
+                                    console.error("Failed to copy text: ", err);
+                                });
                         }
                     }}
                 >
@@ -110,10 +72,17 @@ export default function CanvasLayoutModal ({ editorRef, hoveredBlock })  {
                     text-sm cursor-pointer"
                     onPointerDown={(e) => {
                         e.preventDefault();
-                        const clonedNode = hoveredBlock.cloneNode(true);
-                        hoveredBlock.parentNode.insertBefore(clonedNode, hoveredBlock.nextSibling);
 
-                        onContentChange();
+                        if (hoveredBlock && editorRef.current.contains(hoveredBlock)) {
+
+                            const clonedBlock = hoveredBlock.cloneNode(true);
+
+                            hoveredBlock.parentNode.insertBefore(clonedBlock, hoveredBlock.nextSibling);
+
+                            if (onContentChange) {
+                                onContentChange();
+                            }
+                        }
                     }}
                 >
                     <Copy size={16} className="text-gray-400" />
@@ -128,39 +97,13 @@ export default function CanvasLayoutModal ({ editorRef, hoveredBlock })  {
                     onPointerDown={(e) => {
                         e.preventDefault();
 
-                        const selection = window.getSelection();
+                        if (hoveredBlock && editorRef.current.contains(hoveredBlock)) {
 
-                        if (selection && selection.rangeCount > 0 && selection.isCollapsed) {
-                            let node = selection.anchorNode;
-                            let blockNode = node;
-                            const blockTags = ['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'LI'];
+                            hoveredBlock.remove();
 
-                            while (blockNode && blockNode !== editorRef.current) {
-                                if (blockNode.nodeType === 1 && blockTags.includes(blockNode.tagName.toUpperCase())) {
-                                    break;
-                                }
-                                blockNode = blockNode.parentNode;
+                            if (onContentChange) {
+                                onContentChange();
                             }
-                            if (!blockNode || blockNode === editorRef.current) {
-                                blockNode = node;
-                                while (blockNode && blockNode.parentNode !== editorRef.current && blockNode.parentNode) {
-                                    blockNode = blockNode.parentNode;
-                                }
-                            }
-                            if (blockNode && blockNode !== editorRef.current) {
-                                const range = document.createRange();
-                                range.selectNodeContents(blockNode);
-                                selection.removeAllRanges();
-                                selection.addRange(range);
-                            }
-                        }
-
-                        document.execCommand('delete');
-
-                        onContentChange();
-
-                        if (selection && selection.rangeCount > 0) {
-                            selection.collapseToEnd();
                         }
                     }}
                 >

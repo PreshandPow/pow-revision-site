@@ -277,14 +277,17 @@ export default function NotesToolbar({
     }, [isHighlighterDropdownOpen, isColourPickerDropdownOpen]);
 
     return (
-        <ul className="bg-[var(--layer2)] border-2 border-[var(--layer3)] rounded-xl px-1 md:px-2 py-1
-            flex flex-nowrap md:flex-wrap overflow-x-auto w-full items-center gap-1 [&::-webkit-scrollbar]:hidden
-            [-ms-overflow-style:none] [scrollbar-width:none]">
+        <ul className="bg-[var(--layer1)] border-2 border-[var(--layer3)] rounded-xl px-1 md:px-2 py-1
+            flex flex-nowrap md:flex-wrap overflow-x-auto md:overflow-visible items-center gap-1 [&::-webkit-scrollbar]:hidden
+             [-ms-overflow-style:none] [scrollbar-width:none]">
 
             {/* Text formats e.g., headings and bullets */}
             <li className="relative" ref={textTypeDropdownRef}>
                 <button
-                    onPointerDown={() => setIsTextTypeDropdownOpen(!isTextTypeDropdownOpen)}
+                    onMouseDown={(e) => {
+                        e.preventDefault();
+                    }}
+                    onClick={() => setIsTextTypeDropdownOpen(!isTextTypeDropdownOpen)}
                     className={`flex items-center justify-center gap-1 text-sm font-semibold md:hover:text-[var(--text)] md:hover:bg-[var(--layer3)] 
                         active:bg-[var(--layer3)] active:scale-95 rounded-sm cursor-pointer transition-all px-2 py-2
                         ${isTextTypeDropdownOpen ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
@@ -351,7 +354,10 @@ export default function NotesToolbar({
             {/* font size */}
             <li className="relative" ref={fontSizeDropdownRef}>
                 <button
-                    onPointerDown={() => setIsFontSizeDropdownOpen(!isFontSizeDropdownOpen)}
+                    onMouseDown={(e) => {
+                        e.preventDefault();
+                    }}
+                    onClick={() => setIsFontSizeDropdownOpen(!isFontSizeDropdownOpen)}
                     className={`flex items-center justify-between gap-1 text-sm font-semibold md:hover:text-[var(--text)] md:hover:bg-[var(--layer3)] 
                         active:bg-[var(--layer3)] active:scale-95 rounded-sm cursor-pointer transition-all px-2 py-2 min-w-[80px]
                         ${isFontSizeDropdownOpen ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
@@ -391,7 +397,10 @@ export default function NotesToolbar({
             {/* font style */}
             <li className="relative" ref={fontStyleDropdownRef}>
                 <button
-                    onPointerDown={() => setIsFontStyleDropdownOpen(!isFontStyleDropdownOpen)}
+                    onMouseDown={(e) => {
+                        e.preventDefault();
+                    }}
+                    onClick={() => setIsFontStyleDropdownOpen(!isFontStyleDropdownOpen)}
                     className={`flex items-center justify-between gap-1 text-sm font-semibold md:hover:text-[var(--text)] md:hover:bg-[var(--layer3)] 
                         active:bg-[var(--layer3)] active:scale-95 rounded-sm cursor-pointer transition-all px-2 py-2 min-w-[80px]
                         ${isFontStyleDropdownOpen ? 'bg-[var(--layer3)] text-[var(--text)]' : 'bg-transparent text-[var(--text-muted)]'}`}
@@ -445,7 +454,10 @@ export default function NotesToolbar({
                     <span className="text-xs font-bold text-[var(--text)]">Alignments</span>
                 </div>
                 <button
-                    onPointerDown={(e) => {
+                    onMouseDown={(e) => {
+                        e.preventDefault();
+                    }}
+                    onClick={(e) => {
                         e.preventDefault();
                         setIsAlignmentsDropdownOpen(!isAlignmentsDropdownOpen);
                     }}
@@ -513,7 +525,10 @@ export default function NotesToolbar({
                     <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">B</span>
                 </div>
                 <button
-                    onPointerDown={(e) => {
+                    onMouseDown={(e) => {
+                        e.preventDefault();
+                    }}
+                    onClick={(e) => {
                         e.preventDefault();
                         document.execCommand('bold');
                         setIsTextBold(!isTextBold);
@@ -536,7 +551,10 @@ export default function NotesToolbar({
                     <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">I</span>
                 </div>
                 <button
-                    onPointerDown={(e) => {
+                    onMouseDown={(e) => {
+                        e.preventDefault();
+                    }}
+                    onClick={(e) => {
                         e.preventDefault();
                         document.execCommand('italic');
                         setIsTextItalic(!isTextItalic);
@@ -557,7 +575,10 @@ export default function NotesToolbar({
                     <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">U</span>
                 </div>
                 <button
-                    onPointerDown={(e) => {
+                    onMouseDown={(e) => {
+                        e.preventDefault();
+                    }}
+                    onClick={(e) => {
                         e.preventDefault();
                         document.execCommand('underline');
                         setIsTextUnderlined(!isTextUnderlined);
@@ -579,7 +600,10 @@ export default function NotesToolbar({
                     <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">S</span>
                 </div>
                 <button
-                    onPointerDown={(e) => {
+                    onMouseDown={(e) => {
+                        e.preventDefault();
+                    }}
+                    onClick={(e) => {
                         e.preventDefault();
                         document.execCommand('strikeThrough');
                         setIsTextStrikethrough(!isTextStrikethrough);
@@ -601,7 +625,10 @@ export default function NotesToolbar({
                 </div>
                 <button
                     id={'highlighter-btn'}
-                    onPointerDown={(e) => {
+                    onMouseDown={(e) => {
+                        e.preventDefault();
+                    }}
+                    onClick={(e) => {
                         e.preventDefault();
                         const selection = window.getSelection();
                         const hasSelection = selection && selection.rangeCount > 0 && selection.toString().length > 0;
@@ -666,7 +693,10 @@ export default function NotesToolbar({
                     <span className="text-xs font-bold text-[var(--text)]">Colour Palette</span>
                 </div>
                 <button
-                    onPointerDown={(e) => {
+                    onMouseDown={(e) => {
+                        e.preventDefault();
+                    }}
+                    onClick={(e) => {
                         e.preventDefault();
                         const selection = window.getSelection();
                         const hasSelection = selection && selection.rangeCount > 0 && selection.toString().length > 0;
@@ -731,7 +761,10 @@ export default function NotesToolbar({
                     <span className="text-xs font-bold text-[var(--text)]">Clear Formatting</span>
                 </div>
                 <button
-                    onPointerDown={(e) => {
+                    onMouseDown={(e) => {
+                        e.preventDefault();
+                    }}
+                    onClick={(e) => {
                         e.preventDefault();
                         document.execCommand('foreColor', false, 'inherit');
                         document.execCommand('hiliteColor', false, 'transparent');
@@ -754,7 +787,10 @@ export default function NotesToolbar({
                     <span className="text-xs font-bold text-[var(--text)]">Add Image</span>
                 </div>
                 <button
-                    onPointerDown={(e) => {
+                    onMouseDown={(e) => {
+                        e.preventDefault();
+                    }}
+                    onClick={(e) => {
                         e.preventDefault();
                         handleInsertImagePlaceholder();
                     }}
@@ -773,7 +809,10 @@ export default function NotesToolbar({
                     <span className="text-xs font-bold text-[var(--text)]">Undo</span>
                 </div>
                 <button
-                    onPointerDown={(e) => {
+                    onMouseDown={(e) => {
+                        e.preventDefault();
+                    }}
+                    onClick={(e) => {
                         e.preventDefault();
                         document.execCommand('undo');
                     }}
@@ -790,7 +829,10 @@ export default function NotesToolbar({
                     <span className="text-xs font-bold text-[var(--text)]">Redo</span>
                 </div>
                 <button
-                    onPointerDown={(e) => {
+                    onMouseDown={(e) => {
+                        e.preventDefault();
+                    }}
+                    onClick={(e) => {
                         e.preventDefault();
                         document.execCommand('redo');
                     }}
