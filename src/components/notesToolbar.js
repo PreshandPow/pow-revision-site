@@ -617,7 +617,7 @@ export default function NotesToolbar({
             </li>
 
             {/* highlighter tool */}
-            <li className={'md:relative group'} ref={highlighterDropdownRef}>
+            <li className={'relative group'} ref={highlighterDropdownRef}>
                 <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
                     <span className="text-xs font-bold text-[var(--text)]">Highlighter</span>
                     <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>
@@ -688,7 +688,7 @@ export default function NotesToolbar({
             </li>
 
             {/* Colour palette tool */}
-            <li className={'md:relative group'} ref={textColorDropdownRef}>
+            <li className={'relative group'} ref={textColorDropdownRef}>
                 <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
                     <span className="text-xs font-bold text-[var(--text)]">Colour Palette</span>
                 </div>
