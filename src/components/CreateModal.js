@@ -2,67 +2,73 @@
 
 import { motion } from "framer-motion";
 import { X, Folder, FileText, BookOpen } from "lucide-react";
+import {useEffect, useState} from "react";
 
-const SIDEBAR_ITEMS = [
-    {
-        id: 'folders',
-        label: 'Folders',
-        icon: <Folder size={18} />,
-        cards: [
-            {
-                icon: '📁',
-                title: 'Create a folder',
-                desc: 'Organise your notes and flashcards into folders.',
-            },
-        ],
-    },
-    {
-        id: 'notes',
-        label: 'Notes',
-        icon: <FileText size={18} />,
-        cards: [
-            {
-                icon: '📄',
-                title: 'Create from a PDF, PPT, or file',
-                desc: "We'll create notes from your file.",
-            },
-            {
-                icon: '🎙️',
-                title: 'Create from live recording',
-                desc: 'Start a live lecture recording now.',
-            },
-            {
-                icon: '✏️',
-                title: 'Create from scratch',
-                desc: 'Start writing your own notes.',
-            },
-        ],
-    },
-    {
-        id: 'flashcards',
-        label: 'Flashcards',
-        icon: <BookOpen size={18} />,
-        cards: [
-            {
-                icon: '🗃️',
-                title: 'Create from scratch',
-                desc: 'Build a flashcard set manually.',
-            },
-            {
-                icon: '📄',
-                title: 'Create from a file',
-                desc: "We'll generate flashcards from your file.",
-            },
-            {
-                icon: '📝',
-                title: 'Create from notes',
-                desc: 'Turn your existing notes into flashcards.',
-            },
-        ],
-    },
-];
+export default function CreateModal({ setOpenCreateModal, activeTaskModal, setActiveTaskModal, handleCreateNote, showCreateFolderModal, setShowCreateFolderModal }) {
 
-export default function CreateModal({ setOpenCreateModal, activeTaskModal, setActiveTaskModal, handleCreateNote }) {
+    const SIDEBAR_ITEMS = [
+        {
+            id: 'folders',
+            label: 'Folders',
+            icon: <Folder size={18} />,
+            cards: [
+                {
+                    icon: '📁',
+                    title: 'Create a folder',
+                    desc: 'Organise your notes and flashcards into folders.',
+                    action: () => {
+                        setShowCreateFolderModal(true);
+                        setOpenCreateModal(false);
+                    }
+                },
+            ],
+        },
+        {
+            id: 'notes',
+            label: 'Notes',
+            icon: <FileText size={18} />,
+            cards: [
+                {
+                    icon: '📄',
+                    title: 'Create from a PDF, PPT, or file',
+                    desc: "We'll create notes from your file.",
+                },
+                {
+                    icon: '🎙️',
+                    title: 'Create from live recording',
+                    desc: 'Start a live lecture recording now.',
+                },
+                {
+                    icon: '✏️',
+                    title: 'Create from scratch',
+                    desc: 'Start writing your own notes.',
+                    action: handleCreateNote
+                },
+            ],
+        },
+        {
+            id: 'flashcards',
+            label: 'Flashcards',
+            icon: <BookOpen size={18} />,
+            cards: [
+                {
+                    icon: '🗃️',
+                    title: 'Create from scratch',
+                    desc: 'Build a flashcard set manually.',
+                },
+                {
+                    icon: '📄',
+                    title: 'Create from a file',
+                    desc: "We'll generate flashcards from your file.",
+                },
+                {
+                    icon: '📝',
+                    title: 'Create from notes',
+                    desc: 'Turn your existing notes into flashcards.',
+                },
+            ],
+        },
+    ];
 
     const current = SIDEBAR_ITEMS.find(i => i.id === activeTaskModal);
 
@@ -116,7 +122,9 @@ export default function CreateModal({ setOpenCreateModal, activeTaskModal, setAc
                                 key={idx}
                                 className="bg-[var(--layer2)] border border-[var(--layer3)] rounded-2xl p-5 flex flex-col gap-3 cursor-pointer hover:border-[var(--nice-blue)] transition-colors"
                                 onClick={(e) => {
-                                    if (card.title === 'Create from scratch') handleCreateNote();
+                                    if (card.action) {
+                                        card.action();
+                                    }
                                 }}
                             >
                                 <span className="text-2xl">{card.icon}</span>

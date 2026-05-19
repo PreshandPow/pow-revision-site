@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
-import { useEffect, useState } from 'react';
+import {useEffect, useRef, useState} from 'react';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
@@ -10,6 +10,7 @@ import DetailsModal from '../../components/DetailsModal';
 import CreateModal from "../../components/CreateModal";
 import Footer from "../../components/Footer";
 import Navbar from "../../components/Navbar";
+import CreateFolderModal from "../../components/createFolderModal";
 
 export function createClient() {
 
@@ -48,6 +49,19 @@ export default function Dashboard() {
     const [completedProfile, setCompletedProfile] = useState(true);
     const [notes, setNotes] = useState([]);
     const [flashcards, setFlashcards] = useState([]);
+
+    const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
+    const createFolderModalRef = useRef(null);
+
+    useEffect(() => {
+        const h = (e) => {
+            if (createFolderModalRef.current && !createFolderModalRef.current.contains(e.target))
+                setShowCreateFolderModal(false);
+        };
+        document.addEventListener('mousedown', h);
+        return () => document.removeEventListener('mousedown', h);
+    }, []);
+
 
     const toastStyle = {
         style: {
@@ -439,6 +453,13 @@ export default function Dashboard() {
                     activeTaskModal={activeTaskModal}
                     setActiveTaskModal={setActiveTaskModal}
                     handleCreateNote={handleCreateNote}
+                    showCreateFolderModal={showCreateFolderModal}
+                    setShowCreateFolderModal={setShowCreateFolderModal}
+                />
+            )}
+            {showCreateFolderModal && (
+                <CreateFolderModal
+                    createFolderModalRef={createFolderModalRef}
                 />
             )}
         </main>
