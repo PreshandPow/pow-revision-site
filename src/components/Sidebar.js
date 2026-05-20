@@ -91,6 +91,18 @@ export default function Sidebar({ isNavOpen, setIsNavOpen, isOptionsOpen, setIsO
                             </button>
                         </li>
                         <li>
+                            <button
+                                className="flex items-center gap-4 w-full p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group"
+                                onClick={() => {
+                                    if (session) {
+                                        setIsNavOpen(false);
+                                        router.push(`/dashboard/Notes`);
+                                    }}}>
+                                <span className="text-xl">📔</span>
+                                <span className="font-bold text-[var(--text)]">Notes</span>
+                            </button>
+                        </li>
+                        <li>
                             <button className="flex items-center gap-4 w-full p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group">
                                 <span className="text-xl">📝</span>
                                 <span className="font-bold text-[var(--text)]">Flashcards</span>
