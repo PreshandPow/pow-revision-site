@@ -460,6 +460,7 @@ export default function Dashboard() {
             {showCreateFolderModal && (
                 <CreateFolderModal
                     createFolderModalRef={createFolderModalRef}
+                    setShowCreateFolderModal={setShowCreateFolderModal}
                 />
             )}
         </main>
