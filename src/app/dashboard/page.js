@@ -50,19 +50,6 @@ export default function Dashboard() {
     const [notes, setNotes] = useState([]);
     const [flashcards, setFlashcards] = useState([]);
 
-    const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
-    const createFolderModalRef = useRef(null);
-
-    useEffect(() => {
-        const h = (e) => {
-            if (createFolderModalRef.current && !createFolderModalRef.current.contains(e.target))
-                setShowCreateFolderModal(false);
-        };
-        document.addEventListener('mousedown', h);
-        return () => document.removeEventListener('mousedown', h);
-    }, []);
-
-
     const toastStyle = {
         style: {
             border: '1px solid var(--nice-blue)',
@@ -198,6 +185,33 @@ export default function Dashboard() {
     const stripHtml = (html) => {
         if (!html) return "";
         return html.replace(/<[^>]*>?/gm, '');
+    };
+
+    const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
+    const [folderName, setFolderName] = useState('Untitled Folder');
+    const createFolderModalRef = useRef(null);
+
+    useEffect(() => {
+        const h = (e) => {
+            if (createFolderModalRef.current && !createFolderModalRef.current.contains(e.target))
+                setShowCreateFolderModal(false);
+        };
+        document.addEventListener('mousedown', h);
+        return () => document.removeEventListener('mousedown', h);
+    }, []);
+
+    const handleCreateFolder = async () => {
+        const {  data: {  user}  } = await supabase.auth.getUser();
+
+        const {  data: folder, error } = await supabase
+            .from('folders')
+            .insert({ name: folderName, user_id: user.id, parent_folder_id: null })
+            .select()
+            .single();
+
+        if (error) { toast.error('Could not create note', toastStyle); return; }
+        router.push(`/dashboard/Folders/${folder.id}`);
+        setShowCreateFolderModal(false);
     };
 
     useEffect(() => {
@@ -461,6 +475,8 @@ export default function Dashboard() {
                 <CreateFolderModal
                     createFolderModalRef={createFolderModalRef}
                     setShowCreateFolderModal={setShowCreateFolderModal}
+                    setFolderName={setFolderName}
+                    handleCreateFolder={handleCreateFolder}
                 />
             )}
         </main>

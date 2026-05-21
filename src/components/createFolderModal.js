@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 
-export default function CreateFolderModal({ createFolderModalRef, setShowCreateFolderModal }) {
+export default function CreateFolderModal({ createFolderModalRef, setShowCreateFolderModal, setFolderName, handleCreateFolder }) {
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 md:p-6">
             <motion.div
@@ -28,6 +28,7 @@ export default function CreateFolderModal({ createFolderModalRef, setShowCreateF
                     <input
                         type="text"
                         placeholder="e.g. A-Level Mathematics"
+                        onChange={(e) => setFolderName(e.target.value)}
                         autoFocus
                         className="w-full px-4 py-2.5 text-sm rounded-lg bg-[var(--layer2)]
                         text-[var(--text)] placeholder-[var(--text-muted)] border border-[var(--layer3)]
@@ -47,7 +48,7 @@ export default function CreateFolderModal({ createFolderModalRef, setShowCreateF
                         Cancel
                     </button>
                     <button
-                        type="submit"
+                        onClick={handleCreateFolder}
                         className="w-full md:w-auto px-4 py-2 text-sm font-semibold rounded-lg bg-[var(--nice-blue)]
                         text-white shadow-sm hover:opacity-90 active:scale-95 transition-all duration-200 cursor-pointer"
                     >
