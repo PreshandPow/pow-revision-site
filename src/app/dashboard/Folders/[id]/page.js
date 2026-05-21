@@ -44,9 +44,6 @@ export default function FolderContentPage() {
             }
 
             setFolderName(folder?.name || '');
-            if (folder?.parent_folder_id) {
-                setPrevFolder(folder?.parent_folder_id)
-            }
             folder?.parent_folder_id ? setPrevFolder(folder?.parent_folder_id) : setPrevFolder('Folders')
             setLoading(false);
         };

@@ -209,14 +209,24 @@ export default function FolderContentPage() {
                                                 border border-[var(--layer3)] rounded-xl shadow-2xl py-1.5 z-50
                                                 overflow-hidden left-40"
                                             >
-                                                <button
-                                                    onClick={handleOpenInNewTab}
-                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
+                                                <a
+                                                    href={`/dashboard/Folders/${folder.id}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                >
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setActiveDropdown(null);
+                                                        }}
+                                                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
                                                     font-medium text-[var(--text-muted)] hover:text-[var(--text)]
                                                     hover:bg-[var(--layer2)] transition-colors cursor-pointer"
-                                                >
-                                                    <ExternalLink size={16} /> Open in new tab
-                                                </button>
+                                                    >
+                                                        <ExternalLink size={16} /> Open in new tab
+                                                    </button>
+                                                </a>
+
                                                 <button
                                                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
                                                     font-medium text-[var(--text-muted)] hover:text-[var(--text)]
