@@ -1,8 +1,11 @@
 'use client';
 
 import {useEffect, useRef, useState} from 'react';
-import {Folder, FileText, MoreVertical, Plus, ChevronRight, Trash2, Clock} from "lucide-react";
-import { motion } from "framer-motion";
+import {
+    Folder, FileText, MoreVertical, Plus, ChevronRight,
+    Trash2, Clock, ExternalLink, Edit2, FolderOutput, Copy
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import toast from 'react-hot-toast';
@@ -22,6 +25,14 @@ export default function FolderContentPage() {
     const [folders, setFolders] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    // UI States
+    const [activeDropdown, setActiveDropdown] = useState(null); // ID of the open dropdown
+    const [folderToDelete, setFolderToDelete] = useState(null); // ID of the folder to be deleted
+    const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
+    const [folderName, setFolderName] = useState('Untitled Folder');
+
+    const createFolderModalRef = useRef(null);
+
     const toastStyle = {
         style: {
             border: '1px solid var(--nice-blue)',
@@ -39,6 +50,21 @@ export default function FolderContentPage() {
         fetchFolders();
     }, []);
 
+    const deleteFolderModalRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (createFolderModalRef.current && !createFolderModalRef.current.contains(e.target)) {
+                setShowCreateFolderModal(false);
+            }
+            if (!e.target.closest('.folder-dropdown-container')) {
+                setActiveDropdown(null);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
     const fetchFolders = async () => {
         const {  data: { user } } = await supabase.auth.getUser();
         if (!user) { router.replace('/'); return; }
@@ -54,19 +80,6 @@ export default function FolderContentPage() {
         setLoading(false);
     };
 
-    const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
-    const [folderName, setFolderName] = useState('Untitled Folder');
-    const createFolderModalRef = useRef(null);
-
-    useEffect(() => {
-        const h = (e) => {
-            if (createFolderModalRef.current && !createFolderModalRef.current.contains(e.target))
-                setShowCreateFolderModal(false);
-        };
-        document.addEventListener('mousedown', h);
-        return () => document.removeEventListener('mousedown', h);
-    }, []);
-
     const handleCreateFolder = async () => {
         const {  data: {  user}  } = await supabase.auth.getUser();
 
@@ -81,12 +94,19 @@ export default function FolderContentPage() {
         setShowCreateFolderModal(false);
     };
 
-    const handleDelete = async (e, id) => {
-        e.stopPropagation();
-        const { error } = await supabase.from('folders').delete().eq('id', id);
-        if (error) { toast.error('Could not delete folder', toastStyle); return; }
-        setFolders(prev => prev.filter(n => n.id !== id));
-        toast.success('folder deleted', toastStyle);
+    const handleDeleteConfirm = async () => {
+        if (!folderToDelete) return;
+
+        const { error } = await supabase.from('folders').delete().eq('id', folderToDelete);
+        if (error) {
+            toast.error('Could not delete folder', toastStyle);
+            setFolderToDelete(null);
+            return;
+        }
+
+        setFolders(prev => prev.filter(n => n.id !== folderToDelete));
+        toast.success('Folder deleted', toastStyle);
+        setFolderToDelete(null);
     };
 
     const formatDate = (date) => new Date(date).toLocaleDateString('en-GB', {
@@ -118,7 +138,6 @@ export default function FolderContentPage() {
                     />
                 </svg>
             </div>
-
             <h1 className="font-brand text-[var(--text)] text-2xl md:text-3xl font-bold tracking-tight text-center max-w-md leading-tight">
                 <span className="text-[var(--nice-blue)]">POW Bot</span> is getting your Folders ready for you
             </h1>
@@ -126,6 +145,7 @@ export default function FolderContentPage() {
                 Fetching your data...
             </p>
         </div>
+
     );
 
     return (
@@ -160,16 +180,76 @@ export default function FolderContentPage() {
 
                             <div className="relative bg-[var(--layer2)] border border-[var(--layer3)] rounded-xl rounded-tl-none p-5 flex flex-col min-h-[140px] shadow-sm group-hover:border-[var(--nice-blue)] group-hover:shadow-md transition-all duration-300">
 
-                                <div className="flex items-start justify-between mb-3">
+                                <div className="flex items-start justify-between mb-3 relative folder-dropdown-container">
                                     <div className="p-2 bg-[var(--nice-blue)]/10 rounded-lg text-[var(--nice-blue)]">
                                         <Folder size={20} fill="currentColor" fillOpacity={0.2} />
                                     </div>
+
                                     <button
-                                        onClick={(e) => handleDelete(e, folder.id)}
-                                        className="opacity-0 group-hover:opacity-100 p-2 rounded-lg hover:bg-red-500/10 text-red-400 transition-all cursor-pointer"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setActiveDropdown(activeDropdown === folder.id ? null : folder.id);
+                                        }}
+                                        className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                                     >
-                                        <Trash2 size={16} />
+                                        <MoreVertical size={18} />
                                     </button>
+
+                                    <AnimatePresence>
+                                        {activeDropdown === folder.id && (
+                                            <motion.div
+                                                initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                                exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                                                transition={{ duration: 0.15 }}
+                                                className="absolute right-0 top-full mt-2 w-56 bg-[var(--layer1)]
+                                                border border-[var(--layer3)] rounded-xl shadow-2xl py-1.5 z-50
+                                                overflow-hidden"
+                                            >
+                                                <button
+                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
+                                                    font-medium text-[var(--text-muted)] hover:text-[var(--text)]
+                                                    hover:bg-[var(--layer2)] transition-colors"
+                                                >
+                                                    <ExternalLink size={16} /> Open in new tab
+                                                </button>
+                                                <button
+                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
+                                                    font-medium text-[var(--text-muted)] hover:text-[var(--text)]
+                                                    hover:bg-[var(--layer2)] transition-colors"
+                                                >
+                                                    <Edit2 size={16} /> Rename
+                                                </button>
+                                                <button
+                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
+                                                    font-medium text-[var(--text-muted)] hover:text-[var(--text)]
+                                                    hover:bg-[var(--layer2)] transition-colors"
+                                                >
+                                                    <FolderOutput size={16} /> Move to
+                                                </button>
+                                                <button
+                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
+                                                    font-medium text-[var(--text-muted)] hover:text-[var(--text)]
+                                                    hover:bg-[var(--layer2)] transition-colors"
+                                                >
+                                                    <Copy size={16} /> Duplicate
+                                                </button>
+
+                                                <div className="h-px bg-[var(--layer3)] my-1 w-full" />
+
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setFolderToDelete(folder.id);
+                                                        setActiveDropdown(null);
+                                                    }}
+                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-500 hover:bg-red-500/10 transition-colors"
+                                                >
+                                                    <Trash2 size={16} /> Delete folder
+                                                </button>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
                                 </div>
 
                                 <div className="mt-auto">
@@ -182,16 +262,16 @@ export default function FolderContentPage() {
                                             <Clock size={12} />
                                             {formatDate(folder.updated_at)}
                                         </div>
-                                        {/* Placeholder for item count for when i add it later */}
                                         <span className="text-[10px] bg-[var(--layer3)] px-2 py-0.5 rounded-full text-[var(--text-muted)]">
-                            Folder
-                        </span>
+                                            Folder
+                                        </span>
                                     </div>
                                 </div>
                             </div>
                         </motion.div>
                     ))}
                 </div>
+
                 {showCreateFolderModal && (
                     <CreateFolderModal
                         createFolderModalRef={createFolderModalRef}
@@ -200,6 +280,50 @@ export default function FolderContentPage() {
                         handleCreateFolder={handleCreateFolder}
                     />
                 )}
+
+                <AnimatePresence>
+                    {folderToDelete && (
+                        <div
+                            ref={deleteFolderModalRef}
+                            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 md:p-6">
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                                className="relative flex flex-col w-full max-w-[400px] bg-[var(--layer1)] border border-[var(--layer3)] rounded-xl shadow-2xl overflow-hidden"
+                            >
+                                <div className="p-6">
+                                    <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mb-4 text-red-500">
+                                        <Trash2 size={24} />
+                                    </div>
+                                    <h2 className="text-xl font-bold text-[var(--text)] tracking-tight mb-2">
+                                        Delete folder?
+                                    </h2>
+                                    <p className="text-sm text-[var(--text-muted)] leading-relaxed">
+                                        Are you sure you want to delete this folder? All contents inside will be safe. This action cannot be undone.
+                                    </p>
+                                </div>
+
+                                <div className="px-6 py-4 bg-[var(--layer2)]/50 border-t border-[var(--layer3)] flex items-center justify-end gap-3">
+                                    <button
+                                        onClick={() => setFolderToDelete(null)}
+                                        className="px-4 py-2 text-sm font-semibold rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleDeleteConfirm}
+                                        className="px-4 py-2 text-sm font-semibold rounded-lg bg-red-500 text-white shadow-sm hover:bg-red-600 active:scale-95 transition-all cursor-pointer"
+                                    >
+                                        Yes, delete folder
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>
+
             </div>
         </div>
     );
