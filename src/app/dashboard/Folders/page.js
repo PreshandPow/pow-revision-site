@@ -113,6 +113,10 @@ export default function FolderContentPage() {
         day: 'numeric', month: 'short', year: 'numeric'
     });
 
+    const handleOpenInNewTab = (id) => {
+        window.open(`/dashboard/Folders/${id}`, '_blank');
+    };
+
     if (loading) return (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--layer1)] backdrop-blur-xl p-6">
             <div className="w-16 h-16 mb-8 rounded-2xl bg-[var(--nice-blue)] animate-pulse shadow-[0_0_40px_rgba(var(--blue-rgb),0.3)] flex items-center justify-center">
@@ -145,7 +149,6 @@ export default function FolderContentPage() {
                 Fetching your data...
             </p>
         </div>
-
     );
 
     return (
@@ -202,35 +205,36 @@ export default function FolderContentPage() {
                                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                                 exit={{ opacity: 0, scale: 0.95, y: -10 }}
                                                 transition={{ duration: 0.15 }}
-                                                className="absolute right-0 top-full mt-2 w-56 bg-[var(--layer1)]
+                                                className="absolute top-10 mt-2 w-56 bg-[var(--layer1)]
                                                 border border-[var(--layer3)] rounded-xl shadow-2xl py-1.5 z-50
-                                                overflow-hidden"
+                                                overflow-hidden left-40"
                                             >
                                                 <button
+                                                    onClick={handleOpenInNewTab}
                                                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
                                                     font-medium text-[var(--text-muted)] hover:text-[var(--text)]
-                                                    hover:bg-[var(--layer2)] transition-colors"
+                                                    hover:bg-[var(--layer2)] transition-colors cursor-pointer"
                                                 >
                                                     <ExternalLink size={16} /> Open in new tab
                                                 </button>
                                                 <button
                                                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
                                                     font-medium text-[var(--text-muted)] hover:text-[var(--text)]
-                                                    hover:bg-[var(--layer2)] transition-colors"
+                                                    hover:bg-[var(--layer2)] transition-colors cursor-pointer"
                                                 >
                                                     <Edit2 size={16} /> Rename
                                                 </button>
                                                 <button
                                                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
                                                     font-medium text-[var(--text-muted)] hover:text-[var(--text)]
-                                                    hover:bg-[var(--layer2)] transition-colors"
+                                                    hover:bg-[var(--layer2)] transition-colors cursor-pointer"
                                                 >
                                                     <FolderOutput size={16} /> Move to
                                                 </button>
                                                 <button
                                                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
                                                     font-medium text-[var(--text-muted)] hover:text-[var(--text)]
-                                                    hover:bg-[var(--layer2)] transition-colors"
+                                                    hover:bg-[var(--layer2)] transition-colors cursor-pointer"
                                                 >
                                                     <Copy size={16} /> Duplicate
                                                 </button>
@@ -243,7 +247,8 @@ export default function FolderContentPage() {
                                                         setFolderToDelete(folder.id);
                                                         setActiveDropdown(null);
                                                     }}
-                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-500 hover:bg-red-500/10 transition-colors"
+                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
+                                                    font-medium text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
                                                 >
                                                     <Trash2 size={16} /> Delete folder
                                                 </button>
@@ -285,16 +290,19 @@ export default function FolderContentPage() {
                     {folderToDelete && (
                         <div
                             ref={deleteFolderModalRef}
-                            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 md:p-6">
+                            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40
+                            backdrop-blur-sm p-4 md:p-6">
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.95, y: 10 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.95, y: 10 }}
                                 transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                                className="relative flex flex-col w-full max-w-[400px] bg-[var(--layer1)] border border-[var(--layer3)] rounded-xl shadow-2xl overflow-hidden"
+                                className="relative flex flex-col w-full max-w-[400px] bg-[var(--layer1)] border
+                                border-[var(--layer3)] rounded-xl shadow-2xl overflow-hidden"
                             >
                                 <div className="p-6">
-                                    <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mb-4 text-red-500">
+                                    <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center
+                                    justify-center mb-4 text-red-500">
                                         <Trash2 size={24} />
                                     </div>
                                     <h2 className="text-xl font-bold text-[var(--text)] tracking-tight mb-2">
@@ -308,13 +316,15 @@ export default function FolderContentPage() {
                                 <div className="px-6 py-4 bg-[var(--layer2)]/50 border-t border-[var(--layer3)] flex items-center justify-end gap-3">
                                     <button
                                         onClick={() => setFolderToDelete(null)}
-                                        className="px-4 py-2 text-sm font-semibold rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
+                                        className="px-4 py-2 text-sm font-semibold rounded-lg text-[var(--text-muted)]
+                                        hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                                     >
                                         Cancel
                                     </button>
                                     <button
                                         onClick={handleDeleteConfirm}
-                                        className="px-4 py-2 text-sm font-semibold rounded-lg bg-red-500 text-white shadow-sm hover:bg-red-600 active:scale-95 transition-all cursor-pointer"
+                                        className="px-4 py-2 text-sm font-semibold rounded-lg bg-red-500 text-white
+                                         shadow-sm hover:bg-red-600 active:scale-95 transition-all cursor-pointer"
                                     >
                                         Yes, delete folder
                                     </button>
