@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect, useRef, useState} from 'react';
+import {useEffect, useRef, useState, useCallback} from 'react';
 import {
     Folder, FileText, MoreVertical, Plus, ChevronRight,
     Trash2, Clock, ExternalLink, Edit2, FolderOutput, Copy
@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import toast from 'react-hot-toast';
 import CreateFolderModal from '../../../components/createFolderModal';
+import RenameFolderModal from "../../../components/RenameFolderModal";
 
 export function createClient() {
     return createBrowserClient(
@@ -30,8 +31,11 @@ export default function FolderContentPage() {
     const [folderToDelete, setFolderToDelete] = useState(null); // ID of the folder to be deleted
     const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
     const [folderName, setFolderName] = useState('Untitled Folder');
+    const [showRenameFolderModal, setShowRenameFolderModal] = useState(false);
 
+    const showRenameFolderModalRef = useRef(null);
     const createFolderModalRef = useRef(null);
+    const [folderToRename, setFolderToRename] = useState(null);
 
     const toastStyle = {
         style: {
@@ -59,6 +63,9 @@ export default function FolderContentPage() {
             }
             if (!e.target.closest('.folder-dropdown-container')) {
                 setActiveDropdown(null);
+            }
+            if (showRenameFolderModalRef.current && !showRenameFolderModalRef.current.contains(e.target)) {
+                setShowRenameFolderModal(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -94,6 +101,30 @@ export default function FolderContentPage() {
         setShowCreateFolderModal(false);
     };
 
+    // ── Folder Rename ──────────────────────────────────────────────────────────────────
+    const handleFolderRename = async (newName) => {
+        if (!folderToRename || !newName.trim()) return;
+
+        const { error } = await supabase
+            .from('folders')
+            .update({ name: newName })
+            .eq('id', folderToRename.id);
+
+        if (error) {
+            toast.error('Could not change folder name', toastStyle);
+        } else {
+            toast.success('Folder renamed', toastStyle);
+
+            setFolders(prevFolders =>
+                prevFolders.map(f =>
+                    f.id === folderToRename.id ? { ...f, name: newName } : f
+                )
+            );
+
+            setFolderToRename(null);
+        }
+    };
+
     const handleDeleteConfirm = async () => {
         if (!folderToDelete) return;
 
@@ -112,10 +143,6 @@ export default function FolderContentPage() {
     const formatDate = (date) => new Date(date).toLocaleDateString('en-GB', {
         day: 'numeric', month: 'short', year: 'numeric'
     });
-
-    const handleOpenInNewTab = (id) => {
-        window.open(`/dashboard/Folders/${id}`, '_blank');
-    };
 
     if (loading) return (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--layer1)] backdrop-blur-xl p-6">
@@ -232,6 +259,12 @@ export default function FolderContentPage() {
                                                 </a>
 
                                                 <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setShowRenameFolderModal(!showRenameFolderModal);
+                                                        setFolderToRename(folder);
+                                                        setActiveDropdown(null);
+                                                    }}
                                                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
                                                     font-medium text-[var(--text-muted)] hover:text-[var(--text)]
                                                     hover:bg-[var(--layer2)] transition-colors cursor-pointer"
@@ -346,8 +379,16 @@ export default function FolderContentPage() {
                             </motion.div>
                         </div>
                     )}
+                    {showRenameFolderModal && (
+                        <RenameFolderModal
+                        renameModalRef={showRenameFolderModalRef}
+                        currentName={folderName}
+                        handleRename={handleFolderRename}
+                        setFolderName={setFolderName}
+                        setShowRenameFolderModal={setShowRenameFolderModal}
+                        />
+                    )}
                 </AnimatePresence>
-
             </div>
         </div>
     );
