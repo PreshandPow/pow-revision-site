@@ -175,13 +175,16 @@ export default function FolderContentPage() {
                     {folders.map(folder => (
                         <motion.div
                             key={folder.id}
-                            whileHover={{ y: -4 }}
+                            whileHover={activeDropdown !== folder.id ? { y: -4 } : {}}
                             onClick={() => router.push(`/dashboard/Folders/${folder.id}`)}
-                            className="group relative cursor-pointer"
+                            className={`group relative cursor-pointer ${activeDropdown === folder.id ? 'z-[100]' : 'z-10 hover:z-20'}`}
                         >
-                            <div className="absolute -top-2 left-0 w-16 h-4 bg-[var(--layer3)] rounded-t-lg group-hover:bg-[var(--nice-blue)] transition-colors duration-300" />
+                            <div className="absolute -top-2 left-0 w-16 h-4 bg-[var(--layer3)] rounded-t-lg
+                            group-hover:bg-[var(--nice-blue)] transition-colors duration-300" />
 
-                            <div className="relative bg-[var(--layer2)] border border-[var(--layer3)] rounded-xl rounded-tl-none p-5 flex flex-col min-h-[140px] shadow-sm group-hover:border-[var(--nice-blue)] group-hover:shadow-md transition-all duration-300">
+                            <div className="relative bg-[var(--layer2)] border border-[var(--layer3)] rounded-xl
+                            rounded-tl-none p-5 flex flex-col min-h-[140px] shadow-sm group-hover:border-[var(--nice-blue)]
+                             group-hover:shadow-md transition-all duration-300">
 
                                 <div className="flex items-start justify-between mb-3 relative folder-dropdown-container">
                                     <div className="p-2 bg-[var(--nice-blue)]/10 rounded-lg text-[var(--nice-blue)]">
@@ -193,7 +196,8 @@ export default function FolderContentPage() {
                                             e.stopPropagation();
                                             setActiveDropdown(activeDropdown === folder.id ? null : folder.id);
                                         }}
-                                        className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
+                                        className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text)]
+                                        hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                                     >
                                         <MoreVertical size={18} />
                                     </button>
@@ -206,7 +210,7 @@ export default function FolderContentPage() {
                                                 exit={{ opacity: 0, scale: 0.95, y: -10 }}
                                                 transition={{ duration: 0.15 }}
                                                 className="absolute top-10 mt-2 w-56 bg-[var(--layer1)]
-                                                border border-[var(--layer3)] rounded-xl shadow-2xl py-1.5 z-50
+                                                border border-[var(--layer3)] rounded-xl shadow-2xl py-1.5 z-60
                                                 overflow-hidden left-40"
                                             >
                                                 <a
