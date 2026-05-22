@@ -238,7 +238,7 @@ export default function FolderContentPage() {
                                                 transition={{ duration: 0.15 }}
                                                 className="absolute top-10 mt-2 w-56 bg-[var(--layer1)]
                                                 border border-[var(--layer3)] rounded-xl shadow-2xl py-1.5 z-60
-                                                overflow-hidden left-40"
+                                                overflow-hidden left-25 md:left-40"
                                             >
                                                 <a
                                                     href={`/dashboard/Folders/${folder.id}`}

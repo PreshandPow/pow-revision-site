@@ -26,7 +26,7 @@ export default function RenameFolderModal({ renameModalRef, currentName, handleR
                 <div className="px-6 py-4 bg-[var(--layer2)]/50 border-t border-[var(--layer3)] flex justify-end gap-3">
                     <button onClick={() => {
                         setShowRenameFolderModal(false)
-                    }} className="px-4 py-2 text-sm font-semibold text-[var(--text-muted)] hover:text-[var(--text)]">
+                    }} className="px-4 py-2 text-sm font-semibold text-[var(--text-muted)] hover:text-[var(--text)] cursor-pointer">
                         Cancel
                     </button>
                     <button
@@ -36,7 +36,8 @@ export default function RenameFolderModal({ renameModalRef, currentName, handleR
                                 handleRename(currentName);
                             }
                         }}
-                        className="px-4 py-2 text-sm font-semibold bg-[var(--nice-blue)] text-white rounded-lg"
+                        className="px-4 py-2 text-sm font-semibold bg-[var(--nice-blue)] text-[var(--text)] rounded-lg cursor-pointer
+                        hover:transform hover:scale-105 transition-transform duration-200"
                     >
                         Save Changes
                     </button>
