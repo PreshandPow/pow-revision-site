@@ -310,11 +310,17 @@ export default function NotePage() {
         }
     };
 
-    const handleEditorMouseLeave = () => {
+    const handleEditorMouseLeave = (e) => {
+        const x = e.clientX;
+        const editorRect = editorRef.current?.getBoundingClientRect();
+
+        if (!editorRect) return;
+
+        if (x >= editorRect.left - 90 && x <= editorRect.left) return;
+
         setHoveredBlock(null);
         setSidebarTop(-9999);
     };
-
 
     // ── autosave ──────────────────────────────────────────────────────────────
     const handleAutosaveToggle = () => {
@@ -594,7 +600,7 @@ export default function NotePage() {
 
                 {/* Relative Editor Wrapper */}
                 <div
-                    className="relative w-full"
+                    className="relative w-full group/editor"
                     onMouseMove={handleEditorMouseMove}
                     onMouseLeave={handleEditorMouseLeave}
                 >
