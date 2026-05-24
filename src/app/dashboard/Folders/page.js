@@ -37,6 +37,8 @@ export default function FolderContentPage() {
     const createFolderModalRef = useRef(null);
     const [folderToRename, setFolderToRename] = useState(null);
 
+    const [showMoveFolderModal, setShowMoveFolderModal] = useState(false);
+
     const toastStyle = {
         style: {
             border: '1px solid var(--nice-blue)',
@@ -199,7 +201,7 @@ export default function FolderContentPage() {
 
                 {/* Folders Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {folders.map(folder => (
+                    {folders.filter(i => i.parent_folder_id === null).map(folder => (
                         <motion.div
                             key={folder.id}
                             whileHover={activeDropdown !== folder.id ? { y: -4 } : {}}
@@ -272,6 +274,10 @@ export default function FolderContentPage() {
                                                     <Edit2 size={16} /> Rename
                                                 </button>
                                                 <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setShowMoveFolderModal();
+                                                    }}
                                                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
                                                     font-medium text-[var(--text-muted)] hover:text-[var(--text)]
                                                     hover:bg-[var(--layer2)] transition-colors cursor-pointer"
@@ -387,6 +393,9 @@ export default function FolderContentPage() {
                         setFolderName={setFolderName}
                         setShowRenameFolderModal={setShowRenameFolderModal}
                         />
+                    )}
+                    {showMoveFolderModal && (
+                        <div></div>
                     )}
                 </AnimatePresence>
             </div>
