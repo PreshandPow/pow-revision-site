@@ -281,41 +281,33 @@ export default function NotePage() {
 
     // ── Hover Tracking & Sidebar UI Logic ─────────────────────────────────────
     const handleEditorMouseMove = (e) => {
-
         if (isCanvasLayoutModalOpen || isCanvasInsertModalOpen) return;
-
         if (!editorRef.current) return;
-
         if (sidebarRef.current && sidebarRef.current.contains(e.target)) return;
 
-        let targetNode = e.target;
-        if (targetNode === editorRef.current) {
-            const mouseY = e.clientY;
-            const children = Array.from(editorRef.current.children);
-            const foundChild = children.find(child => {
-                const rect = child.getBoundingClientRect();
-                return mouseY >= rect.top && mouseY <= rect.bottom;
-            });
-            if (foundChild) {
-                setHoveredBlock(foundChild);
-                setSidebarTop(foundChild.offsetTop);
-            } else {
-                setHoveredBlock(null);
-                setSidebarTop(-9999);
-            }
-            return;
-        }
-        let node = targetNode;
-        while (node && node !== document.body) {
-            if (node.parentElement === editorRef.current) {
-                setHoveredBlock(node);
-                setSidebarTop(node.offsetTop);
-                return;
-            }
+        const range = document.caretRangeFromPoint?.(e.clientX, e.clientY);
+        if (!range) return;
+
+        let node = range.startContainer;
+        if (node.nodeType === 3) node = node.parentElement;
+
+        while (node && node.parentElement !== editorRef.current) {
             node = node.parentElement;
         }
-        setHoveredBlock(null);
-        setSidebarTop(-9999);
+
+        if (node && node !== editorRef.current) {
+            const lineRange = document.caretRangeFromPoint(e.clientX, e.clientY);
+            const rect = lineRange?.getBoundingClientRect();
+            const editorRect = editorRef.current.getBoundingClientRect();
+
+            if (rect) {
+                setHoveredBlock(node);
+                setSidebarTop(rect.top - editorRect.top);
+            }
+        } else {
+            setHoveredBlock(null);
+            setSidebarTop(-9999);
+        }
     };
 
     const handleEditorMouseLeave = () => {
@@ -600,22 +592,23 @@ export default function NotePage() {
 
                 <div className="h-[1px] bg-[var(--nice-blue)]" />
 
-                {/* ── Relative Editor Wrapper ── */}
+                {/* Relative Editor Wrapper */}
                 <div
-                    className="relative w-full group/editor"
+                    className="relative w-full"
                     onMouseMove={handleEditorMouseMove}
                     onMouseLeave={handleEditorMouseLeave}
                 >
-                    {/* Floating Sidebar Buttons */}
+                    {/* Floating Sidebar */}
                     <ul
                         ref={sidebarRef}
-                        className={`absolute z-50 md:flex items-center gap-1.5 transition-all duration-150
-                            md:opacity-0 md:pointer-events-none hidden
-                            md:top-[var(--dynamic-top)] md:left-2
-                            ${hoveredBlock ? 'md:!opacity-100 md:!pointer-events-auto' : ''}
-                        `}
+                        className={`absolute z-50 md:flex items-center gap-1.5 hidden
+                        md:opacity-0 md:pointer-events-none
+                        md:transition-all md:duration-150
+                        ${hoveredBlock ? 'md:!opacity-100 md:!pointer-events-auto' : ''}`}
                         style={{
-                            '--dynamic-top': sidebarTop !== -9999 ? `${sidebarTop}px` : '0px',
+                            top: sidebarTop !== -9999 ? `${sidebarTop}px` : '0px',
+                            left: '-72px',
+                            transform: 'translateY(-20%)',
                         }}
                     >
                         <li className="relative">
@@ -677,7 +670,7 @@ export default function NotePage() {
 
                     </ul>
 
-                    {/* Editor Canvas */}
+                    {/* Editor Canvas — full width, no left padding */}
                     <div
                         ref={editorRef}
                         contentEditable
@@ -689,8 +682,15 @@ export default function NotePage() {
                         onKeyUp={handleSelectionChange}
                         onMouseUp={handleSelectionChange}
                         onSelect={handleSelectionChange}
-                        className="pow-editor w-full pl-14 pr-4 md:ml-6 min-h-[55vh] min-w-[40vw] bg-transparent text-[var(--text)] outline-none border-none leading-relaxed font-medium"
+                        className="pow-editor w-full min-h-[70vh] bg-transparent text-[var(--text)] outline-none border-none leading-relaxed font-medium"
                     />
+                </div>
+                <div className="flex items-center gap-4 text-xs text-[var(--text-muted)] opacity-50 mt-4 pb-10">
+                    <span>{content.replace(/<[^>]*>/g, '').trim().split(/\s+/).filter(Boolean).length} words</span>
+                    <span>·</span>
+                    <span>{Math.max(1, Math.ceil(content.replace(/<[^>]*>/g, '').trim().split(/\s+/).filter(Boolean).length / 200))} min read</span>
+                    <span>·</span>
+                    <span>{new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                 </div>
             </div>
         </main>

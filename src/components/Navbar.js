@@ -87,13 +87,13 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                 >
                     <Menu className="w-6 h-6 text-[var(--text)]" />
                 </button>
-                <Link href="/" className="font-brand font-black tracking-tighter z-20 text-5xl text-[var(--nice-blue)]">
+                <Link href="/" className="font-brand font-black tracking-tighter z-20 text-3xl lg:text-5xl text-[var(--nice-blue)]">
                     POW
                 </Link>
-                <ul className="hidden min-[1200px]:flex items-center gap-4 font-semibold">
+                <ul className="hidden min-[1200px]:flex items-center gap-3 [1200px]:gap-4 font-semibold">
                     <li>
                         <button
-                            className="flex items-center gap-3 p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group"
+                            className="flex items-center gap-3 p-2 [1000px]:p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group"
                             onClick={() => {
                                 if (session) {
                                     router.push(`/dashboard/Notes`);
@@ -105,7 +105,7 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                     </li>
                     <li>
                         <button
-                            className="flex items-center gap-3 p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group"
+                            className="flex items-center gap-3 p-2 [1200px]:p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group"
                             onClick={() => {
                                 if (session) {
                                     router.push(`/dashboard/Folders`);
@@ -121,7 +121,7 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                     </li>
                     <li>
                         <button
-                            className="flex items-center gap-3 p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group"
+                            className="flex items-center gap-3 p-2 [1200px]:p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group"
                             onClick={() => {
                                 if (session) {
                                     router.push(`/dashboard/Notes`);
@@ -131,14 +131,14 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                         </button>
                     </li>
                     <li>
-                        <button className="flex items-center gap-3 p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group">
+                        <button className="flex items-center gap-3 p-2 [1200px]:p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group">
                             <span className="text-xl">📝</span>
                             <span className="text-[var(--text)]">Flashcards</span>
                         </button>
                     </li>
                     <li>
                         <button
-                            className="flex items-center gap-3 p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group"
+                            className="flex items-center gap-3 p-2 [1200px]:p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group"
                             onClick={() => {
                                 if (session) {
                                     router.push(`/dashboard/Notes`);
@@ -148,7 +148,7 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                         </button>
                     </li>
                     <li>
-                        <button className="flex items-center gap-3 p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group">
+                        <button className="flex items-center gap-3 p-2 [1200px]:p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group">
                             <span className="text-xl">❓</span>
                             <span className="text-[var(--text)]">Support</span>
                         </button>
@@ -156,7 +156,7 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                     <li>
                         <button
                             onClick={handleThemeChange}
-                            className="p-2 hover:bg-[var(--layer3)] rounded-full text-2xl cursor-pointer"
+                            className="p-2 [1200px]:p-3 hover:bg-[var(--layer3)] rounded-full text-2xl cursor-pointer"
                             aria-label="Toggle theme"
                         >
                             {theme === 'light' ? '☀️' : '🌙'}
