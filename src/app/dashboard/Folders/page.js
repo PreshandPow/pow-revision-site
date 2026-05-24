@@ -11,6 +11,7 @@ import { createBrowserClient } from '@supabase/ssr';
 import toast from 'react-hot-toast';
 import CreateFolderModal from '../../../components/createFolderModal';
 import RenameFolderModal from "../../../components/RenameFolderModal";
+import MoveItemModal from "../../../components/MoveItemModal";
 
 export function createClient() {
     return createBrowserClient(
@@ -37,7 +38,9 @@ export default function FolderContentPage() {
     const createFolderModalRef = useRef(null);
     const [folderToRename, setFolderToRename] = useState(null);
 
-    const [showMoveFolderModal, setShowMoveFolderModal] = useState(false);
+    const [itemToMove, setItemToMove] = useState(null);
+    const [showMoveItemModal, setShowMoveItemModal] = useState(false);
+    const itemToMoveRef = useRef(null);
 
     const toastStyle = {
         style: {
@@ -124,6 +127,21 @@ export default function FolderContentPage() {
             );
 
             setFolderToRename(null);
+        }
+    };
+
+    // ── Item Move ──────────────────────────────────────────────────────────────────
+    const handleMove = async (destinationId) => {
+        if (!itemToMove) return;
+
+        const targetTable = itemToMove.type === 'folder' ? 'folders' : 'notes';
+
+        const { error } = await supabase
+            .from(targetTable)
+            .update({ parent_folder_id: destinationId === 'root' ? null : destinationId })
+            .eq('id', itemToMove.id);
+
+        if (!error) {
         }
     };
 
@@ -276,7 +294,9 @@ export default function FolderContentPage() {
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        setShowMoveFolderModal();
+                                                        setItemToMove(folder);
+                                                        setShowMoveItemModal(true);
+                                                        setActiveDropdown(null);
                                                     }}
                                                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
                                                     font-medium text-[var(--text-muted)] hover:text-[var(--text)]
@@ -394,8 +414,17 @@ export default function FolderContentPage() {
                         setShowRenameFolderModal={setShowRenameFolderModal}
                         />
                     )}
-                    {showMoveFolderModal && (
-                        <div></div>
+                    {showMoveItemModal && itemToMove && (
+                        <MoveItemModal
+                            moveModalRef={itemToMoveRef}
+                            folders={folders}
+                            currentItem={itemToMove}
+                            onMove={handleMove}
+                            onClose={() => {
+                                setShowMoveItemModal(false);
+                                setItemToMove(null);
+                            }}
+                        />
                     )}
                 </AnimatePresence>
             </div>

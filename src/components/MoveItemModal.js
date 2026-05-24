@@ -4,11 +4,10 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { Folder } from "lucide-react";
 
-export default function MoveFolderModal({ moveModalRef, onClose, folders, currentFolder, onMove }) {
+export default function MoveItemModal({ moveModalRef, onClose, folders, currentItem, onMove }) {
     const [selectedDestination, setSelectedDestination] = useState(null);
 
-    // Filter out the folder we are currently moving so it doesn't show up in the destination list
-    const availableFolders = folders.filter(f => f.id !== currentFolder?.id);
+    const availableFolders = folders.filter(f => f.id !== currentItem?.id);
 
     return (
         <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
@@ -22,13 +21,12 @@ export default function MoveFolderModal({ moveModalRef, onClose, folders, curren
             >
                 {/* Header */}
                 <div className="px-6 pt-6 pb-4">
-                    <h2 className="text-xl font-semibold text-[var(--text)] tracking-tight">Move folder</h2>
+                    <h2 className="text-xl font-semibold text-[var(--text)] tracking-tight">Move item</h2>
                     <p className="text-sm text-[var(--text-muted)] mt-1.5 leading-relaxed">
-                        Select a destination for <span className="font-bold text-[var(--text)]">"{currentFolder?.name}"</span>.
+                        Select a destination for <span className="font-bold text-[var(--text)]">"{currentItem?.name}"</span>.
                     </p>
                 </div>
 
-                {/* Folder List */}
                 <div className="px-6 pb-6 max-h-[300px] overflow-y-auto custom-scrollbar">
                     {availableFolders.length === 0 ? (
                         <div className="text-center py-8 text-sm text-[var(--text-muted)] border border-dashed border-[var(--layer3)] rounded-xl bg-[var(--layer2)]/50">
@@ -36,7 +34,6 @@ export default function MoveFolderModal({ moveModalRef, onClose, folders, curren
                         </div>
                     ) : (
                         <div className="flex flex-col gap-2">
-                            {/* Option to move to root directory if you want to un-nest a folder */}
                             <button
                                 onClick={() => setSelectedDestination('root')}
                                 className={`flex items-center gap-3 w-full p-3 rounded-lg border transition-all duration-200 text-left
@@ -52,7 +49,6 @@ export default function MoveFolderModal({ moveModalRef, onClose, folders, curren
                                 </span>
                             </button>
 
-                            {/* List of existing folders */}
                             {availableFolders.map((folder) => (
                                 <button
                                     key={folder.id}
@@ -74,7 +70,6 @@ export default function MoveFolderModal({ moveModalRef, onClose, folders, curren
                     )}
                 </div>
 
-                {/* Footer Actions */}
                 <div className="px-6 py-4 bg-[var(--layer2)]/50 border-t border-[var(--layer3)] flex justify-end gap-3">
                     <button
                         onClick={onClose}
