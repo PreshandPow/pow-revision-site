@@ -53,7 +53,7 @@ export default function MoveItemModal({ moveModalRef, onClose, folders, currentI
                                 <button
                                     key={folder.id}
                                     onClick={() => setSelectedDestination(folder.id)}
-                                    className={`flex items-center gap-3 w-full p-3 rounded-lg border transition-all duration-200 text-left
+                                    className={`flex items-center gap-3 w-full p-3 rounded-lg border transition-all duration-200 text-left cursor-pointer
                                     ${selectedDestination === folder.id
                                         ? 'border-[var(--nice-blue)] bg-[var(--nice-blue)]/5'
                                         : 'border-[var(--layer3)] bg-[var(--layer2)] hover:border-[var(--text-muted)]'}`}

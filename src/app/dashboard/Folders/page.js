@@ -61,6 +61,7 @@ export default function FolderContentPage() {
 
     const deleteFolderModalRef = useRef(null);
 
+    // ── Closing dropdowns if clicking outside them ──────────────────────────────────────────────────────────────────
     useEffect(() => {
         const handleClickOutside = (e) => {
             if (createFolderModalRef.current && !createFolderModalRef.current.contains(e.target)) {
@@ -92,6 +93,7 @@ export default function FolderContentPage() {
         setLoading(false);
     };
 
+    // ── Folder Creation ──────────────────────────────────────────────────────────────────
     const handleCreateFolder = async () => {
         const {  data: {  user}  } = await supabase.auth.getUser();
 
@@ -145,6 +147,7 @@ export default function FolderContentPage() {
         }
     };
 
+    // ── Folder Deletion ──────────────────────────────────────────────────────────────────
     const handleDeleteConfirm = async () => {
         if (!folderToDelete) return;
 
@@ -158,6 +161,24 @@ export default function FolderContentPage() {
         setFolders(prev => prev.filter(n => n.id !== folderToDelete));
         toast.success('Folder deleted', toastStyle);
         setFolderToDelete(null);
+    };
+
+    // ── Folder Duplication ──────────────────────────────────────────────────────────────────
+    const handleDuplicateFolder = async (folder) => {
+        const { data: { user } } = await supabase.auth.getUser();
+
+        const { data: newFolder, error } = await supabase
+            .from('folders')
+            .insert({ name: `${folder.name} (copy)`, user_id: user.id, parent_folder_id: folder.parent })
+            .select()
+            .single();
+
+        if (error) {
+            toast.error('Could not duplicate folder', toastStyle);
+        } else {
+            setFolders(prev => [newFolder, ...prev]);
+            toast.success('Folder duplicated', toastStyle);
+        }
     };
 
     const formatDate = (date) => new Date(date).toLocaleDateString('en-GB', {
@@ -305,6 +326,11 @@ export default function FolderContentPage() {
                                                     <FolderOutput size={16} /> Move to
                                                 </button>
                                                 <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDuplicateFolder(folder);
+                                                        setActiveDropdown(null);
+                                                    }}
                                                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
                                                     font-medium text-[var(--text-muted)] hover:text-[var(--text)]
                                                     hover:bg-[var(--layer2)] transition-colors cursor-pointer"
