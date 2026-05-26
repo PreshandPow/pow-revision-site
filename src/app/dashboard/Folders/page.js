@@ -40,6 +40,7 @@ export default function FolderContentPage() {
 
     const [itemToMove, setItemToMove] = useState(null);
     const [showMoveItemModal, setShowMoveItemModal] = useState(false);
+    const [targetFolder, setTargetFolder] = useState(null);
     const itemToMoveRef = useRef(null);
 
     const toastStyle = {
@@ -135,15 +136,20 @@ export default function FolderContentPage() {
     // ── Item Move ──────────────────────────────────────────────────────────────────
     const handleMove = async (destinationId) => {
         if (!itemToMove) return;
-
-        const targetTable = itemToMove.type === 'folder' ? 'folders' : 'notes';
+        const targetTable = 'folders';
 
         const { error } = await supabase
             .from(targetTable)
             .update({ parent_folder_id: destinationId === 'root' ? null : destinationId })
             .eq('id', itemToMove.id);
 
-        if (!error) {
+        if (error) {
+            toast.error('Could not move folder', toastStyle);
+        } else {
+            setShowMoveItemModal(false);
+            setFolders(prev => prev.filter(n => n.id !== itemToMove.id));
+            toast.success('Folder moved successfully', toastStyle);
+            setItemToMove(null);
         }
     };
 
@@ -169,14 +175,14 @@ export default function FolderContentPage() {
 
         const { data: newFolder, error } = await supabase
             .from('folders')
-            .insert({ name: `${folder.name} (copy)`, user_id: user.id, parent_folder_id: folder.parent })
+            .insert({ name: folder.name, user_id: user.id, parent_folder_id: folder.parent })
             .select()
             .single();
 
         if (error) {
             toast.error('Could not duplicate folder', toastStyle);
         } else {
-            setFolders(prev => [newFolder, ...prev]);
+            setFolders(prev => [folder, ...prev]);
             toast.success('Folder duplicated', toastStyle);
         }
     };
@@ -240,7 +246,7 @@ export default function FolderContentPage() {
 
                 {/* Folders Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {folders.filter(i => i.parent_folder_id === null).map(folder => (
+                    {folders.filter(i => i?.parent_folder_id === null).map(folder => (
                         <motion.div
                             key={folder.id}
                             whileHover={activeDropdown !== folder.id ? { y: -4 } : {}}
@@ -446,6 +452,8 @@ export default function FolderContentPage() {
                             folders={folders}
                             currentItem={itemToMove}
                             onMove={handleMove}
+                            targetFolder={targetFolder}
+                            setTargetFolder={setTargetFolder}
                             onClose={() => {
                                 setShowMoveItemModal(false);
                                 setItemToMove(null);

@@ -23,7 +23,7 @@ export default function MoveItemModal({ moveModalRef, onClose, folders, currentI
                 <div className="px-6 pt-6 pb-4">
                     <h2 className="text-xl font-semibold text-[var(--text)] tracking-tight">Move item</h2>
                     <p className="text-sm text-[var(--text-muted)] mt-1.5 leading-relaxed">
-                        Select a destination for <span className="font-bold text-[var(--text)]">"{currentItem?.name}"</span>.
+                        Select a destination for <span className="font-bold text-[var(--text)]">"{currentItem?.name || 'this item'}"</span>.
                     </p>
                 </div>
 
@@ -36,7 +36,7 @@ export default function MoveItemModal({ moveModalRef, onClose, folders, currentI
                         <div className="flex flex-col gap-2">
                             <button
                                 onClick={() => setSelectedDestination('root')}
-                                className={`flex items-center gap-3 w-full p-3 rounded-lg border transition-all duration-200 text-left
+                                className={`flex items-center gap-3 w-full p-3 rounded-lg border transition-all duration-200 text-left cursor-pointer
                                 ${selectedDestination === 'root'
                                     ? 'border-[var(--nice-blue)] bg-[var(--nice-blue)]/5'
                                     : 'border-[var(--layer3)] bg-[var(--layer2)] hover:border-[var(--text-muted)]'}`}
