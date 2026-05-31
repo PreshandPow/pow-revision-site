@@ -612,7 +612,7 @@ export default function NotePage() {
                         md:transition-all md:duration-150
                         ${hoveredBlock ? 'md:!opacity-100 md:!pointer-events-auto' : ''}`}
                         style={{
-                            top: sidebarTop !== -9999 ? `${sidebarTop}px` : '0px',
+                            top: sidebarTop !== -9999 ? `${sidebarTop + 17}px` : '0px',
                             left: '-72px',
                             transform: 'translateY(-20%)',
                         }}
