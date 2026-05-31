@@ -191,6 +191,8 @@ export default function FolderContentPage() {
         day: 'numeric', month: 'short', year: 'numeric'
     });
 
+    const foldersWithoutParent = folders.filter(f => f.parent_folder_id === null);
+
     if (loading) return (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--layer1)] backdrop-blur-xl p-6">
             <div className="w-16 h-16 mb-8 rounded-2xl bg-[var(--nice-blue)] animate-pulse shadow-[0_0_40px_rgba(var(--blue-rgb),0.3)] flex items-center justify-center">
@@ -230,17 +232,17 @@ export default function FolderContentPage() {
             <div className="max-w-7xl mx-auto">
 
                 {/* Header and Breadcrumbs */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
-                    <div className="flex items-center gap-2 text-sm font-medium text-[var(--text-muted)]">
-                        <h1 className="text-2xl md:text-4xl text-[var(--text)] font-brand">Folders</h1>
+                <div className="flex items-center justify-between mb-8">
+                    <div>
+                        <h1 className="text-3xl font-bold text-[var(--text)]">Folders</h1>
+                        <p className="text-[var(--text-muted)] mt-1 text-sm">{foldersWithoutParent.length} folder{foldersWithoutParent.length !== 1 ? 's' : ''}</p>
                     </div>
-
                     <button
-                        onClick={() => setShowCreateFolderModal(true)}
-                        className="flex items-center justify-center gap-2 bg-[var(--nice-blue)] text-white px-4
-                    py-2 rounded-lg font-semibold text-sm hover:opacity-90 transition-all shadow-sm w-fit cursor-pointer">
+                        onClick={handleCreateFolder}
+                        className="flex items-center gap-2 bg-[var(--nice-blue)] text-white font-bold px-5 py-2.5 rounded-xl shadow-lg shadow-blue-500/20 hover:scale-95 transition-transform cursor-pointer"
+                    >
                         <Plus size={18} />
-                        New Item
+                        New folder
                     </button>
                 </div>
 
