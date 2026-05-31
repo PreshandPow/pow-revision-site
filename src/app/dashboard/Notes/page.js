@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import {useEffect, useRef, useState} from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import {Plus, FileText, Clock, Trash2, MoreVertical, ExternalLink, Edit2, FolderOutput, Copy} from 'lucide-react';
 import toast from 'react-hot-toast';
 import {AnimatePresence, motion} from "framer-motion";
+import RenameItemModal from "../../../components/RenameItemModal";
 
 export function createClient() {
     return createBrowserClient(
@@ -36,6 +37,49 @@ export default function NotesPage() {
 
     useEffect(() => {
         fetchNotes();
+    }, []);
+
+    const [showRenameNoteModal, setShowRenameNoteModal] = useState(false);
+    const [noteName, setNoteName] = useState('Untitled Folder');
+    const [noteToRename, setNoteToRename] = useState(null);
+    const showRenameNoteModalRef = useRef(null);
+
+    // ── Note Rename ──────────────────────────────────────────────────────────────────
+    const handleNoteRename = async (newName) => {
+        if (!noteToRename || !newName.trim()) return;
+
+        const { error } = await supabase
+            .from('notes')
+            .update({ title: newName })
+            .eq('id', noteToRename.id);
+
+        if (error) {
+            toast.error(`Could not change note name: ${error}`, toastStyle);
+        } else {
+            toast.success('Note renamed', toastStyle);
+
+            setNotes(prevNotes =>
+                prevNotes.map(n =>
+                    n.id === noteToRename.id ? { ...n, title: newName } : n
+                )
+            );
+
+            setNoteToRename(null);
+        }
+    };
+
+    // ── Closing dropdowns if clicking outside them ──────────────────────────────────────────────────────────────────
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (!e.target.closest('.folder-dropdown-container')) {
+                setActiveDropdown(null);
+            }
+            if (showRenameNoteModalRef.current && !showRenameNoteModalRef.current.contains(e.target)) {
+                setShowRenameNoteModal(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
     const fetchNotes = async () => {
@@ -207,6 +251,9 @@ export default function NotesPage() {
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
+                                                        setShowRenameNoteModal(!showRenameNoteModal);
+                                                        setNoteToRename(note);
+                                                        setNoteName(note.title);
                                                         setActiveDropdown(null);
                                                     }}
                                                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
@@ -277,6 +324,15 @@ export default function NotesPage() {
                             </div>
                         ))}
                     </div>
+                )}
+                {showRenameNoteModal && (
+                    <RenameItemModal
+                        renameModalRef={showRenameNoteModalRef}
+                        currentName={noteName}
+                        handleRename={handleNoteRename}
+                        setItemName={setNoteName}
+                        setShowRenameItemModal={setShowRenameNoteModal}
+                    />
                 )}
             </div>
         </main>

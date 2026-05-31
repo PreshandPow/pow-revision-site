@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import toast from 'react-hot-toast';
 import CreateFolderModal from '../../../components/createFolderModal';
-import RenameFolderModal from "../../../components/RenameFolderModal";
+import RenameItemModal from "../../../components/RenameItemModal";
 import MoveItemModal from "../../../components/MoveItemModal";
 
 export function createClient() {
@@ -32,7 +32,7 @@ export default function FolderContentPage() {
     const [folderToDelete, setFolderToDelete] = useState(null); // ID of the folder to be deleted
     const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
     const [folderName, setFolderName] = useState('Untitled Folder');
-    const [showRenameFolderModal, setShowRenameFolderModal] = useState(false);
+    const [showRenameItemModal, setShowRenameItemModal] = useState(false);
 
     const showRenameFolderModalRef = useRef(null);
     const createFolderModalRef = useRef(null);
@@ -71,8 +71,8 @@ export default function FolderContentPage() {
             if (!e.target.closest('.folder-dropdown-container')) {
                 setActiveDropdown(null);
             }
-            if (showRenameFolderModalRef.current && !showRenameFolderModalRef.current.contains(e.target)) {
-                setShowRenameFolderModal(false);
+            if (showRenameItemModal.current && !showRenameItemModal.current.contains(e.target)) {
+                setShowRenameItemModal(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -310,8 +310,9 @@ export default function FolderContentPage() {
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        setShowRenameFolderModal(!showRenameFolderModal);
+                                                        setShowRenameItemModal(!showRenameItemModal);
                                                         setFolderToRename(folder);
+                                                        setFolderName(folder.name);
                                                         setActiveDropdown(null);
                                                     }}
                                                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
@@ -439,13 +440,13 @@ export default function FolderContentPage() {
                             </motion.div>
                         </div>
                     )}
-                    {showRenameFolderModal && (
-                        <RenameFolderModal
+                    {showRenameItemModal && (
+                        <RenameItemModal
                         renameModalRef={showRenameFolderModalRef}
                         currentName={folderName}
                         handleRename={handleFolderRename}
-                        setFolderName={setFolderName}
-                        setShowRenameFolderModal={setShowRenameFolderModal}
+                        setItemName={setFolderName}
+                        setShowRenameItemModal={setShowRenameItemModal}
                         />
                     )}
                     {showMoveItemModal && itemToMove && (
