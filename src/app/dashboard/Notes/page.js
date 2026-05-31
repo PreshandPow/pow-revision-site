@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
-import { Plus, FileText, Clock, Trash2 } from 'lucide-react';
+import {Plus, FileText, Clock, Trash2, MoreVertical, ExternalLink, Edit2, FolderOutput, Copy} from 'lucide-react';
 import toast from 'react-hot-toast';
+import {AnimatePresence, motion} from "framer-motion";
 
 export function createClient() {
     return createBrowserClient(
@@ -18,6 +19,7 @@ export default function NotesPage() {
     const supabase = createClient();
     const [notes, setNotes] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [activeDropdown, setActiveDropdown] = useState(null);
 
     const toastStyle = {
         style: {
@@ -155,16 +157,102 @@ export default function NotesPage() {
                             <div
                                 key={note.id}
                                 onClick={() => router.push(`/dashboard/Notes/${note.id}`)}
-                                className="group bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5 flex flex-col gap-3 cursor-pointer hover:border-[var(--nice-blue)] transition-colors"
+                                className={`group relative bg-[var(--layer1)] border border-[var(--layer3)] 
+                                        rounded-2xl p-5 flex flex-col gap-3 cursor-pointer transition-colors duration-200
+                                        ${activeDropdown === note.id ? 'z-[100] border-[var(--nice-blue)]' : 'z-10 hover:border-[var(--nice-blue)]'}`}
                             >
                                 <div className="flex items-start justify-between gap-2">
                                     <p className="font-bold text-[var(--text)] truncate flex-1">{note.title || 'Untitled'}</p>
                                     <button
-                                        onClick={(e) => handleDelete(e, note.id)}
-                                        className="md:opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg hover:bg-red-500/10 cursor-pointer"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setActiveDropdown(activeDropdown === note.id ? null : note.id);
+                                        }}
+                                        className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text)]
+                                        hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                                     >
-                                        <Trash2 size={15} className="text-red-400" />
+                                        <MoreVertical size={18} />
                                     </button>
+
+                                    <AnimatePresence>
+                                        {activeDropdown === note.id && (
+                                            <motion.div
+                                                initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                                exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                                                transition={{ duration: 0.15 }}
+                                                className="absolute top-10 mt-2 w-56 bg-[var(--layer1)]
+                                                border border-[var(--layer3)] rounded-xl shadow-2xl py-1.5 z-60
+                                                overflow-hidden left-25 md:left-40"
+                                            >
+                                                <a
+                                                    href={`/dashboard/Notes/${note.id}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                >
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setActiveDropdown(null);
+                                                        }}
+                                                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
+                                                    font-medium text-[var(--text-muted)] hover:text-[var(--text)]
+                                                    hover:bg-[var(--layer2)] transition-colors cursor-pointer"
+                                                    >
+                                                        <ExternalLink size={16} /> Open in new tab
+                                                    </button>
+                                                </a>
+
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setActiveDropdown(null);
+                                                    }}
+                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
+                                                    font-medium text-[var(--text-muted)] hover:text-[var(--text)]
+                                                    hover:bg-[var(--layer2)] transition-colors cursor-pointer"
+                                                >
+                                                    <Edit2 size={16} /> Rename
+                                                </button>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setActiveDropdown(null);
+                                                    }}
+                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
+                                                    font-medium text-[var(--text-muted)] hover:text-[var(--text)]
+                                                    hover:bg-[var(--layer2)] transition-colors cursor-pointer"
+                                                >
+                                                    <FolderOutput size={16} /> Move to
+                                                </button>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setActiveDropdown(null);
+                                                    }}
+                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
+                                                    font-medium text-[var(--text-muted)] hover:text-[var(--text)]
+                                                    hover:bg-[var(--layer2)] transition-colors cursor-pointer"
+                                                >
+                                                    <Copy size={16} /> Duplicate
+                                                </button>
+
+                                                <div className="h-px bg-[var(--layer3)] my-1 w-full" />
+
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setActiveDropdown(null);
+                                                    }}
+                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
+                                                    font-medium text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
+                                                >
+                                                    <Trash2 size={16} /> Delete note
+                                                </button>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+
                                 </div>
 
                                 <p className="text-sm text-[var(--text-muted)] line-clamp-2 flex-1">
