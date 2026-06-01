@@ -1,11 +1,11 @@
 'use client';
 
-import {useEffect, useRef, useState} from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
-import {Plus, FileText, Clock, Trash2, MoreVertical, ExternalLink, Edit2, FolderOutput, Copy} from 'lucide-react';
+import { Plus, FileText, Clock, Trash2, MoreVertical, ExternalLink, Edit2, FolderOutput, Copy } from 'lucide-react';
 import toast from 'react-hot-toast';
-import {AnimatePresence, motion} from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import RenameItemModal from "../../../components/RenameItemModal";
 import MoveItemModal from "../../../components/MoveItemModal";
 
@@ -19,11 +19,31 @@ export function createClient() {
 export default function NotesPage() {
     const router = useRouter();
     const supabase = createClient();
+
+    // ─── 1. GLOBAL UI & DATA STATES ────────────────────────────────────────────────
     const [notes, setNotes] = useState([]);
+    const [folders, setFolders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeDropdown, setActiveDropdown] = useState(null);
-    const [folders, setFolders] = useState([]);
 
+    // ─── 2. MODAL SPECIFIC STATES & REFS ──────────────────────────────────────────
+    // Rename Modal
+    const [showRenameNoteModal, setShowRenameNoteModal] = useState(false);
+    const [noteToRename, setNoteToRename] = useState(null);
+    const [noteName, setNoteName] = useState('Untitled Folder');
+    const showRenameNoteModalRef = useRef(null);
+
+    // Move Modal
+    const [showMoveItemModal, setShowMoveItemModal] = useState(false);
+    const [noteToMove, setNoteToMove] = useState(null);
+    const [targetFolder, setTargetFolder] = useState(null);
+    const itemToMoveRef = useRef(null);
+
+    // Delete Modal
+    const [noteToDelete, setNoteToDelete] = useState(null);
+    const deleteNoteModalRef = useRef(null);
+
+    // ─── 3. CONSTANTS & HELPERS ───────────────────────────────────────────────────
     const toastStyle = {
         style: {
             border: '1px solid var(--nice-blue)',
@@ -37,35 +57,17 @@ export default function NotesPage() {
         },
     };
 
-    const [showRenameNoteModal, setShowRenameNoteModal] = useState(false);
-    const [noteName, setNoteName] = useState('Untitled Folder');
-    const [noteToRename, setNoteToRename] = useState(null);
-    const showRenameNoteModalRef = useRef(null);
+    const formatDate = (date) => new Date(date).toLocaleDateString('en-GB', {
+        day: 'numeric', month: 'short', year: 'numeric'
+    });
 
-    // ── Note Rename ──────────────────────────────────────────────────────────────────
-    const handleNoteRename = async (newName) => {
-        if (!noteToRename || !newName.trim()) return;
-
-        const { error } = await supabase
-            .from('notes')
-            .update({ title: newName })
-            .eq('id', noteToRename.id);
-
-        if (error) {
-            toast.error(`Could not change note name: ${error}`, toastStyle);
-        } else {
-            toast.success('Note renamed', toastStyle);
-
-            setNotes(prevNotes =>
-                prevNotes.map(n =>
-                    n.id === noteToRename.id ? { ...n, title: newName } : n
-                )
-            );
-
-            setNoteToRename(null);
-        }
+    const stripHtml = (html) => {
+        if (!html) return "";
+        return html.replace(/<[^>]*>?/gm, '');
     };
 
+    // ─── 4. USE EFFECTS ───────────────────────────────────────────────────────────
+    // Initial Data Fetch
     useEffect(() => {
         const fetchAllData = async () => {
             const { data: { user } } = await supabase.auth.getUser();
@@ -75,6 +77,7 @@ export default function NotesPage() {
                 supabase.from('notes').select('*').eq('user_id', user.id).order('updated_at', { ascending: false }),
                 supabase.from('folders').select('*').eq('user_id', user.id).order('updated_at', { ascending: false })
             ]);
+
             if (notesResponse.error) {
                 toast.error(notesResponse.error.message, toastStyle);
             } else {
@@ -93,13 +96,60 @@ export default function NotesPage() {
         fetchAllData();
     }, []);
 
-    const [showMoveItemModal, setShowMoveItemModal] = useState(false);
-    const [noteToMove, setNoteToMove] = useState(null);
-    const [targetFolder, setTargetFolder] = useState(null);
+    // Click Outside Listener
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (!e.target.closest('.folder-dropdown-container')) {
+                setActiveDropdown(null);
+            }
+            if (showRenameNoteModalRef.current && !showRenameNoteModalRef.current.contains(e.target)) {
+                setShowRenameNoteModal(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
-    const itemToMoveRef = useRef(null);
 
-    // ── Item Move ──────────────────────────────────────────────────────────────────
+    // ─── 5. CRUD ACTION HANDLERS ──────────────────────────────────────────────────
+
+    // Create
+    const handleCreateNote = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+
+        const { data: note, error } = await supabase
+            .from('notes')
+            .insert({ user_id: user.id, title: 'Untitled', content: '' })
+            .select()
+            .single();
+
+        if (error) { toast.error('Could not create note', toastStyle); return; }
+        router.push(`/dashboard/Notes/${note.id}`);
+    };
+
+    // Rename
+    const handleNoteRename = async (newName) => {
+        if (!noteToRename || !newName.trim()) return;
+
+        const { error } = await supabase
+            .from('notes')
+            .update({ title: newName })
+            .eq('id', noteToRename.id);
+
+        if (error) {
+            toast.error(`Could not change note name: ${error}`, toastStyle);
+        } else {
+            toast.success('Note renamed', toastStyle);
+            setNotes(prevNotes =>
+                prevNotes.map(n =>
+                    n.id === noteToRename.id ? { ...n, title: newName } : n
+                )
+            );
+            setNoteToRename(null);
+        }
+    };
+
+    // Move
     const handleMove = async (destinationId) => {
         if (!noteToMove) return;
         const targetTable = 'notes';
@@ -118,35 +168,7 @@ export default function NotesPage() {
         }
     };
 
-    // ── Closing dropdowns if clicking outside them ──────────────────────────────────────────────────────────────────
-    useEffect(() => {
-        const handleClickOutside = (e) => {
-            if (!e.target.closest('.folder-dropdown-container')) {
-                setActiveDropdown(null);
-            }
-            if (showRenameNoteModalRef.current && !showRenameNoteModalRef.current.contains(e.target)) {
-                setShowRenameNoteModal(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
-
-    // ──  Note Creation ──────────────────────────────────────────────────────────────────
-    const handleCreateNote = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-
-        const { data: note, error } = await supabase
-            .from('notes')
-            .insert({ user_id: user.id, title: 'Untitled', content: '' })
-            .select()
-            .single();
-
-        if (error) { toast.error('Could not create note', toastStyle); return; }
-        router.push(`/dashboard/Notes/${note.id}`);
-    };
-
-    // ── Note Duplication ──────────────────────────────────────────────────────────────────
+    // Duplicate
     const handleDuplicateNote = async (note) => {
         const { data: { user } } = await supabase.auth.getUser();
 
@@ -164,60 +186,31 @@ export default function NotesPage() {
         }
     };
 
-    // ── Note Deletion ──────────────────────────────────────────────────────────────────
-    const [noteToDelete, setNoteToDelete] = useState(null);
-    const deleteNoteModalRef = useRef(null);
-
+    // Delete
     const handleDeleteConfirm = async () => {
         if (!noteToDelete) return;
 
-        const { error } = await supabase.from('folders').delete().eq('id', noteToDelete);
+        const { error } = await supabase.from('notes').delete().eq('id', noteToDelete.id);
         if (error) {
             toast.error('Could not delete note', toastStyle);
             setNoteToDelete(null);
             return;
         }
 
-        setNotes(prev => prev.filter(n => n.id !== noteToDelete));
+        setNotes(prev => prev.filter(n => n.id !== noteToDelete.id));
         toast.success('Note deleted', toastStyle);
         setNoteToDelete(null);
     };
 
-    const formatDate = (date) => new Date(date).toLocaleDateString('en-GB', {
-        day: 'numeric', month: 'short', year: 'numeric'
-    });
-
-    const stripHtml = (html) => {
-        if (!html) return "";
-        return html.replace(/<[^>]*>?/gm, '');
-    };
-
+    // ─── 6. RENDER ────────────────────────────────────────────────────────────────
     if (loading) return (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--layer1)] backdrop-blur-xl p-6">
             <div className="w-16 h-16 mb-8 rounded-2xl bg-[var(--nice-blue)] animate-pulse shadow-[0_0_40px_rgba(var(--blue-rgb),0.3)] flex items-center justify-center">
-                <svg
-                    className="animate-spin"
-                    width="40"
-                    height="40"
-                    viewBox="0 0 32 32"
-                    fill="none"
-                >
-                    <circle
-                        cx="16"
-                        cy="16"
-                        r="12"
-                        stroke="rgba(255,255,255,0.2)"
-                        strokeWidth="3"
-                    />
-                    <path
-                        d="M16 4 A12 12 0 0 1 28 16"
-                        stroke="white"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                    />
+                <svg className="animate-spin" width="40" height="40" viewBox="0 0 32 32" fill="none">
+                    <circle cx="16" cy="16" r="12" stroke="rgba(255,255,255,0.2)" strokeWidth="3" />
+                    <path d="M16 4 A12 12 0 0 1 28 16" stroke="white" strokeWidth="3" strokeLinecap="round" />
                 </svg>
             </div>
-
             <h1 className="font-brand text-[var(--text)] text-2xl md:text-3xl font-bold tracking-tight text-center max-w-md leading-tight">
                 <span className="text-[var(--nice-blue)]">POW Bot</span> is getting your notes for you
             </h1>
@@ -231,7 +224,7 @@ export default function NotesPage() {
         <main className="min-h-screen bg-[var(--layer2)] p-6 md:p-10">
             <div className="max-w-5xl mx-auto">
 
-                {/* Header and Breadcrumbs */}
+                {/* Header */}
                 <div className="flex items-center justify-between mb-8">
                     <div>
                         <h1 className="text-3xl font-bold text-[var(--text)]">Notes</h1>
@@ -246,6 +239,7 @@ export default function NotesPage() {
                     </button>
                 </div>
 
+                {/* Empty State */}
                 {notes.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-24 gap-4">
                         <div className="w-16 h-16 rounded-2xl bg-[var(--layer1)] border border-[var(--layer3)] flex items-center justify-center">
@@ -263,6 +257,7 @@ export default function NotesPage() {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {/* Note Cards */}
                         {notes.map(note => (
                             <div
                                 key={note.id}
@@ -271,19 +266,21 @@ export default function NotesPage() {
                                         rounded-2xl p-5 flex flex-col gap-3 cursor-pointer transition-colors duration-200
                                         ${activeDropdown === note.id ? 'z-[100] border-[var(--nice-blue)]' : 'z-10 hover:border-[var(--nice-blue)]'}`}
                             >
-                                <div className="flex items-start justify-between gap-2">
+                                <div className="flex items-start justify-between gap-2 folder-dropdown-container">
                                     <p className="font-bold text-[var(--text)] truncate flex-1">{note.title || 'Untitled'}</p>
+
+                                    {/* Dropdown Trigger */}
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             setActiveDropdown(activeDropdown === note.id ? null : note.id);
                                         }}
-                                        className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text)]
-                                        hover:bg-[var(--layer3)] transition-colors cursor-pointer"
+                                        className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                                     >
                                         <MoreVertical size={18} />
                                     </button>
 
+                                    {/* Dropdown Menu */}
                                     <AnimatePresence>
                                         {activeDropdown === note.id && (
                                             <motion.div
@@ -291,23 +288,12 @@ export default function NotesPage() {
                                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                                 exit={{ opacity: 0, scale: 0.95, y: -10 }}
                                                 transition={{ duration: 0.15 }}
-                                                className="absolute top-10 mt-2 w-56 bg-[var(--layer1)]
-                                                border border-[var(--layer3)] rounded-xl shadow-2xl py-1.5 z-60
-                                                overflow-hidden left-25 md:left-40"
+                                                className="absolute top-10 mt-2 w-56 bg-[var(--layer1)] border border-[var(--layer3)] rounded-xl shadow-2xl py-1.5 z-60 overflow-hidden left-25 md:left-40"
                                             >
-                                                <a
-                                                    href={`/dashboard/Notes/${note.id}`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                >
+                                                <a href={`/dashboard/Notes/${note.id}`} target="_blank" rel="noopener noreferrer">
                                                     <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setActiveDropdown(null);
-                                                        }}
-                                                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
-                                                    font-medium text-[var(--text-muted)] hover:text-[var(--text)]
-                                                    hover:bg-[var(--layer2)] transition-colors cursor-pointer"
+                                                        onClick={(e) => { e.stopPropagation(); setActiveDropdown(null); }}
+                                                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer"
                                                     >
                                                         <ExternalLink size={16} /> Open in new tab
                                                     </button>
@@ -316,17 +302,16 @@ export default function NotesPage() {
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        setShowRenameNoteModal(!showRenameNoteModal);
+                                                        setShowRenameNoteModal(true);
                                                         setNoteToRename(note);
                                                         setNoteName(note.title);
                                                         setActiveDropdown(null);
                                                     }}
-                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
-                                                    font-medium text-[var(--text-muted)] hover:text-[var(--text)]
-                                                    hover:bg-[var(--layer2)] transition-colors cursor-pointer"
+                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer"
                                                 >
                                                     <Edit2 size={16} /> Rename
                                                 </button>
+
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
@@ -334,21 +319,18 @@ export default function NotesPage() {
                                                         setShowMoveItemModal(true);
                                                         setActiveDropdown(null);
                                                     }}
-                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
-                                                    font-medium text-[var(--text-muted)] hover:text-[var(--text)]
-                                                    hover:bg-[var(--layer2)] transition-colors cursor-pointer"
+                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer"
                                                 >
                                                     <FolderOutput size={16} /> Move to
                                                 </button>
+
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         handleDuplicateNote(note);
                                                         setActiveDropdown(null);
                                                     }}
-                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
-                                                    font-medium text-[var(--text-muted)] hover:text-[var(--text)]
-                                                    hover:bg-[var(--layer2)] transition-colors cursor-pointer"
+                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer"
                                                 >
                                                     <Copy size={16} /> Duplicate
                                                 </button>
@@ -361,15 +343,13 @@ export default function NotesPage() {
                                                         setNoteToDelete(note);
                                                         setActiveDropdown(null);
                                                     }}
-                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
-                                                    font-medium text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
+                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
                                                 >
                                                     <Trash2 size={16} /> Delete note
                                                 </button>
                                             </motion.div>
                                         )}
                                     </AnimatePresence>
-
                                 </div>
 
                                 <p className="text-sm text-[var(--text-muted)] line-clamp-2 flex-1">
@@ -394,69 +374,33 @@ export default function NotesPage() {
                         ))}
                     </div>
                 )}
-                {showRenameNoteModal && (
-                    <RenameItemModal
-                        renameModalRef={showRenameNoteModalRef}
-                        currentName={noteName}
-                        handleRename={handleNoteRename}
-                        setItemName={setNoteName}
-                        setShowRenameItemModal={setShowRenameNoteModal}
-                    />
-                )}
-                {showMoveItemModal && noteToMove && (
-                    <MoveItemModal
-                        moveModalRef={itemToMoveRef}
-                        folders={folders}
-                        currentItem={noteToMove}
-                        onMove={handleMove}
-                        targetFolder={targetFolder}
-                        setTargetFolder={setTargetFolder}
-                        onClose={() => {
-                            setShowMoveItemModal(false);
-                            setNoteToMove(null);
-                        }}
-                    />
-                )}
+
+                {/* ─── MODALS ──────────────────────────────────────────────────────────── */}
                 <AnimatePresence>
+                    {/* Delete Modal */}
                     {noteToDelete && (
-                        <div
-                            ref={deleteNoteModalRef}
-                            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40
-                            backdrop-blur-sm p-4 md:p-6">
+                        <div ref={deleteNoteModalRef} className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 md:p-6">
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.95, y: 10 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.95, y: 10 }}
                                 transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                                className="relative flex flex-col w-full max-w-[400px] bg-[var(--layer1)] border
-                                border-[var(--layer3)] rounded-xl shadow-2xl overflow-hidden"
+                                className="relative flex flex-col w-full max-w-[400px] bg-[var(--layer1)] border border-[var(--layer3)] rounded-xl shadow-2xl overflow-hidden"
                             >
                                 <div className="p-6">
-                                    <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center
-                                    justify-center mb-4 text-red-500">
+                                    <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mb-4 text-red-500">
                                         <Trash2 size={24} />
                                     </div>
-                                    <h2 className="text-xl font-bold text-[var(--text)] tracking-tight mb-2">
-                                        Delete note?
-                                    </h2>
+                                    <h2 className="text-xl font-bold text-[var(--text)] tracking-tight mb-2">Delete note?</h2>
                                     <p className="text-sm text-[var(--text-muted)] leading-relaxed">
-                                        Are you sure you want to delete this note? All contents inside will be safe. This action cannot be undone.
+                                        Are you sure you want to delete this note? This action cannot be undone.
                                     </p>
                                 </div>
-
                                 <div className="px-6 py-4 bg-[var(--layer2)]/50 border-t border-[var(--layer3)] flex items-center justify-end gap-3">
-                                    <button
-                                        onClick={() => setNoteToDelete(null)}
-                                        className="px-4 py-2 text-sm font-semibold rounded-lg text-[var(--text-muted)]
-                                        hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
-                                    >
+                                    <button onClick={() => setNoteToDelete(null)} className="px-4 py-2 text-sm font-semibold rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer">
                                         Cancel
                                     </button>
-                                    <button
-                                        onClick={handleDeleteConfirm}
-                                        className="px-4 py-2 text-sm font-semibold rounded-lg bg-red-500 text-white
-                                         shadow-sm hover:bg-red-600 active:scale-95 transition-all cursor-pointer"
-                                    >
+                                    <button onClick={handleDeleteConfirm} className="px-4 py-2 text-sm font-semibold rounded-lg bg-red-500 text-white shadow-sm hover:bg-red-600 active:scale-95 transition-all cursor-pointer">
                                         Yes, delete note
                                     </button>
                                 </div>
@@ -464,24 +408,24 @@ export default function NotesPage() {
                         </div>
                     )}
 
+                    {/* Rename Modal */}
                     {showRenameNoteModal && (
                         <RenameItemModal
                             renameModalRef={showRenameNoteModalRef}
                             currentName={noteName}
                             handleRename={handleNoteRename}
                             setItemName={setNoteName}
-                            setShowRenameItemModal={setShowRenameNoteModal}
+                            setShowRenameModal={setShowRenameNoteModal}
                         />
                     )}
 
+                    {/* Move Modal */}
                     {showMoveItemModal && noteToMove && (
                         <MoveItemModal
                             moveModalRef={itemToMoveRef}
                             folders={folders}
                             currentItem={noteToMove}
                             onMove={handleMove}
-                            targetFolder={targetFolder}
-                            setTargetFolder={setTargetFolder}
                             onClose={() => {
                                 setShowMoveItemModal(false);
                                 setNoteToMove(null);
