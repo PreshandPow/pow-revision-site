@@ -7,6 +7,7 @@ import {Plus, FileText, Clock, Trash2, MoreVertical, ExternalLink, Edit2, Folder
 import toast from 'react-hot-toast';
 import {AnimatePresence, motion} from "framer-motion";
 import RenameItemModal from "../../../components/RenameItemModal";
+import MoveItemModal from "../../../components/MoveItemModal";
 
 export function createClient() {
     return createBrowserClient(
@@ -21,6 +22,7 @@ export default function NotesPage() {
     const [notes, setNotes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeDropdown, setActiveDropdown] = useState(null);
+    const [folders, setFolders] = useState([]);
 
     const toastStyle = {
         style: {
@@ -65,6 +67,51 @@ export default function NotesPage() {
             );
 
             setNoteToRename(null);
+        }
+    };
+
+    useEffect(() => {
+        fetchFolders();
+    }, []);
+
+
+    const fetchFolders = async () => {
+        const {  data: { user } } = await supabase.auth.getUser();
+        if (!user) { router.replace('/'); return; }
+
+        const { data, error } = await supabase
+            .from('folders')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('updated_at', { ascending: false });
+
+        if (error) toast.error(error.message, toastStyle);
+        else setFolders(data || []);
+        setLoading(false);
+    };
+
+    const [showMoveItemModal, setShowMoveItemModal] = useState(false);
+    const [noteToMove, setNoteToMove] = useState(null);
+    const [targetFolder, setTargetFolder] = useState(null);
+
+    const itemToMoveRef = useRef(null);
+
+    // ── Item Move ──────────────────────────────────────────────────────────────────
+    const handleMove = async (destinationId) => {
+        if (!noteToMove) return;
+        const targetTable = 'notes';
+
+        const { error } = await supabase
+            .from(targetTable)
+            .update({ folder_id: destinationId === 'root' ? null : destinationId })
+            .eq('id', noteToMove.id);
+
+        if (error) {
+            toast.error('Could not move note', toastStyle);
+        } else {
+            setShowMoveItemModal(false);
+            toast.success('Note moved successfully', toastStyle);
+            setNoteToMove(null);
         }
     };
 
@@ -265,6 +312,8 @@ export default function NotesPage() {
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
+                                                        setNoteToMove(note);
+                                                        setShowMoveItemModal(true);
                                                         setActiveDropdown(null);
                                                     }}
                                                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
@@ -332,6 +381,20 @@ export default function NotesPage() {
                         handleRename={handleNoteRename}
                         setItemName={setNoteName}
                         setShowRenameItemModal={setShowRenameNoteModal}
+                    />
+                )}
+                {showMoveItemModal && noteToMove && (
+                    <MoveItemModal
+                        moveModalRef={itemToMoveRef}
+                        folders={folders}
+                        currentItem={noteToMove}
+                        onMove={handleMove}
+                        targetFolder={targetFolder}
+                        setTargetFolder={setTargetFolder}
+                        onClose={() => {
+                            setShowMoveItemModal(false);
+                            setNoteToMove(null);
+                        }}
                     />
                 )}
             </div>
