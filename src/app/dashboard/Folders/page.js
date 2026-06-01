@@ -28,8 +28,8 @@ export default function FolderContentPage() {
     const [loading, setLoading] = useState(true);
 
     // UI States
-    const [activeDropdown, setActiveDropdown] = useState(null); // ID of the open dropdown
-    const [folderToDelete, setFolderToDelete] = useState(null); // ID of the folder to be deleted
+    const [activeDropdown, setActiveDropdown] = useState(null);
+    const [folderToDelete, setFolderToDelete] = useState(null);
     const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
     const [folderName, setFolderName] = useState('Untitled Folder');
     const [showRenameItemModal, setShowRenameItemModal] = useState(false);
@@ -175,14 +175,14 @@ export default function FolderContentPage() {
 
         const { data: newFolder, error } = await supabase
             .from('folders')
-            .insert({ name: folder.name, user_id: user.id, parent_folder_id: folder.parent })
+            .insert({ name: `${folder?.name} (copy)`, user_id: user?.id, parent_folder_id: folder?.parent_folder_id })
             .select()
             .single();
 
         if (error) {
             toast.error('Could not duplicate folder', toastStyle);
         } else {
-            setFolders(prev => [folder, ...prev]);
+            setFolders(prev => [newFolder, ...prev]);
             toast.success('Folder duplicated', toastStyle);
         }
     };

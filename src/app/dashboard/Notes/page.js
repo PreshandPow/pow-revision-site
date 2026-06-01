@@ -37,10 +37,6 @@ export default function NotesPage() {
         },
     };
 
-    useEffect(() => {
-        fetchNotes();
-    }, []);
-
     const [showRenameNoteModal, setShowRenameNoteModal] = useState(false);
     const [noteName, setNoteName] = useState('Untitled Folder');
     const [noteToRename, setNoteToRename] = useState(null);
@@ -71,24 +67,31 @@ export default function NotesPage() {
     };
 
     useEffect(() => {
-        fetchFolders();
+        const fetchAllData = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) { router.replace('/'); return; }
+
+            const [notesResponse, foldersResponse] = await Promise.all([
+                supabase.from('notes').select('*').eq('user_id', user.id).order('updated_at', { ascending: false }),
+                supabase.from('folders').select('*').eq('user_id', user.id).order('updated_at', { ascending: false })
+            ]);
+            if (notesResponse.error) {
+                toast.error(notesResponse.error.message, toastStyle);
+            } else {
+                setNotes(notesResponse.data || []);
+            }
+
+            if (foldersResponse.error) {
+                toast.error(foldersResponse.error.message, toastStyle);
+            } else {
+                setFolders(foldersResponse.data || []);
+            }
+
+            setLoading(false);
+        };
+
+        fetchAllData();
     }, []);
-
-
-    const fetchFolders = async () => {
-        const {  data: { user } } = await supabase.auth.getUser();
-        if (!user) { router.replace('/'); return; }
-
-        const { data, error } = await supabase
-            .from('folders')
-            .select('*')
-            .eq('user_id', user.id)
-            .order('updated_at', { ascending: false });
-
-        if (error) toast.error(error.message, toastStyle);
-        else setFolders(data || []);
-        setLoading(false);
-    };
 
     const [showMoveItemModal, setShowMoveItemModal] = useState(false);
     const [noteToMove, setNoteToMove] = useState(null);
@@ -129,21 +132,7 @@ export default function NotesPage() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const fetchNotes = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) { router.replace('/'); return; }
-
-        const { data, error } = await supabase
-            .from('notes')
-            .select('*')
-            .eq('user_id', user.id)
-            .order('updated_at', { ascending: false });
-
-        if (error) toast.error(error.message, toastStyle);
-        else setNotes(data || []);
-        setLoading(false);
-    };
-
+    // ──  Note Creation ──────────────────────────────────────────────────────────────────
     const handleCreateNote = async () => {
         const { data: { user } } = await supabase.auth.getUser();
 
@@ -157,12 +146,41 @@ export default function NotesPage() {
         router.push(`/dashboard/Notes/${note.id}`);
     };
 
-    const handleDelete = async (e, id) => {
-        e.stopPropagation();
-        const { error } = await supabase.from('notes').delete().eq('id', id);
-        if (error) { toast.error('Could not delete note', toastStyle); return; }
-        setNotes(prev => prev.filter(n => n.id !== id));
+    // ── Note Duplication ──────────────────────────────────────────────────────────────────
+    const handleDuplicateNote = async (note) => {
+        const { data: { user } } = await supabase.auth.getUser();
+
+        const { data: newNote, error } = await supabase
+            .from('notes')
+            .insert({ title: `${note?.title} (copy)`, user_id: user?.id, folder_id: note?.folder_id, content: note?.content, tags: note?.tags })
+            .select()
+            .single();
+
+        if (error) {
+            toast.error(`Could not duplicate note: ${error}`, toastStyle);
+        } else {
+            setNotes(prev => [newNote, ...prev]);
+            toast.success('Note duplicated', toastStyle);
+        }
+    };
+
+    // ── Note Deletion ──────────────────────────────────────────────────────────────────
+    const [noteToDelete, setNoteToDelete] = useState(null);
+    const deleteNoteModalRef = useRef(null);
+
+    const handleDeleteConfirm = async () => {
+        if (!noteToDelete) return;
+
+        const { error } = await supabase.from('folders').delete().eq('id', noteToDelete);
+        if (error) {
+            toast.error('Could not delete note', toastStyle);
+            setNoteToDelete(null);
+            return;
+        }
+
+        setNotes(prev => prev.filter(n => n.id !== noteToDelete));
         toast.success('Note deleted', toastStyle);
+        setNoteToDelete(null);
     };
 
     const formatDate = (date) => new Date(date).toLocaleDateString('en-GB', {
@@ -325,6 +343,7 @@ export default function NotesPage() {
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
+                                                        handleDuplicateNote(note);
                                                         setActiveDropdown(null);
                                                     }}
                                                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
@@ -339,6 +358,7 @@ export default function NotesPage() {
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
+                                                        setNoteToDelete(note);
                                                         setActiveDropdown(null);
                                                     }}
                                                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
@@ -397,6 +417,78 @@ export default function NotesPage() {
                         }}
                     />
                 )}
+                <AnimatePresence>
+                    {noteToDelete && (
+                        <div
+                            ref={deleteNoteModalRef}
+                            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40
+                            backdrop-blur-sm p-4 md:p-6">
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                                className="relative flex flex-col w-full max-w-[400px] bg-[var(--layer1)] border
+                                border-[var(--layer3)] rounded-xl shadow-2xl overflow-hidden"
+                            >
+                                <div className="p-6">
+                                    <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center
+                                    justify-center mb-4 text-red-500">
+                                        <Trash2 size={24} />
+                                    </div>
+                                    <h2 className="text-xl font-bold text-[var(--text)] tracking-tight mb-2">
+                                        Delete note?
+                                    </h2>
+                                    <p className="text-sm text-[var(--text-muted)] leading-relaxed">
+                                        Are you sure you want to delete this note? All contents inside will be safe. This action cannot be undone.
+                                    </p>
+                                </div>
+
+                                <div className="px-6 py-4 bg-[var(--layer2)]/50 border-t border-[var(--layer3)] flex items-center justify-end gap-3">
+                                    <button
+                                        onClick={() => setNoteToDelete(null)}
+                                        className="px-4 py-2 text-sm font-semibold rounded-lg text-[var(--text-muted)]
+                                        hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleDeleteConfirm}
+                                        className="px-4 py-2 text-sm font-semibold rounded-lg bg-red-500 text-white
+                                         shadow-sm hover:bg-red-600 active:scale-95 transition-all cursor-pointer"
+                                    >
+                                        Yes, delete note
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </div>
+                    )}
+
+                    {showRenameNoteModal && (
+                        <RenameItemModal
+                            renameModalRef={showRenameNoteModalRef}
+                            currentName={noteName}
+                            handleRename={handleNoteRename}
+                            setItemName={setNoteName}
+                            setShowRenameItemModal={setShowRenameNoteModal}
+                        />
+                    )}
+
+                    {showMoveItemModal && noteToMove && (
+                        <MoveItemModal
+                            moveModalRef={itemToMoveRef}
+                            folders={folders}
+                            currentItem={noteToMove}
+                            onMove={handleMove}
+                            targetFolder={targetFolder}
+                            setTargetFolder={setTargetFolder}
+                            onClose={() => {
+                                setShowMoveItemModal(false);
+                                setNoteToMove(null);
+                            }}
+                        />
+                    )}
+                </AnimatePresence>
             </div>
         </main>
     );
