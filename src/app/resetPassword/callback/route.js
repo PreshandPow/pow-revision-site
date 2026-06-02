@@ -1,42 +1,35 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
+import { createClient } from "@/lib/supabase-server";
 
 export async function GET(request) {
     // ─── 1. URL PARSING ─────────────────────────────────────────────────────────
     const { searchParams, origin } = new URL(request.url)
     const code = searchParams.get('code')
 
+    // Handle proxies
+    const forwardedHost = request.headers.get('x-forwarded-host');
+    const forwardedProto = request.headers.get('x-forwarded-proto') ?? 'http';
+    const actualOrigin = forwardedHost ? `${forwardedProto}://${forwardedHost}` : origin;
+
+    console.log('running route');
+
     if (code) {
         // ─── 2. SUPABASE CLIENT INITIALIZATION ──────────────────────────────────
-        const cookieStore = await cookies()
-
-        const supabase = createServerClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-            {
-                cookies: {
-                    getAll() {
-                        return cookieStore.getAll()
-                    },
-                    setAll(cookiesToSet) {
-                        cookiesToSet.forEach(({ name, value, options }) =>
-                            cookieStore.set(name, value, options)
-                        )
-                    },
-                },
-            }
-        )
+        const supabase = createClient();
 
         // ─── 3. AUTH EXCHANGE ───────────────────────────────────────────────────
         const { error } = await supabase.auth.exchangeCodeForSession(code)
 
         if (!error) {
             // ─── 4. SUCCESSFUL REDIRECT ───────────────────────────────────────────
-            return NextResponse.redirect(`${origin}/resetPassword`)
+            return NextResponse.redirect(`${actualOrigin}/resetPassword`)
+        }   else {
+            console.error("Auth exchange error:", error)
         }
     }
 
     // ─── 5. FALLBACK REDIRECT ───────────────────────────────────────────────────
-    return NextResponse.redirect(`${origin}/`)
+    return NextResponse.redirect(`${actualOrigin}/`)
 }

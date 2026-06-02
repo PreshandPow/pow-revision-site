@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import createClient from "../../../lib/supabase-server";
 
 export async function GET(request) {
     // ─── 1. URL & ORIGIN PARSING ────────────────────────────────────────────────
@@ -8,7 +9,7 @@ export async function GET(request) {
     const code = searchParams.get('code');
     const next = searchParams.get('next') ?? '/dashboard';
 
-    // Handle proxies (e.g., Vercel deployments)
+    // Handle proxies
     const forwardedHost = request.headers.get('x-forwarded-host');
     const forwardedProto = request.headers.get('x-forwarded-proto') ?? 'http';
     const actualOrigin = forwardedHost ? `${forwardedProto}://${forwardedHost}` : origin;
@@ -17,28 +18,7 @@ export async function GET(request) {
 
     if (code) {
         // ─── 2. SUPABASE CLIENT INITIALIZATION ──────────────────────────────────
-        const cookieStore = await cookies();
-
-        const supabase = createServerClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-            {
-                cookies: {
-                    getAll() {
-                        return cookieStore.getAll();
-                    },
-                    setAll(cookiesToSet) {
-                        try {
-                            cookiesToSet.forEach(({ name, value, options }) =>
-                                cookieStore.set(name, value, options)
-                            );
-                        } catch (error) {
-                            console.error('Cookie setting error:', error);
-                        }
-                    },
-                },
-            }
-        );
+        const supabase = createClient();
 
         // ─── 3. AUTH EXCHANGE & PROFILE CREATION ────────────────────────────────
         const { data, error } = await supabase.auth.exchangeCodeForSession(code);
