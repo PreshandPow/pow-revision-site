@@ -3,17 +3,22 @@ import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 
 export async function GET(request) {
+    // ─── 1. URL PARSING ─────────────────────────────────────────────────────────
     const { searchParams, origin } = new URL(request.url)
     const code = searchParams.get('code')
 
     if (code) {
+        // ─── 2. SUPABASE CLIENT INITIALIZATION ──────────────────────────────────
         const cookieStore = await cookies()
+
         const supabase = createServerClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL,
             process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
             {
                 cookies: {
-                    getAll() { return cookieStore.getAll() },
+                    getAll() {
+                        return cookieStore.getAll()
+                    },
                     setAll(cookiesToSet) {
                         cookiesToSet.forEach(({ name, value, options }) =>
                             cookieStore.set(name, value, options)
@@ -23,11 +28,15 @@ export async function GET(request) {
             }
         )
 
+        // ─── 3. AUTH EXCHANGE ───────────────────────────────────────────────────
         const { error } = await supabase.auth.exchangeCodeForSession(code)
+
         if (!error) {
+            // ─── 4. SUCCESSFUL REDIRECT ───────────────────────────────────────────
             return NextResponse.redirect(`${origin}/resetPassword`)
         }
     }
 
+    // ─── 5. FALLBACK REDIRECT ───────────────────────────────────────────────────
     return NextResponse.redirect(`${origin}/`)
 }
