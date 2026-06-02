@@ -1,12 +1,14 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
-import { createClient } from "@/lib/supabase-server";
+import { createClient } from "../../../lib/supabase-server";
 
 export async function GET(request) {
     // ─── 1. URL PARSING ─────────────────────────────────────────────────────────
     const { searchParams, origin } = new URL(request.url)
     const code = searchParams.get('code')
+
+    console.log('Extracted code:', code);
 
     // Handle proxies
     const forwardedHost = request.headers.get('x-forwarded-host');
@@ -17,7 +19,7 @@ export async function GET(request) {
 
     if (code) {
         // ─── 2. SUPABASE CLIENT INITIALIZATION ──────────────────────────────────
-        const supabase = createClient();
+        const supabase = await createClient();
 
         // ─── 3. AUTH EXCHANGE ───────────────────────────────────────────────────
         const { error } = await supabase.auth.exchangeCodeForSession(code)

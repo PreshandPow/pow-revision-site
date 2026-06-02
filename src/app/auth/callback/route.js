@@ -18,7 +18,7 @@ export async function GET(request) {
 
     if (code) {
         // ─── 2. SUPABASE CLIENT INITIALIZATION ──────────────────────────────────
-        const supabase = createClient();
+        const supabase = await createClient();
 
         // ─── 3. AUTH EXCHANGE & PROFILE CREATION ────────────────────────────────
         const { data, error } = await supabase.auth.exchangeCodeForSession(code);

@@ -6,9 +6,11 @@ import { createBrowserClient } from '@supabase/ssr';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 import { ArrowLeft, Tag, X, Plus, GripVertical } from 'lucide-react';
+
 import NotesToolbar from '../../../../components/notesToolbar';
 import CanvasLayoutModal from '../../../../components/canvasLayoutModal';
 import CanvasInsertModal from '../../../../components/canvasInsertModal';
+
 export function createClient() {
     return createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -17,41 +19,11 @@ export function createClient() {
 }
 
 export default function NotePage() {
+    // ─── 1. GLOBAL SETUP & MISC ───────────────────────────────────────────────────
     const router = useRouter();
     const { id } = useParams();
     const supabase = createClient();
-
-    // ── core state ────────────────────────────────────────────────────────────
-    const [title, setTitle] = useState('');
-    const [content, setContent] = useState('');
-    const [tags, setTags] = useState([]);
-    const [tagInput, setTagInput] = useState('');
-    const [saveStatus, setSaveStatus] = useState('saved');
     const [loading, setLoading] = useState(true);
-    const [hasChanged, setHasChanged] = useState(false);
-    const [isAutosave, setIsAutosave] = useState(() => {
-        if (typeof window === 'undefined') return true;
-        const saved = localStorage.getItem('pow_autosave');
-        return saved !== null ? JSON.parse(saved) : true;
-    });
-
-    const saveTimer = useRef(null);
-    const lastSavedContent = useRef('');
-    const editorRef = useRef(null);
-
-    // ── sidebar logic state ────────────────────────────────────────────────────
-    const [hoveredBlock, setHoveredBlock] = useState(null);
-    const [sidebarTop, setSidebarTop] = useState(-9999);
-    const sidebarRef = useRef(null);
-
-    // ── toolbar formatting state ──────────────────────────────────────────────
-    const [isUserFocused, setIsUserFocused] = useState(false);
-    const [isTextBold,          setIsTextBold]          = useState(false);
-    const [isTextItalic,        setIsTextItalic]        = useState(false);
-    const [isTextUnderlined,    setIsTextUnderlined]    = useState(false);
-    const [isTextStrikethrough, setIsTextStrikethrough] = useState(false);
-    const [selectedTextType,    setSelectedTextType]    = useState('Paragraph');
-    const [selectedHighlighter, setSelectedHighlighter] = useState(null);
 
     const toastStyle = {
         style: {
@@ -66,270 +38,46 @@ export default function NotePage() {
         },
     };
 
-    // ── selection tracking ────────────────────────────────────────────────────
-    const handleSelectionChange = () => {
-        setIsTextBold(document.queryCommandState('bold'));
-        setIsTextItalic(document.queryCommandState('italic'));
-        setIsTextUnderlined(document.queryCommandState('underline'));
-        setIsTextStrikethrough(document.queryCommandState('strikeThrough'));
+    // ─── 2. NOTE DATA & SAVING STATES ─────────────────────────────────────────────
+    const [title, setTitle] = useState('');
+    const [content, setContent] = useState('');
+    const [tags, setTags] = useState([]);
+    const [tagInput, setTagInput] = useState('');
+    const [saveStatus, setSaveStatus] = useState('saved');
+    const [hasChanged, setHasChanged] = useState(false);
 
-        const selection = window.getSelection();
-        if (selection && selection.rangeCount > 0) {
-            const node = selection.anchorNode;
-            const block = node?.nodeType === 3 ? node.parentElement : node;
-            const tag = block?.closest('h1,h2,h3,p,li')?.tagName?.toLowerCase();
-            const labelMap = { h1: 'Heading 1', h2: 'Heading 2', h3: 'Heading 3', p: 'Paragraph', li: 'Bullet list' };
-            if (tag && labelMap[tag]) setSelectedTextType(labelMap[tag]);
-        }
+    const [isAutosave, setIsAutosave] = useState(() => {
+        if (typeof window === 'undefined') return true;
+        const saved = localStorage.getItem('pow_autosave');
+        return saved !== null ? JSON.parse(saved) : true;
+    });
 
-        setIsUserFocused(document.activeElement!=null);
-    };
+    const saveTimer = useRef(null);
+    const lastSavedContent = useRef('');
 
-    // ── keyboard shortcuts ────────────────────────────────────────────────────
-    const handleKeyDown = (e) => {
-        const isMod = e.ctrlKey || e.metaKey;
+    // ─── 3. EDITOR FORMATTING STATES ──────────────────────────────────────────────
+    const editorRef = useRef(null);
+    const [isUserFocused, setIsUserFocused] = useState(false);
+    const [isTextBold, setIsTextBold] = useState(false);
+    const [isTextItalic, setIsTextItalic] = useState(false);
+    const [isTextUnderlined, setIsTextUnderlined] = useState(false);
+    const [isTextStrikethrough, setIsTextStrikethrough] = useState(false);
+    const [selectedTextType, setSelectedTextType] = useState('Paragraph');
+    const [selectedHighlighter, setSelectedHighlighter] = useState(null);
 
-        if (isMod && e.key.toLowerCase() === 's' && !e.shiftKey) {
-            e.preventDefault();
-            save(title, content, tags);
-            toast.success('Note saved!', toastStyle);
-        }
-        if (isMod && e.shiftKey && e.key.toLowerCase() === 's') {
-            e.preventDefault();
-            document.execCommand('strikeThrough');
-            handleContentChange();
-        }
-        if (isMod && e.shiftKey && e.key.toLowerCase() === 'a') {
-            e.preventDefault();
-            handleAutosaveToggle();
-        }
+    // ─── 4. SIDEBAR & MODAL STATES ────────────────────────────────────────────────
+    const [hoveredBlock, setHoveredBlock] = useState(null);
+    const [sidebarTop, setSidebarTop] = useState(-9999);
+    const sidebarRef = useRef(null);
 
-        if (isMod && e.key.toLowerCase() === 'h') {
-            e.preventDefault();
-            const highlighterBtn = document.getElementById('highlighter-btn');
-            if (highlighterBtn) highlighterBtn.click();
-        }
-    };
+    const [isCanvasLayoutModalOpen, setIsCanvasLayoutModalOpen] = useState(false);
+    const [isCanvasInsertModalOpen, setIsCanvasInsertModalOpen] = useState(false);
+    const layoutModalRef = useRef(null);
+    const insertModalRef = useRef(null);
 
-    // ── block insertion utility ───────────────────────────────────────────────
-    const insertBlock = (newElement) => {
-        if (!editorRef.current) return;
-        editorRef.current.focus();
+    // ─── 5. DATA FETCHING & EFFECTS ───────────────────────────────────────────────
 
-        const selection = window.getSelection();
-        if (selection.rangeCount > 0) {
-            const range = selection.getRangeAt(0);
-            let currentNode = range.endContainer;
-
-            while (
-                currentNode &&
-                currentNode !== editorRef.current &&
-                (currentNode.nodeType === 3 || window.getComputedStyle(currentNode).display.includes('inline'))
-                ) {
-                currentNode = currentNode.parentNode;
-            }
-
-            if (currentNode && currentNode !== editorRef.current) {
-                currentNode.parentNode.insertBefore(newElement, currentNode.nextSibling);
-            } else {
-                editorRef.current.appendChild(newElement);
-            }
-        } else {
-            editorRef.current.appendChild(newElement);
-        }
-
-        const newRange = document.createRange();
-        newRange.selectNodeContents(newElement);
-        newRange.collapse(true);
-        selection.removeAllRanges();
-        selection.addRange(newRange);
-    };
-
-    // ── heading insertion ─────────────────────
-    const handleInsertHeading = (tag) => {
-        const el = document.createElement(tag);
-        const level = tag.replace('h', '');
-        el.textContent = `Heading ${level}`;
-        el.className = `pow-heading-placeholder outline-none`;
-
-        insertBlock(el);
-        handleContentChange();
-    };
-
-    // ── insertion ────────────────────────────────────────────────────────
-    const handleInsertTodo = () => {
-        const container = document.createElement('div');
-        container.className = 'pow-todo-item flex items-start gap-3 my-2';
-
-        const checkboxWrapper = document.createElement('span');
-        checkboxWrapper.contentEditable = "false";
-        checkboxWrapper.className = 'mt-1 flex items-center justify-center';
-
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.className = 'w-4 h-4 cursor-pointer accent-[var(--nice-blue)]';
-
-        checkboxWrapper.appendChild(checkbox);
-
-        const textSpan = document.createElement('div');
-        textSpan.className = 'pow-todo-text flex-1 outline-none min-w-[50px]';
-        textSpan.textContent = '\u200B';
-
-        container.appendChild(checkboxWrapper);
-        container.appendChild(textSpan);
-
-        insertBlock(container);
-
-        setTimeout(() => {
-            const selection = window.getSelection();
-            const newRange = document.createRange();
-            newRange.selectNodeContents(textSpan);
-            newRange.collapse(false);
-            selection.removeAllRanges();
-            selection.addRange(newRange);
-        }, 0);
-
-        handleContentChange();
-    };
-
-    // ── Placeholder clear & focus utility ─────────────────────────────────────
-    const clearPlaceholderAndFocus = (node) => {
-        if (!node || !node.classList || !node.classList.contains('pow-heading-placeholder')) return;
-
-        node.textContent = '\u200B';
-        node.classList.remove('pow-heading-placeholder');
-
-        const selection = window.getSelection();
-        const range = document.createRange();
-        range.selectNodeContents(node);
-        range.collapse(false);
-        selection.removeAllRanges();
-        selection.addRange(range);
-
-        handleContentChange();
-    };
-
-    // ── Event Delegation for Editor ───────────────────────────────────────────
-    const handleEditorClick = (e) => {
-        // 1. Existing Todo logic...
-        if (e.target.tagName === 'INPUT' && e.target.type === 'checkbox') {
-            const container = e.target.closest('.pow-todo-item');
-            const textNode = container?.querySelector('.pow-todo-text');
-            if (e.target.checked) {
-                e.target.setAttribute('checked', 'checked');
-                if (textNode) textNode.classList.add('line-through', 'opacity-50');
-            } else {
-                e.target.removeAttribute('checked');
-                if (textNode) textNode.classList.remove('line-through', 'opacity-50');
-            }
-            handleContentChange();
-        }
-
-        const imageBox = e.target.closest('.pow-image-placeholder');
-        if (imageBox) {
-            const fileInput = document.createElement('input');
-            fileInput.type = 'file';
-            fileInput.accept = 'image/*';
-
-            fileInput.onchange = (event) => {
-                const file = event.target.files[0];
-                if (!file) return;
-
-                const reader = new FileReader();
-                reader.onload = (readerEvent) => {
-                    const imgWrapper = document.createElement('div');
-                    imgWrapper.contentEditable = "false";
-                    imgWrapper.className = "my-4 relative";
-
-                    const img = document.createElement('img');
-                    img.src = readerEvent.target.result;
-                    img.className = "max-w-full rounded-lg border border-[var(--layer3)]";
-
-                    imgWrapper.appendChild(img);
-
-                    if (imageBox.parentNode) {
-                        imageBox.parentNode.replaceChild(imgWrapper, imageBox);
-                        handleContentChange();
-                    }
-                };
-                reader.readAsDataURL(file);
-            };
-
-            fileInput.click();
-            return;
-        }
-
-        let node = e.target;
-        if (node && node.nodeType === 3) node = node.parentElement;
-        clearPlaceholderAndFocus(node);
-    };
-
-    const handleEditorKeyDown = (e) => {
-        handleKeyDown(e);
-
-        const selection = window.getSelection();
-        if (selection.rangeCount > 0) {
-            let node = selection.anchorNode;
-            if (node && node.nodeType === 3) node = node.parentElement;
-
-            if (node && node.classList && node.classList.contains('pow-heading-placeholder')) {
-                if (['Shift', 'Control', 'Alt', 'Meta', 'CapsLock'].includes(e.key)) return;
-                clearPlaceholderAndFocus(node);
-            }
-        }
-    };
-
-    // ── Hover Tracking & Sidebar UI Logic ─────────────────────────────────────
-    const handleEditorMouseMove = (e) => {
-        if (isCanvasLayoutModalOpen || isCanvasInsertModalOpen) return;
-        if (!editorRef.current) return;
-        if (sidebarRef.current && sidebarRef.current.contains(e.target)) return;
-
-        const range = document.caretRangeFromPoint?.(e.clientX, e.clientY);
-        if (!range) return;
-
-        let node = range.startContainer;
-        if (node.nodeType === 3) node = node.parentElement;
-
-        while (node && node.parentElement !== editorRef.current) {
-            node = node.parentElement;
-        }
-
-        if (node && node !== editorRef.current) {
-            const lineRange = document.caretRangeFromPoint(e.clientX, e.clientY);
-            const rect = lineRange?.getBoundingClientRect();
-            const editorRect = editorRef.current.getBoundingClientRect();
-
-            if (rect) {
-                setHoveredBlock(node);
-                setSidebarTop(rect.top - editorRect.top);
-            }
-        } else {
-            setHoveredBlock(null);
-            setSidebarTop(-9999);
-        }
-    };
-
-    const handleEditorMouseLeave = (e) => {
-        const x = e.clientX;
-        const editorRect = editorRef.current?.getBoundingClientRect();
-
-        if (!editorRect) return;
-
-        if (x >= editorRect.left - 90 && x <= editorRect.left) return;
-
-        setHoveredBlock(null);
-        setSidebarTop(-9999);
-    };
-
-    // ── autosave ──────────────────────────────────────────────────────────────
-    const handleAutosaveToggle = () => {
-        const newValue = !isAutosave;
-        setIsAutosave(newValue);
-        localStorage.setItem('pow_autosave', JSON.stringify(newValue));
-    };
-
-    // ── data fetching ─────────────────────────────────────────────────────────
+    // Fetch Note Data
     useEffect(() => {
         const fetchNote = async () => {
             const { data: note, error } = await supabase
@@ -353,13 +101,48 @@ export default function NotePage() {
         fetchNote();
     }, [id]);
 
+    // Populate Editor on Load
     useEffect(() => {
         if (!loading && editorRef.current && editorRef.current.innerHTML === '') {
             editorRef.current.innerHTML = lastSavedContent.current;
         }
     }, [loading]);
 
-    // ── save ──────────────────────────────────────────────────────────────────
+    // Body Overflow Lock while Loading
+    useEffect(() => {
+        if (loading) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+        }
+    }, [loading]);
+
+    // Click Outside Listeners for Sidebar Modals
+    useEffect(() => {
+        const handleClickOutsideLayout = (e) => {
+            if (isCanvasLayoutModalOpen && layoutModalRef.current && !layoutModalRef.current.contains(e.target)) {
+                setIsCanvasLayoutModalOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutsideLayout);
+        return () => document.removeEventListener('mousedown', handleClickOutsideLayout);
+    }, [isCanvasLayoutModalOpen]);
+
+    useEffect(() => {
+        const handleClickOutsideInsert = (e) => {
+            if (isCanvasInsertModalOpen && insertModalRef.current && !insertModalRef.current.contains(e.target)) {
+                setIsCanvasInsertModalOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutsideInsert);
+        return () => document.removeEventListener('mousedown', handleClickOutsideInsert);
+    }, [isCanvasInsertModalOpen]);
+
+
+    // ─── 6. SAVING & CONTENT HANDLERS ─────────────────────────────────────────────
     const save = useCallback(async (newTitle, newContent, newTags) => {
         setSaveStatus('saving');
         const { error } = await supabase
@@ -382,6 +165,7 @@ export default function NotePage() {
         setHasChanged(changed);
         if (!changed) { setSaveStatus('saved'); return; }
         setSaveStatus('unsaved');
+
         if (!isAutosave) return;
         if (saveTimer.current) clearTimeout(saveTimer.current);
         saveTimer.current = setTimeout(() => save(newTitle, newContent, newTags), 1500);
@@ -418,49 +202,110 @@ export default function NotePage() {
         debouncedSave(title, content, newTags);
     };
 
-    useEffect(() => {
-        if (loading) {
-            document.body.style.overflow = 'hidden'
+    const handleAutosaveToggle = () => {
+        const newValue = !isAutosave;
+        setIsAutosave(newValue);
+        localStorage.setItem('pow_autosave', JSON.stringify(newValue));
+    };
+
+
+    // ─── 7. EDITOR INSERTION & FORMATTING ─────────────────────────────────────────
+    const handleSelectionChange = () => {
+        setIsTextBold(document.queryCommandState('bold'));
+        setIsTextItalic(document.queryCommandState('italic'));
+        setIsTextUnderlined(document.queryCommandState('underline'));
+        setIsTextStrikethrough(document.queryCommandState('strikeThrough'));
+
+        const selection = window.getSelection();
+        if (selection && selection.rangeCount > 0) {
+            const node = selection.anchorNode;
+            const block = node?.nodeType === 3 ? node.parentElement : node;
+            const tag = block?.closest('h1,h2,h3,p,li')?.tagName?.toLowerCase();
+            const labelMap = { h1: 'Heading 1', h2: 'Heading 2', h3: 'Heading 3', p: 'Paragraph', li: 'Bullet list' };
+            if (tag && labelMap[tag]) setSelectedTextType(labelMap[tag]);
+        }
+
+        setIsUserFocused(document.activeElement != null);
+    };
+
+    const insertBlock = (newElement) => {
+        if (!editorRef.current) return;
+        editorRef.current.focus();
+
+        const selection = window.getSelection();
+        if (selection.rangeCount > 0) {
+            const range = selection.getRangeAt(0);
+            let currentNode = range.endContainer;
+
+            while (
+                currentNode &&
+                currentNode !== editorRef.current &&
+                (currentNode.nodeType === 3 || window.getComputedStyle(currentNode).display.includes('inline'))
+                ) {
+                currentNode = currentNode.parentNode;
+            }
+
+            if (currentNode && currentNode !== editorRef.current) {
+                currentNode.parentNode.insertBefore(newElement, currentNode.nextSibling);
+            } else {
+                editorRef.current.appendChild(newElement);
+            }
         } else {
-            document.body.style.overflow = ''
+            editorRef.current.appendChild(newElement);
         }
 
-        return () => {
-            document.body.style.overflow = '';
-        }
-    }, [loading]);
+        const newRange = document.createRange();
+        newRange.selectNodeContents(newElement);
+        newRange.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(newRange);
+    };
 
-    // ── floating buttons ────────────────────────────────────
-    const [isCanvasLayoutModalOpen, setIsCanvasLayoutModalOpen] = useState(false);
-    const [isCanvasInsertModalOpen, setIsCanvasInsertModalOpen] = useState(false);
+    const handleInsertHeading = (tag) => {
+        const el = document.createElement(tag);
+        const level = tag.replace('h', '');
+        el.textContent = `Heading ${level}`;
+        el.className = `pow-heading-placeholder outline-none`;
 
+        insertBlock(el);
+        handleContentChange();
+    };
 
-    const layoutModalRef = useRef(null);
-    const insertModalRef = useRef(null);
+    const handleInsertTodo = () => {
+        const container = document.createElement('div');
+        container.className = 'pow-todo-item flex items-start gap-3 my-2';
 
-    useEffect(() => {
-        const handleClickOutside = (e) => {
-            if (isCanvasLayoutModalOpen && layoutModalRef.current && !layoutModalRef.current.contains(e.target)) {
-                setIsCanvasLayoutModalOpen(false);
-            }
-        };
+        const checkboxWrapper = document.createElement('span');
+        checkboxWrapper.contentEditable = "false";
+        checkboxWrapper.className = 'mt-1 flex items-center justify-center';
 
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [isCanvasLayoutModalOpen]);
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'w-4 h-4 cursor-pointer accent-[var(--nice-blue)]';
 
-    useEffect(() => {
-        const handleClickOutside = (e) => {
-            if (isCanvasInsertModalOpen && insertModalRef.current && !insertModalRef.current.contains(e.target)) {
-                setIsCanvasInsertModalOpen(false);
-            }
-        };
+        checkboxWrapper.appendChild(checkbox);
 
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [isCanvasInsertModalOpen]);
+        const textSpan = document.createElement('div');
+        textSpan.className = 'pow-todo-text flex-1 outline-none min-w-[50px]';
+        textSpan.textContent = '\u200B';
 
-    // ── Image Block Insertion ────────────────────────────────────────────────
+        container.appendChild(checkboxWrapper);
+        container.appendChild(textSpan);
+
+        insertBlock(container);
+
+        setTimeout(() => {
+            const selection = window.getSelection();
+            const newRange = document.createRange();
+            newRange.selectNodeContents(textSpan);
+            newRange.collapse(false);
+            selection.removeAllRanges();
+            selection.addRange(newRange);
+        }, 0);
+
+        handleContentChange();
+    };
+
     const handleInsertImagePlaceholder = () => {
         if (!editorRef.current) return;
 
@@ -494,7 +339,162 @@ export default function NotePage() {
         selection.addRange(range);
     };
 
-    // ── loading screen ────────────────────────────────────────────────────────
+    const clearPlaceholderAndFocus = (node) => {
+        if (!node || !node.classList || !node.classList.contains('pow-heading-placeholder')) return;
+
+        node.textContent = '\u200B';
+        node.classList.remove('pow-heading-placeholder');
+
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        range.collapse(false);
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        handleContentChange();
+    };
+
+
+    // ─── 8. EDITOR EVENT LISTENERS ────────────────────────────────────────────────
+    const handleKeyDown = (e) => {
+        const isMod = e.ctrlKey || e.metaKey;
+
+        if (isMod && e.key.toLowerCase() === 's' && !e.shiftKey) {
+            e.preventDefault();
+            save(title, content, tags);
+            toast.success('Note saved!', toastStyle);
+        }
+        if (isMod && e.shiftKey && e.key.toLowerCase() === 's') {
+            e.preventDefault();
+            document.execCommand('strikeThrough');
+            handleContentChange();
+        }
+        if (isMod && e.shiftKey && e.key.toLowerCase() === 'a') {
+            e.preventDefault();
+            handleAutosaveToggle();
+        }
+        if (isMod && e.key.toLowerCase() === 'h') {
+            e.preventDefault();
+            const highlighterBtn = document.getElementById('highlighter-btn');
+            if (highlighterBtn) highlighterBtn.click();
+        }
+    };
+
+    const handleEditorKeyDown = (e) => {
+        handleKeyDown(e);
+
+        const selection = window.getSelection();
+        if (selection.rangeCount > 0) {
+            let node = selection.anchorNode;
+            if (node && node.nodeType === 3) node = node.parentElement;
+
+            if (node && node.classList && node.classList.contains('pow-heading-placeholder')) {
+                if (['Shift', 'Control', 'Alt', 'Meta', 'CapsLock'].includes(e.key)) return;
+                clearPlaceholderAndFocus(node);
+            }
+        }
+    };
+
+    const handleEditorClick = (e) => {
+        // Todo interaction
+        if (e.target.tagName === 'INPUT' && e.target.type === 'checkbox') {
+            const container = e.target.closest('.pow-todo-item');
+            const textNode = container?.querySelector('.pow-todo-text');
+            if (e.target.checked) {
+                e.target.setAttribute('checked', 'checked');
+                if (textNode) textNode.classList.add('line-through', 'opacity-50');
+            } else {
+                e.target.removeAttribute('checked');
+                if (textNode) textNode.classList.remove('line-through', 'opacity-50');
+            }
+            handleContentChange();
+        }
+
+        // Image upload trigger
+        const imageBox = e.target.closest('.pow-image-placeholder');
+        if (imageBox) {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'image/*';
+
+            fileInput.onchange = (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (readerEvent) => {
+                    const imgWrapper = document.createElement('div');
+                    imgWrapper.contentEditable = "false";
+                    imgWrapper.className = "my-4 relative";
+
+                    const img = document.createElement('img');
+                    img.src = readerEvent.target.result;
+                    img.className = "max-w-full rounded-lg border border-[var(--layer3)]";
+
+                    imgWrapper.appendChild(img);
+
+                    if (imageBox.parentNode) {
+                        imageBox.parentNode.replaceChild(imgWrapper, imageBox);
+                        handleContentChange();
+                    }
+                };
+                reader.readAsDataURL(file);
+            };
+
+            fileInput.click();
+            return;
+        }
+
+        // Handle placeholder focus
+        let node = e.target;
+        if (node && node.nodeType === 3) node = node.parentElement;
+        clearPlaceholderAndFocus(node);
+    };
+
+    const handleEditorMouseMove = (e) => {
+        if (isCanvasLayoutModalOpen || isCanvasInsertModalOpen) return;
+        if (!editorRef.current) return;
+        if (sidebarRef.current && sidebarRef.current.contains(e.target)) return;
+
+        const range = document.caretRangeFromPoint?.(e.clientX, e.clientY);
+        if (!range) return;
+
+        let node = range.startContainer;
+        if (node.nodeType === 3) node = node.parentElement;
+
+        while (node && node.parentElement !== editorRef.current) {
+            node = node.parentElement;
+        }
+
+        if (node && node !== editorRef.current) {
+            const lineRange = document.caretRangeFromPoint(e.clientX, e.clientY);
+            const rect = lineRange?.getBoundingClientRect();
+            const editorRect = editorRef.current.getBoundingClientRect();
+
+            if (rect) {
+                setHoveredBlock(node);
+                setSidebarTop(rect.top - editorRect.top);
+            }
+        } else {
+            setHoveredBlock(null);
+            setSidebarTop(-9999);
+        }
+    };
+
+    const handleEditorMouseLeave = (e) => {
+        const x = e.clientX;
+        const editorRect = editorRef.current?.getBoundingClientRect();
+
+        if (!editorRect) return;
+        if (x >= editorRect.left - 90 && x <= editorRect.left) return;
+
+        setHoveredBlock(null);
+        setSidebarTop(-9999);
+    };
+
+
+    // ─── 9. RENDER ────────────────────────────────────────────────────────────────
     if (loading) return (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--layer1)] backdrop-blur-xl p-6">
             <div className="w-16 h-16 mb-8 rounded-2xl bg-[var(--nice-blue)] animate-pulse shadow-[0_0_40px_rgba(var(--blue-rgb),0.3)] flex items-center justify-center">
@@ -561,11 +561,12 @@ export default function NotePage() {
 
             <div className="flex-1 w-full max-w-3xl mx-auto px-4 md:px-0 py-10 flex flex-col gap-6">
 
+                {/* Title Input */}
                 <input type="text" value={title} onChange={handleTitleChange} placeholder="Untitled"
                        className="w-full bg-transparent text-3xl md:text-4xl font-main text-[var(--text)] placeholder:text-[var(--layer3)] outline-none border-none resize-none"/>
 
-                {/* ── toolbar ── */}
-                <div className={'sticky top-[60px] z-[60] pb-2'}>
+                {/* Toolbar */}
+                <div className="sticky top-[60px] z-[60] pb-2">
                     <NotesToolbar
                         editorRef={editorRef}
                         onContentChange={handleContentChange}
@@ -612,11 +613,12 @@ export default function NotePage() {
                         md:transition-all md:duration-150
                         ${hoveredBlock ? 'md:!opacity-100 md:!pointer-events-auto' : ''}`}
                         style={{
-                            top: sidebarTop !== -9999 ? `${sidebarTop + 17}px` : '0px',
+                            top: sidebarTop !== -9999 ? `${sidebarTop}px` : '0px',
                             left: '-72px',
                             transform: 'translateY(-20%)',
                         }}
                     >
+                        {/* Insert Modal Toggle */}
                         <li className="relative">
                             <button
                                 onMouseDown={(e) => {
@@ -629,11 +631,7 @@ export default function NotePage() {
                             </button>
 
                             {isCanvasInsertModalOpen && (
-                                <div
-                                    ref={insertModalRef}
-                                    onMouseLeave={() => setIsCanvasInsertModalOpen(false)}
-                                    className="absolute top-0 left-8 z-50"
-                                >
+                                <div ref={insertModalRef} onMouseLeave={() => setIsCanvasInsertModalOpen(false)} className="absolute top-0 left-8 z-50">
                                     <CanvasInsertModal
                                         editorRef={editorRef}
                                         hoveredBlock={hoveredBlock}
@@ -646,6 +644,7 @@ export default function NotePage() {
                             )}
                         </li>
 
+                        {/* Layout Modal Toggle */}
                         <li className="relative">
                             <button
                                 onMouseDown={(e) => {
@@ -658,11 +657,7 @@ export default function NotePage() {
                             </button>
 
                             {isCanvasLayoutModalOpen && (
-                                <div
-                                    ref={layoutModalRef}
-                                    onMouseLeave={() => setIsCanvasLayoutModalOpen(false)}
-                                    className="absolute top-0 left-8 z-50"
-                                >
+                                <div ref={layoutModalRef} onMouseLeave={() => setIsCanvasLayoutModalOpen(false)} className="absolute top-0 left-8 z-50">
                                     <CanvasLayoutModal
                                         editorRef={editorRef}
                                         hoveredBlock={hoveredBlock}
@@ -673,10 +668,9 @@ export default function NotePage() {
                                 </div>
                             )}
                         </li>
-
                     </ul>
 
-                    {/* Editor Canvas — full width, no left padding */}
+                    {/* Editor Canvas */}
                     <div
                         ref={editorRef}
                         contentEditable
@@ -691,6 +685,8 @@ export default function NotePage() {
                         className="pow-editor w-full min-h-[70vh] bg-transparent text-[var(--text)] outline-none border-none leading-relaxed font-medium"
                     />
                 </div>
+
+                {/* Footer Word Count Stats */}
                 <div className="flex items-center gap-4 text-xs text-[var(--text-muted)] opacity-50 mt-4 pb-10">
                     <span>{content.replace(/<[^>]*>/g, '').trim().split(/\s+/).filter(Boolean).length} words</span>
                     <span>·</span>
