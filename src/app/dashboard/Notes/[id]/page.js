@@ -45,12 +45,8 @@ export default function NotePage() {
     const [tagInput, setTagInput] = useState('');
     const [saveStatus, setSaveStatus] = useState('saved');
     const [hasChanged, setHasChanged] = useState(false);
+    const [isAutosave, setIsAutosave] = useState(true);
 
-    const [isAutosave, setIsAutosave] = useState(() => {
-        if (typeof window === 'undefined') return true;
-        const saved = localStorage.getItem('pow_autosave');
-        return saved !== null ? JSON.parse(saved) : true;
-    });
 
     const saveTimer = useRef(null);
     const lastSavedContent = useRef('');
@@ -76,6 +72,12 @@ export default function NotePage() {
     const insertModalRef = useRef(null);
 
     // ─── 5. DATA FETCHING & EFFECTS ───────────────────────────────────────────────
+
+    // Fetch autosave state from localstorage
+    useEffect(() => {
+        const savedAutosaveState = localStorage.getItem('pow_autosave');
+        setIsAutosave(savedAutosaveState === 'true');
+    }, [])
 
     // Fetch Note Data
     useEffect(() => {
