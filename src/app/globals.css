@@ -53,6 +53,29 @@
     .pow-todo-item input[type="checkbox"] {
         margin-top: 5px;
     }
+    :root {
+        --layer1: #ffffff;
+        --layer2: #f3f4f6;
+        --layer3: #e5e7eb;
+        --text: #000000;
+        --text-muted: #6b7280;
+        --nice-blue: #3b82f6; /* Example */
+    }
+
+    /* 🌙 DARK MODE VARIABLES */
+    .dark {
+        --layer1: #1a1a1a;
+        --layer2: #242424;
+        --layer3: #333333;
+        --text: #ffffff;
+        --text-muted: #a3a3a3;
+    }
+
+    /* Force the background and text color to apply to the whole page */
+    body {
+        background-color: var(--layer1);
+        color: var(--text);
+    }
 }
 @layer components {
     /* Track */
@@ -102,14 +125,14 @@
 .font-main {
     font-family: var(--font-inter), sans-serif;
 }
-body.dark {
+.dark {
     --layer1: hsl(0, 0%, 0%);
     --layer2: hsl(0, 0%, 5%);
     --layer3: hsl(0, 0%, 10%);
     --text: hsl(0, 0%, 95%);
     --text-muted: hsl(0, 0%, 70%);
 }
-body.light {
+.light {
     --layer1: hsl(0, 0%, 100%);
     --layer2: hsl(0, 0%, 95%);
     --layer3: hsl(0, 0%, 90%);

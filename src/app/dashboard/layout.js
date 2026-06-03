@@ -1,57 +1,65 @@
 'use client';
 
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
+import { useTheme } from 'next-themes';
+import { useRouter, usePathname } from 'next/navigation';
 import Navbar from "../../components/Navbar";
 import Sidebar from "../../components/Sidebar";
-import {supabase} from "../../lib/supabase-client";
-import { useRouter } from 'next/navigation';
 import Footer from "../../components/Footer";
-import { usePathname } from 'next/navigation';
+import { supabase } from "../../lib/supabase-client";
 
 export default function DashboardLayout({ children }) {
-
+    // ─── 1. GLOBAL SETUP & UI STATES ──────────────────────────────────────────────
     const router = useRouter();
-    const [loggedIn, setLoggedIn] = useState(true);
-    const [isNavOpen, setIsNavOpen] = useState(false);
-    const [theme, setTheme] = useState('light');
-    const [searchInput, setSearchInput] = useState("");
-    const [isOptionsOpen, setIsOptionsOpen] = useState(false);
-    const [session, setSession] = useState(undefined);
-
     const pathname = usePathname();
+
+    // Check if the user is currently on the full-screen Note Canvas
     const isNoteCanvas = pathname.startsWith('/dashboard/Notes/') && pathname !== '/dashboard/Notes';
 
-    const fetchSession = async () => {
-        const {data: {session}} = await supabase.auth.getSession();
-        setSession(session);
-    }
+    // Navigation and Search States
+    const [isNavOpen, setIsNavOpen] = useState(false);
+    const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+    const [searchInput, setSearchInput] = useState("");
+
+    // ─── 2. AUTHENTICATION STATE ──────────────────────────────────────────────────
+    const [session, setSession] = useState(undefined);
+    const loggedIn = session !== undefined && session !== null;
+
     useEffect(() => {
+        const fetchSession = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            setSession(session);
+        };
+
         fetchSession();
 
+        // Listen for login/logout events to keep session state synced
         const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-            setSession(session);
-        })
+            if (session) setSession(session);
+        });
+
         return () => {
             authListener.subscription.unsubscribe();
-        }
+        };
     }, []);
 
-    useEffect(() => {
-        const saved = localStorage.getItem("theme");
-        const system = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        setTheme(saved || system);
-    }, []);
+    // ─── 3. THEME MANAGEMENT ──────────────────────────────────────────────────────
+    const { theme, setTheme } = useTheme();
+
+    // Apply Theme Changes
     useEffect(() => {
         if (!theme) return;
         document.body.classList.remove('light', 'dark');
         document.body.classList.add(theme);
         localStorage.setItem("theme", theme);
     }, [theme]);
+
     const handleThemeChange = (e) => {
         e.preventDefault();
         setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
     };
 
+    // ─── 4. RENDER ────────────────────────────────────────────────────────────────
     return (
         <div className={theme}>
             {!isNoteCanvas && (
@@ -66,6 +74,7 @@ export default function DashboardLayout({ children }) {
                     router={router}
                 />
             )}
+
             {!isNoteCanvas && (
                 <Sidebar
                     isNavOpen={isNavOpen}
@@ -77,7 +86,11 @@ export default function DashboardLayout({ children }) {
                     router={router}
                 />
             )}
-            <main>{children}</main>
+
+            <main>
+                {children}
+            </main>
+
             {!isNoteCanvas && (
                 <Footer />
             )}

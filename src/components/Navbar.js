@@ -6,16 +6,19 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import toast from "react-hot-toast";
 import Image from "next/image";
+import { useTheme } from 'next-themes';
 
 const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
-export default function Navbar({ setSearchInput, theme, handleThemeChange, isNavOpen, setIsNavOpen, setAuthMode, router }) {
+export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAuthMode, router }) {
     const [session, setSession] = useState(null);
     const [userProfile, setUserProfile] = useState(null);
     const [email, setEmail] = useState(null);
+
+    const { theme, setTheme } = useTheme();
 
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -155,7 +158,7 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                     </li>
                     <li>
                         <button
-                            onClick={handleThemeChange}
+                            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                             className="p-2 [1200px]:p-3 hover:bg-[var(--layer3)] rounded-full text-2xl cursor-pointer"
                             aria-label="Toggle theme"
                         >
@@ -252,7 +255,7 @@ export default function Navbar({ setSearchInput, theme, handleThemeChange, isNav
                                         <span>Profile</span>
                                     </button>
                                     <button
-                                        onClick={handleThemeChange}
+                                        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                                         className="px-5 py-4 text-left font-bold text-[var(--text)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                                         aria-label="Toggle theme"
                                     >

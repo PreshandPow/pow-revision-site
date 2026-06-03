@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from "react";
+import { useTheme } from 'next-themes';
 import {AnimatePresence, motion, useScroll, useTransform} from "framer-motion";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
@@ -15,7 +16,6 @@ export default function Home() {
     const [searchInput, setSearchInput] = useState("");
     const [isNavOpen, setIsNavOpen] = useState(false);
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
-    const [theme, setTheme] = useState('');
     const [authMode, setAuthMode] = useState('');
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -24,6 +24,8 @@ export default function Home() {
     const [day, setDay] = useState("");
     const [month, setMonth] = useState("");
     const [year, setYear] = useState("");
+
+    const { theme, setTheme } = useTheme();
 
     const updateUser = async () => {
 
