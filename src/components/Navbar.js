@@ -17,6 +17,11 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
     const [session, setSession] = useState(null);
     const [userProfile, setUserProfile] = useState(null);
     const [email, setEmail] = useState(null);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const { theme, setTheme } = useTheme();
 
@@ -162,7 +167,7 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
                             className="p-2 [1200px]:p-3 hover:bg-[var(--layer3)] rounded-full text-2xl cursor-pointer"
                             aria-label="Toggle theme"
                         >
-                            {theme === 'light' ? '☀️' : '🌙'}
+                            {mounted ? (theme === 'light' ? '☀️' : '🌙') : '☀️'}
                         </button>
                     </li>
                 </ul>
@@ -259,7 +264,7 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
                                         className="px-5 py-4 text-left font-bold text-[var(--text)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                                         aria-label="Toggle theme"
                                     >
-                                        {theme === 'light' ? '☀️ Dark Mode' : `🌙 Light Mode`}
+                                        {mounted ? (theme === 'light' ? '☀️' : '🌙') : '☀️'}
                                     </button>
                                     <button
                                         className="flex flex-row gap-4 whitespace-nowrap px-5 py-4 text-left font-bold text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"

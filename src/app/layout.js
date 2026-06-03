@@ -33,8 +33,7 @@ export default function RootLayout({ children }) {
         // 1. ADDED suppressHydrationWarning (Required by next-themes)
         <html lang="en" className={`${inter.variable} ${outfit.variable}`} suppressHydrationWarning>
         <body>
-        <ThemeProvider attribute="class">
-            {/* 2. REMOVED the manual <script> tag here */}
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             {children}
 
             <Toaster

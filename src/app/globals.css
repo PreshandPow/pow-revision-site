@@ -54,27 +54,35 @@
         margin-top: 5px;
     }
     :root {
-        --layer1: #ffffff;
-        --layer2: #f3f4f6;
-        --layer3: #e5e7eb;
-        --text: #000000;
-        --text-muted: #6b7280;
-        --nice-blue: #3b82f6; /* Example */
+        --layer1: hsl(0, 0%, 100%);
+        --layer2: hsl(0, 0%, 95%);
+        --layer3: hsl(0, 0%, 90%);
+        --text: hsl(0, 0%, 5%);
+        --text-muted: hsl(0, 0%, 30%);
+        --vanilla-cream: hsl(44, 58%, 90%);
+        --nice-blue: hsl(177, 50%, 40%);
     }
 
-    /* 🌙 DARK MODE VARIABLES */
+    /* 🌙 DARK MODE VARIABLES (Triggered by next-themes adding the .dark class) */
     .dark {
-        --layer1: #1a1a1a;
-        --layer2: #242424;
-        --layer3: #333333;
-        --text: #ffffff;
-        --text-muted: #a3a3a3;
+        --layer1: hsl(0, 0%, 0%);
+        --layer2: hsl(0, 0%, 5%);
+        --layer3: hsl(0, 0%, 10%);
+        --text: hsl(0, 0%, 95%);
+        --text-muted: hsl(0, 0%, 70%);
+        --vanilla-cream: hsl(44, 58%, 90%);
+        --nice-blue: hsl(177, 50%, 40%); /* Keeping consistent, or update if you want a dark-mode specific blue */
     }
 
-    /* Force the background and text color to apply to the whole page */
     body {
-        background-color: var(--layer1);
+        background-color: var(--layer2); /* Uses the dynamically updated variable */
         color: var(--text);
+        font-family: Arial, helvetica, sans-serif;
+        transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+    }
+
+    * {
+        transition: background-color 0.4s ease, border-color 0.4s ease;
     }
 }
 @layer components {
