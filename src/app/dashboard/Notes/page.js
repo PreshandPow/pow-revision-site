@@ -6,6 +6,7 @@ import { createBrowserClient } from '@supabase/ssr';
 import { Plus, FileText, Clock, Trash2, MoreVertical, ExternalLink, Edit2, FolderOutput, Copy } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { AnimatePresence, motion } from "framer-motion";
+
 import RenameItemModal from "../../../components/RenameItemModal";
 import MoveItemModal from "../../../components/MoveItemModal";
 
@@ -17,33 +18,15 @@ export function createClient() {
 }
 
 export default function NotesPage() {
+    // ─── 1. GLOBAL SETUP & STATES ─────────────────────────────────────────────────
     const router = useRouter();
     const supabase = createClient();
 
-    // ─── 1. GLOBAL UI & DATA STATES ────────────────────────────────────────────────
     const [notes, setNotes] = useState([]);
     const [folders, setFolders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeDropdown, setActiveDropdown] = useState(null);
 
-    // ─── 2. MODAL SPECIFIC STATES & REFS ──────────────────────────────────────────
-    // Rename Modal
-    const [showRenameNoteModal, setShowRenameNoteModal] = useState(false);
-    const [noteToRename, setNoteToRename] = useState(null);
-    const [noteName, setNoteName] = useState('Untitled Folder');
-    const showRenameNoteModalRef = useRef(null);
-
-    // Move Modal
-    const [showMoveItemModal, setShowMoveItemModal] = useState(false);
-    const [noteToMove, setNoteToMove] = useState(null);
-    const [targetFolder, setTargetFolder] = useState(null);
-    const itemToMoveRef = useRef(null);
-
-    // Delete Modal
-    const [noteToDelete, setNoteToDelete] = useState(null);
-    const deleteNoteModalRef = useRef(null);
-
-    // ─── 3. CONSTANTS & HELPERS ───────────────────────────────────────────────────
     const toastStyle = {
         style: {
             border: '1px solid var(--nice-blue)',
@@ -57,22 +40,120 @@ export default function NotesPage() {
         },
     };
 
-    const formatDate = (date) => new Date(date).toLocaleDateString('en-GB', {
-        day: 'numeric', month: 'short', year: 'numeric'
-    });
+    // ─── 2. CREATE NOTE FEATURE ───────────────────────────────────────────────────
+    const handleCreateNote = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
 
-    const stripHtml = (html) => {
-        if (!html) return "";
-        return html.replace(/<[^>]*>?/gm, '');
+        const { data: note, error } = await supabase
+            .from('notes')
+            .insert({ user_id: user.id, title: 'Untitled', content: '' })
+            .select()
+            .single();
+
+        if (error) { toast.error('Could not create note', toastStyle); return; }
+        router.push(`/dashboard/Notes/${note.id}`);
     };
 
-    // ─── 4. USE EFFECTS ───────────────────────────────────────────────────────────
-    // Initial Data Fetch
+    // ─── 3. RENAME NOTE FEATURE ───────────────────────────────────────────────────
+    const [showRenameNoteModal, setShowRenameNoteModal] = useState(false);
+    const [noteToRename, setNoteToRename] = useState(null);
+    const [noteName, setNoteName] = useState('Untitled Note');
+    const showRenameNoteModalRef = useRef(null);
+
+    const handleNoteRename = async (newName) => {
+        if (!noteToRename || !newName.trim()) return;
+
+        const { error } = await supabase
+            .from('notes')
+            .update({ title: newName })
+            .eq('id', noteToRename.id);
+
+        if (error) {
+            toast.error(`Could not change note name: ${error}`, toastStyle);
+        } else {
+            toast.success('Note renamed', toastStyle);
+            setNotes(prevNotes =>
+                prevNotes.map(n =>
+                    n.id === noteToRename.id ? { ...n, title: newName } : n
+                )
+            );
+            setNoteToRename(null);
+        }
+    };
+
+    // ─── 4. MOVE NOTE FEATURE ─────────────────────────────────────────────────────
+    const [showMoveItemModal, setShowMoveItemModal] = useState(false);
+    const [noteToMove, setNoteToMove] = useState(null);
+    const itemToMoveRef = useRef(null);
+
+    const handleMove = async (destinationId) => {
+        if (!noteToMove) return;
+        const targetTable = 'notes';
+
+        const { error } = await supabase
+            .from(targetTable)
+            .update({ folder_id: destinationId === 'root' ? null : destinationId })
+            .eq('id', noteToMove.id);
+
+        if (error) {
+            toast.error('Could not move note', toastStyle);
+        } else {
+            setShowMoveItemModal(false);
+            toast.success('Note moved successfully', toastStyle);
+            setNoteToMove(null);
+        }
+    };
+
+    // ─── 5. DELETE NOTE FEATURE ───────────────────────────────────────────────────
+    const [noteToDelete, setNoteToDelete] = useState(null);
+    const deleteNoteModalRef = useRef(null);
+
+    const handleDeleteConfirm = async () => {
+        if (!noteToDelete) return;
+
+        const { error } = await supabase.from('notes').delete().eq('id', noteToDelete.id);
+        if (error) {
+            toast.error('Could not delete note', toastStyle);
+            setNoteToDelete(null);
+            return;
+        }
+
+        setNotes(prev => prev.filter(n => n.id !== noteToDelete.id));
+        toast.success('Note deleted', toastStyle);
+        setNoteToDelete(null);
+    };
+
+    // ─── 6. DUPLICATE NOTE FEATURE ────────────────────────────────────────────────
+    const handleDuplicateNote = async (note) => {
+        const { data: { user } } = await supabase.auth.getUser();
+
+        const { data: newNote, error } = await supabase
+            .from('notes')
+            .insert({
+                title: `${note?.title} (copy)`,
+                user_id: user?.id,
+                folder_id: note?.folder_id,
+                content: note?.content,
+                tags: note?.tags
+            })
+            .select()
+            .single();
+
+        if (error) {
+            toast.error(`Could not duplicate note: ${error}`, toastStyle);
+        } else {
+            setNotes(prev => [newNote, ...prev]);
+            toast.success('Note duplicated', toastStyle);
+        }
+    };
+
+    // ─── 7. DATA FETCHING & EFFECTS ───────────────────────────────────────────────
     useEffect(() => {
         const fetchAllData = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) { router.replace('/'); return; }
 
+            // Using Promise.all to fetch notes and folders simultaneously (prevents UI race conditions)
             const [notesResponse, foldersResponse] = await Promise.all([
                 supabase.from('notes').select('*').eq('user_id', user.id).order('updated_at', { ascending: false }),
                 supabase.from('folders').select('*').eq('user_id', user.id).order('updated_at', { ascending: false })
@@ -96,7 +177,6 @@ export default function NotesPage() {
         fetchAllData();
     }, []);
 
-    // Click Outside Listener
     useEffect(() => {
         const handleClickOutside = (e) => {
             if (!e.target.closest('.folder-dropdown-container')) {
@@ -110,99 +190,17 @@ export default function NotesPage() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    // ─── 8. HELPERS ───────────────────────────────────────────────────────────────
+    const formatDate = (date) => new Date(date).toLocaleDateString('en-GB', {
+        day: 'numeric', month: 'short', year: 'numeric'
+    });
 
-    // ─── 5. CRUD ACTION HANDLERS ──────────────────────────────────────────────────
-
-    // Create
-    const handleCreateNote = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-
-        const { data: note, error } = await supabase
-            .from('notes')
-            .insert({ user_id: user.id, title: 'Untitled', content: '' })
-            .select()
-            .single();
-
-        if (error) { toast.error('Could not create note', toastStyle); return; }
-        router.push(`/dashboard/Notes/${note.id}`);
+    const stripHtml = (html) => {
+        if (!html) return "";
+        return html.replace(/<[^>]*>?/gm, '');
     };
 
-    // Rename
-    const handleNoteRename = async (newName) => {
-        if (!noteToRename || !newName.trim()) return;
-
-        const { error } = await supabase
-            .from('notes')
-            .update({ title: newName })
-            .eq('id', noteToRename.id);
-
-        if (error) {
-            toast.error(`Could not change note name: ${error}`, toastStyle);
-        } else {
-            toast.success('Note renamed', toastStyle);
-            setNotes(prevNotes =>
-                prevNotes.map(n =>
-                    n.id === noteToRename.id ? { ...n, title: newName } : n
-                )
-            );
-            setNoteToRename(null);
-        }
-    };
-
-    // Move
-    const handleMove = async (destinationId) => {
-        if (!noteToMove) return;
-        const targetTable = 'notes';
-
-        const { error } = await supabase
-            .from(targetTable)
-            .update({ folder_id: destinationId === 'root' ? null : destinationId })
-            .eq('id', noteToMove.id);
-
-        if (error) {
-            toast.error('Could not move note', toastStyle);
-        } else {
-            setShowMoveItemModal(false);
-            toast.success('Note moved successfully', toastStyle);
-            setNoteToMove(null);
-        }
-    };
-
-    // Duplicate
-    const handleDuplicateNote = async (note) => {
-        const { data: { user } } = await supabase.auth.getUser();
-
-        const { data: newNote, error } = await supabase
-            .from('notes')
-            .insert({ title: `${note?.title} (copy)`, user_id: user?.id, folder_id: note?.folder_id, content: note?.content, tags: note?.tags })
-            .select()
-            .single();
-
-        if (error) {
-            toast.error(`Could not duplicate note: ${error}`, toastStyle);
-        } else {
-            setNotes(prev => [newNote, ...prev]);
-            toast.success('Note duplicated', toastStyle);
-        }
-    };
-
-    // Delete
-    const handleDeleteConfirm = async () => {
-        if (!noteToDelete) return;
-
-        const { error } = await supabase.from('notes').delete().eq('id', noteToDelete.id);
-        if (error) {
-            toast.error('Could not delete note', toastStyle);
-            setNoteToDelete(null);
-            return;
-        }
-
-        setNotes(prev => prev.filter(n => n.id !== noteToDelete.id));
-        toast.success('Note deleted', toastStyle);
-        setNoteToDelete(null);
-    };
-
-    // ─── 6. RENDER ────────────────────────────────────────────────────────────────
+    // ─── 9. RENDER ────────────────────────────────────────────────────────────────
     if (loading) return (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--layer1)] backdrop-blur-xl p-6">
             <div className="w-16 h-16 mb-8 rounded-2xl bg-[var(--nice-blue)] animate-pulse shadow-[0_0_40px_rgba(var(--blue-rgb),0.3)] flex items-center justify-center">
@@ -257,6 +255,7 @@ export default function NotesPage() {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
                         {/* Note Cards */}
                         {notes.map(note => (
                             <div
