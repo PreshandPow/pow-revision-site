@@ -2,18 +2,13 @@
 
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
-import {useEffect, useRef, useState} from 'react';
+import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
-import { motion } from 'framer-motion';
-import Image from 'next/image';
 import DetailsModal from '../../components/DetailsModal';
 import CreateModal from "../../components/CreateModal";
-import Footer from "../../components/Footer";
-import Navbar from "../../components/Navbar";
 import CreateFolderModal from "../../components/createFolderModal";
 
 export function createClient() {
-
     return createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -34,21 +29,10 @@ function calculateAge(day, month, year) {
 }
 
 export default function Dashboard() {
+    // ─── 1. GLOBAL SETUP & UI STATES ──────────────────────────────────────────────
     const router = useRouter();
     const supabase = createClient();
-    const [userProfile, setUserProfile] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [username, setUsername] = useState(null);
-    const [age, setAge] = useState(null);
-    const [avatarUrl, setAvatarUrl] = useState(null);
-    const [day, setDay] = useState(null);
-    const [month, setMonth] = useState(null);
-    const [year, setYear] = useState(null);
-    const [openCreateModal , setOpenCreateModal] = useState(false);
-    const [activeTaskModal, setActiveTaskModal] = useState(null);
-    const [completedProfile, setCompletedProfile] = useState(true);
-    const [notes, setNotes] = useState([]);
-    const [flashcards, setFlashcards] = useState([]);
 
     const toastStyle = {
         style: {
@@ -64,13 +48,45 @@ export default function Dashboard() {
         },
     };
 
+    const stripHtml = (html) => {
+        if (!html) return "";
+        return html.replace(/<[^>]*>?/gm, '');
+    };
+
+    // ─── 2. USER PROFILE & ONBOARDING STATES ──────────────────────────────────────
+    const [userProfile, setUserProfile] = useState(null);
+    const [username, setUsername] = useState(null);
+    const [age, setAge] = useState(null);
+    const [avatarUrl, setAvatarUrl] = useState(null);
+    const [completedProfile, setCompletedProfile] = useState(false);
+
+    // DOB Form States
+    const [day, setDay] = useState(null);
+    const [month, setMonth] = useState(null);
+    const [year, setYear] = useState(null);
+
+    const needsDate = !userProfile?.date_of_birth;
+    const needsAvatar = !userProfile?.avatar_url;
+
+    // ─── 3. DASHBOARD DATA STATES ─────────────────────────────────────────────────
+    const [notes, setNotes] = useState([]);
+    const [flashcards, setFlashcards] = useState([]);
+
+    // ─── 4. MODAL STATES & REFS ───────────────────────────────────────────────────
+    const [openCreateModal, setOpenCreateModal] = useState(false);
+    const [activeTaskModal, setActiveTaskModal] = useState(null);
+
+    const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
+    const [folderName, setFolderName] = useState('Untitled Folder');
+    const createFolderModalRef = useRef(null);
+
+    // ─── 5. DATA FETCHING & UI EFFECTS ────────────────────────────────────────────
     useEffect(() => {
         const getUser = async () => {
-
             const { data: { user } } = await supabase.auth.getUser();
 
             if (user) {
-                const {data: profile, error} = await supabase
+                const { data: profile, error } = await supabase
                     .from('profiles')
                     .select('*')
                     .eq('id', user.id)
@@ -84,17 +100,17 @@ export default function Dashboard() {
                     .limit(1)
                     .maybeSingle();
 
-                setUsername(profile?.username)
-                setAge(profile?.date_of_birth)
-                setAvatarUrl(profile?.avatar_url)
-                setNotes(recentNote)
+                setUsername(profile?.username);
+                setAge(profile?.date_of_birth);
+                setAvatarUrl(profile?.avatar_url);
+                setNotes(recentNote);
 
                 if (error) {
                     console.error(error);
                     toast.error(error.message, toastStyle);
                 }
                 setUserProfile(profile);
-            }   else {
+            } else {
                 router.replace('/');
             }
             setLoading(false);
@@ -102,9 +118,10 @@ export default function Dashboard() {
         getUser();
     }, [supabase, router]);
 
-
     useEffect(() => {
-        if (userProfile?.date_of_birth || userProfile?.avatar_url) setCompletedProfile(false);
+        if (userProfile?.date_of_birth && userProfile?.avatar_url) {
+            setCompletedProfile(true);
+        }
     }, [userProfile]);
 
     useEffect(() => {
@@ -116,14 +133,30 @@ export default function Dashboard() {
         return () => subscription.unsubscribe();
     }, []);
 
-    const handleLogOut = async () => {
-        await supabase.auth.signOut();
-        router.replace('/');
-        router.refresh();
-    };
+    // Prevent scrolling while loading
+    useEffect(() => {
+        if (loading) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
 
-    const needsDate = !userProfile?.date_of_birth;
-    const needsAvatar = !userProfile?.avatar_url;
+        return () => {
+            document.body.style.overflow = '';
+        }
+    }, [loading]);
+
+    // Click outside listener for Folder Modal
+    useEffect(() => {
+        const h = (e) => {
+            if (createFolderModalRef.current && !createFolderModalRef.current.contains(e.target))
+                setShowCreateFolderModal(false);
+        };
+        document.addEventListener('mousedown', h);
+        return () => document.removeEventListener('mousedown', h);
+    }, []);
+
+    // ─── 6. ACTION HANDLERS ───────────────────────────────────────────────────────
 
     const handleSaveDetails = async () => {
         const profileUpdates = {};
@@ -182,28 +215,10 @@ export default function Dashboard() {
         router.push(`/dashboard/Notes/${note.id}`);
     };
 
-    const stripHtml = (html) => {
-        if (!html) return "";
-        return html.replace(/<[^>]*>?/gm, '');
-    };
-
-    const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
-    const [folderName, setFolderName] = useState('Untitled Folder');
-    const createFolderModalRef = useRef(null);
-
-    useEffect(() => {
-        const h = (e) => {
-            if (createFolderModalRef.current && !createFolderModalRef.current.contains(e.target))
-                setShowCreateFolderModal(false);
-        };
-        document.addEventListener('mousedown', h);
-        return () => document.removeEventListener('mousedown', h);
-    }, []);
-
     const handleCreateFolder = async () => {
-        const {  data: {  user}  } = await supabase.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
 
-        const {  data: folder, error } = await supabase
+        const { data: folder, error } = await supabase
             .from('folders')
             .insert({ name: folderName, user_id: user.id, parent_folder_id: null })
             .select()
@@ -214,41 +229,13 @@ export default function Dashboard() {
         setShowCreateFolderModal(false);
     };
 
-    useEffect(() => {
-        if (loading) {
-            document.body.style.overflow = 'hidden'
-        } else {
-            document.body.style.overflow = ''
-        }
-
-        return () => {
-            document.body.style.overflow = '';
-        }
-    }, [loading]);
-
+    // ─── 7. RENDER ────────────────────────────────────────────────────────────────
     if (loading) return (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--layer1)] backdrop-blur-xl p-6">
             <div className="w-16 h-16 mb-8 rounded-2xl bg-[var(--nice-blue)] animate-pulse shadow-[0_0_40px_rgba(var(--blue-rgb),0.3)] flex items-center justify-center">
-                <svg
-                    className="animate-spin"
-                    width="40"
-                    height="40"
-                    viewBox="0 0 32 32"
-                    fill="none"
-                >
-                    <circle
-                        cx="16"
-                        cy="16"
-                        r="12"
-                        stroke="rgba(255,255,255,0.2)"
-                        strokeWidth="3"
-                    />
-                    <path
-                        d="M16 4 A12 12 0 0 1 28 16"
-                        stroke="white"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                    />
+                <svg className="animate-spin" width="40" height="40" viewBox="0 0 32 32" fill="none">
+                    <circle cx="16" cy="16" r="12" stroke="rgba(255,255,255,0.2)" strokeWidth="3" />
+                    <path d="M16 4 A12 12 0 0 1 28 16" stroke="white" strokeWidth="3" strokeLinecap="round" />
                 </svg>
             </div>
 
@@ -263,7 +250,8 @@ export default function Dashboard() {
 
     return (
         <main className="flex flex-col bg-[var(--layer2)] min-h-screen transition-colors duration-300 p-6 md:p-10 w-full">
-            {(!userProfile?.date_of_birth || !userProfile?.avatar_url && !completedProfile) && (
+            {/* Onboarding Modal */}
+            {(!completedProfile) && (
                 <DetailsModal
                     day={day}
                     setDay={setDay}
@@ -279,11 +267,13 @@ export default function Dashboard() {
                 />
             )}
 
+            {/* Header */}
             <div className="mb-8">
                 <h1 className="text-3xl font-bold text-[var(--text)]">Hey, {username}!</h1>
                 <p className="text-[var(--text-muted)] mt-1">Here's what's happening on your POW dashboard.</p>
             </div>
 
+            {/* Quick Actions */}
             <p className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest mb-4">Quick actions</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
                 <div className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5 flex flex-col gap-3 hover:border-[var(--nice-blue)] transition-colors">
@@ -294,8 +284,7 @@ export default function Dashboard() {
                     </div>
                     <p className="font-bold text-[var(--text)]">Upload a file</p>
                     <p className="text-sm text-[var(--text-muted)] flex-1">Turn a PDF or doc into notes or flashcards instantly.</p>
-                    <button className="cursor-pointer text-sm font-bold border border-[var(--layer3)] rounded-xl px-4 py-2 hover:bg-[var(--layer2)] transition-colors text-[var(--text)] w-fit"
-                           >
+                    <button className="cursor-pointer text-sm font-bold border border-[var(--layer3)] rounded-xl px-4 py-2 hover:bg-[var(--layer2)] transition-colors text-[var(--text)] w-fit">
                         Upload
                     </button>
                 </div>
@@ -353,6 +342,7 @@ export default function Dashboard() {
                 </div>
             </div>
 
+            {/* POW Bot AI */}
             <p className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest mb-4">POW bot</p>
             <div className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center gap-4 mb-10 hover:border-[var(--nice-blue)] transition-colors">
                 <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
@@ -374,32 +364,33 @@ export default function Dashboard() {
                 </button>
             </div>
 
+            {/* Recent Activity */}
             <p className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest mb-4">Recent activity</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                 {notes ? (
-                    <div
-                        className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5 hover:border-[var(--nice-blue)] transition-colors"
-                    >
+                    <div className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5 hover:border-[var(--nice-blue)] transition-colors">
                         <div className="flex items-center gap-2 mb-3">
                             <div className="w-2 h-2 rounded-full bg-teal-500"></div>
                             <span className="text-xs font-bold text-[var(--text-muted)]">Most recent note</span>
                         </div>
                         <p className="font-bold text-[var(--text)] mb-1 truncate">{notes.title || 'Untitled'}</p>
                         <p className="text-sm text-[var(--text-muted)] line-clamp-2">{stripHtml(notes.content) || 'No content yet...'}</p>
+
                         {notes.tags?.length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-2">
                                 {notes.tags.map(tag => (
                                     <span key={tag} className="text-xs font-semibold bg-[var(--layer2)] text-[var(--text-muted)] px-2 py-0.5 rounded-lg">
-                        {tag}
-                    </span>
+                                        {tag}
+                                    </span>
                                 ))}
                             </div>
                         )}
+
                         <div className="flex justify-between items-center mt-4 pt-3 border-t border-[var(--layer3)]">
-            <span className="text-xs text-[var(--text-muted)]">
-                {new Date(notes.updated_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-            </span>
+                            <span className="text-xs text-[var(--text-muted)]">
+                                {new Date(notes.updated_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                            </span>
                             <button
                                 className="cursor-pointer text-sm font-bold border border-[var(--layer3)] rounded-xl px-4 py-2 hover:bg-[var(--layer2)] transition-colors text-[var(--text)]"
                                 onClick={() => router.push(`/dashboard/Notes/${notes.id}`)}>
@@ -451,9 +442,9 @@ export default function Dashboard() {
                         <p className="font-bold text-[var(--text)] mb-1 truncate">{flashcards.title || 'Untitled'}</p>
                         <p className="text-sm text-[var(--text-muted)]">{flashcards.card_count ?? 0} cards</p>
                         <div className="flex justify-between items-center mt-4 pt-3 border-t border-[var(--layer3)]">
-            <span className="text-xs text-[var(--text-muted)]">
-                {new Date(flashcards.updated_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-            </span>
+                            <span className="text-xs text-[var(--text-muted)]">
+                                {new Date(flashcards.updated_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                            </span>
                             <button className="cursor-pointer text-sm font-bold border border-[var(--layer3)] rounded-xl px-4 py-2 hover:bg-[var(--layer2)] transition-colors text-[var(--text)]">
                                 Open →
                             </button>
@@ -461,6 +452,8 @@ export default function Dashboard() {
                     </div>
                 )}
             </div>
+
+            {/* ─── MODALS ──────────────────────────────────────────────────────────── */}
             {openCreateModal && (
                 <CreateModal
                     setOpenCreateModal={setOpenCreateModal}
@@ -471,6 +464,7 @@ export default function Dashboard() {
                     setShowCreateFolderModal={setShowCreateFolderModal}
                 />
             )}
+
             {showCreateFolderModal && (
                 <CreateFolderModal
                     createFolderModalRef={createFolderModalRef}

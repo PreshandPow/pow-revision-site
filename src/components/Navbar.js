@@ -264,7 +264,7 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
                                         className="px-5 py-4 text-left font-bold text-[var(--text)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                                         aria-label="Toggle theme"
                                     >
-                                        {mounted ? (theme === 'light' ? '☀️' : '🌙') : '☀️'}
+                                        {theme === 'light' ? '☀️ Dark Mode' : `🌙 Light Mode`}
                                     </button>
                                     <button
                                         className="flex flex-row gap-4 whitespace-nowrap px-5 py-4 text-left font-bold text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
