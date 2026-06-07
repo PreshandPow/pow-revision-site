@@ -1,58 +1,8 @@
 @import "tailwindcss";
-:root {
-    --layer1: hsl(0, 0%, 100%);
-    --layer2: hsl(0, 0%, 95%);
-    --layer3: hsl(0, 0%, 90%);
-    --text: hsl(0, 0%, 5%);
-    --text-muted: hsl(0, 0%, 30%);
-    --vanilla-cream: hsl(44, 58%, 90%);
-    --nice-blue: hsl(177,50%,40%);
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-      --layer1: hsl(0, 0%, 0%);
-      --layer2: hsl(0, 0%, 5%);
-      --layer3: hsl(0, 0%, 10%);
-      --text: hsl(0, 0%, 95%);
-      --text-muted: hsl(0, 0%, 70%);
-      --vanilla-cream: hsl(44, 58%, 90%)
-  }
-}
-@layer utilities {
-    .no-scrollbar::-webkit-scrollbar {
-        display: none;
-    }
-    .no-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
-}
+
+/* ─── 1. BASE LAYER (Variables & Core HTML Tags) ────────────────────────── */
 @layer base {
-    body {
-        background: var(--layer2);
-        font-family: Arial, helvetica, sans-serif;
-        color: var(--text);
-        transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
-    }
-    * {
-        transition: background-color 0.4s ease, border-color 0.4s ease;
-    }
-    .pow-editor h1 { font-size: 2.25rem; font-weight: 700; margin-top: 1rem; margin-bottom: 0.5rem; }
-    .pow-editor h2 { font-size: 1.5rem; font-weight: 700; margin-top: 1rem; margin-bottom: 0.5rem; }
-    .pow-editor h3 { font-size: 1.25rem; font-weight: 700; margin-top: 1rem; margin-bottom: 0.5rem; }
-
-    .pow-editor ul { list-style-type: disc; padding-left: 1.5rem; margin-top: 0.5rem; margin-bottom: 0.5rem; }
-    .pow-editor ol { list-style-type: decimal; padding-left: 1.5rem; margin-top: 0.5rem; margin-bottom: 0.5rem; }
-    .pow-editor li { margin-bottom: 0.25rem; }
-
-    .pow-heading-placeholder {
-        color: var(--text-muted);
-        opacity: 0.5;
-    }
-
-    .pow-todo-item input[type="checkbox"] {
-        margin-top: 5px;
-    }
+    /* ☀️ Light Mode Variables (Default) */
     :root {
         --layer1: hsl(0, 0%, 100%);
         --layer2: hsl(0, 0%, 95%);
@@ -63,7 +13,7 @@
         --nice-blue: hsl(177, 50%, 40%);
     }
 
-    /* 🌙 DARK MODE VARIABLES (Triggered by next-themes adding the .dark class) */
+    /* 🌙 Dark Mode Variables (Triggered by next-themes adding the .dark class) */
     .dark {
         --layer1: hsl(0, 0%, 0%);
         --layer2: hsl(0, 0%, 5%);
@@ -71,22 +21,55 @@
         --text: hsl(0, 0%, 95%);
         --text-muted: hsl(0, 0%, 70%);
         --vanilla-cream: hsl(44, 58%, 90%);
-        --nice-blue: hsl(177, 50%, 40%); /* Keeping consistent, or update if you want a dark-mode specific blue */
+        --nice-blue: hsl(177, 50%, 40%);
     }
 
+    /* Explicit Light Mode Class (Fallback) */
+    .light {
+        --layer1: hsl(0, 0%, 100%);
+        --layer2: hsl(0, 0%, 95%);
+        --layer3: hsl(0, 0%, 90%);
+        --text: hsl(0, 0%, 5%);
+        --text-muted: hsl(0, 0%, 30%);
+    }
+
+    /* Global HTML Tags */
     body {
-        background-color: var(--layer2); /* Uses the dynamically updated variable */
-        color: var(--text);
+        background-color: var(--layer2);
         font-family: Arial, helvetica, sans-serif;
+        color: var(--text);
         transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
     }
 
     * {
         transition: background-color 0.4s ease, border-color 0.4s ease;
     }
+
+    [contenteditable]:empty:before {
+        content: attr(data-placeholder);
+        color: var(--nice-blue);
+        pointer-events: none;
+    }
 }
+
+
+/* ─── 2. COMPONENTS LAYER (Custom UI Elements) ─────────────────────────── */
 @layer components {
-    /* Track */
+    /* Editor Headings */
+    .pow-editor h1 { font-size: 2.25rem; font-weight: 700; margin-top: 1rem; margin-bottom: 0.5rem; }
+    .pow-editor h2 { font-size: 1.5rem; font-weight: 700; margin-top: 1rem; margin-bottom: 0.5rem; }
+    .pow-editor h3 { font-size: 1.25rem; font-weight: 700; margin-top: 1rem; margin-bottom: 0.5rem; }
+
+    /* Editor Lists */
+    .pow-editor ul { list-style-type: disc; padding-left: 1.5rem; margin-top: 0.5rem; margin-bottom: 0.5rem; }
+    .pow-editor ol { list-style-type: decimal; padding-left: 1.5rem; margin-top: 0.5rem; margin-bottom: 0.5rem; }
+    .pow-editor li { margin-bottom: 0.25rem; }
+
+    /* Editor Placeholders & Todos */
+    .pow-heading-placeholder { color: var(--text-muted); opacity: 0.5; }
+    .pow-todo-item input[type="checkbox"] { margin-top: 5px; }
+
+    /* Custom Slider Track */
     .pow-hue-slider {
         -webkit-appearance: none;
         appearance: none;
@@ -98,7 +81,7 @@
         cursor: pointer;
     }
 
-    /* Thumb (Chrome, Safari, Edge) */
+    /* Custom Slider Thumb (Chrome, Safari, Edge) */
     .pow-hue-slider::-webkit-slider-thumb {
         -webkit-appearance: none;
         appearance: none;
@@ -110,12 +93,9 @@
         border: 5px solid var(--text);
         cursor: grab;
     }
+    .pow-hue-slider::-webkit-slider-thumb:active { cursor: grabbing; }
 
-    .pow-hue-slider::-webkit-slider-thumb:active {
-        cursor: grabbing;
-    }
-
-    /* Thumb (Firefox) */
+    /* Custom Slider Thumb (Firefox) */
     .pow-hue-slider::-moz-range-thumb {
         width: 36px;
         height: 36px;
@@ -125,73 +105,52 @@
         box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         cursor: grab;
     }
-}
-.font-brand {
-    font-family: var(--font-outfit), sans-serif;
+
+    /* Typography Utilities */
+    .font-brand { font-family: var(--font-outfit), sans-serif; }
+    .font-main  { font-family: var(--font-inter), sans-serif; }
+
+    /* Button Animations */
+    .btn-animation {
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+        transition: color 0.3s ease-in-out;
+        background-color: transparent;
+        cursor: pointer;
+    }
+    .btn-animation::before {
+        content: '';
+        position: absolute;
+        z-index: -1;
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.3s ease-in-out;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+    }
+    .btn-animation:hover::before { transform: scaleX(1); }
+    .btn-animation span { position: relative; z-index: 2; }
+
+    /* Card Animations */
+    .card-animation {
+        transition: transform 0.3s ease-in-out;
+        will-change: transform;
+    }
+    .card-animation:hover {
+        transform: scale(1.05);
+        border: solid 2px var(--layer3);
+        box-shadow: 10px 10px 10px var(--layer3);
+    }
 }
 
-.font-main {
-    font-family: var(--font-inter), sans-serif;
-}
-.dark {
-    --layer1: hsl(0, 0%, 0%);
-    --layer2: hsl(0, 0%, 5%);
-    --layer3: hsl(0, 0%, 10%);
-    --text: hsl(0, 0%, 95%);
-    --text-muted: hsl(0, 0%, 70%);
-}
-.light {
-    --layer1: hsl(0, 0%, 100%);
-    --layer2: hsl(0, 0%, 95%);
-    --layer3: hsl(0, 0%, 90%);
-    --text: hsl(0, 0%, 5%);
-    --text-muted: hsl(0, 0%, 30%);
-}
-.btn-animation {
-    position: relative;
-    overflow: hidden;
-    z-index: 1;
-    transition: color 0.3s ease-in-out;
-    background-color: transparent;
-    cursor: pointer;
-}
-.btn-animation::before{
-    content: '';
-    position: absolute;
-    z-index: -1;
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.3s ease-in-out;
-    width: 100%;
-    height: 100%;
-    top:0;
-    left: 0;
-}
-.btn-animation:hover::before {
-    transform: scaleX(1);
-}
-.btn-animation span {
-    position: relative;
-    z-index: 2;
-}
-.card-animation {
-    transition: transform 0.3s ease-in-out;
-    will-change: transform;
-}
-.card-animation:hover {
-    transform: scale(1.05);
-    border: solid 2px var(--layer3);
-    box-shadow: 10px 10px 10px var(--layer3);
-}
-.motion-div-track {
-    transition: none !important;
-}
-.allow-transition {
-    transition: transform 0.3s ease-in-out;
-    will-change: transform;
-}
-[contenteditable]:empty:before {
-    content: attr(data-placeholder);
-    color: var(--nice-blue);
-    pointer-events: none;
+
+/* ─── 3. UTILITIES LAYER (Helper Classes) ──────────────────────────────── */
+@layer utilities {
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .motion-div-track { transition: none !important; }
+    .allow-transition { transition: transform 0.3s ease-in-out; will-change: transform; }
 }
