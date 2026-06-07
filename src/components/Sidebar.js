@@ -72,35 +72,34 @@ export default function Sidebar({ isNavOpen, setIsNavOpen, isOptionsOpen, setIsO
                                 onClick={() => {
                                     if (session) {
                                         setIsNavOpen(false);
-                                        router.push(`/dashboard/Folders`);
                                     }}}>
                                 <span className="text-xl">🗃️</span>
                                 <span className="font-bold text-[var(--text)]">Materials</span>
                             </button>
                         </li>
                         <li>
-                            <button
+                            <Link
+                                href={'/dashboard/Folders'}
                                 className="flex items-center gap-4 w-full p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group"
                                 onClick={() => {
                                     if (session) {
                                         setIsNavOpen(false);
-                                        router.push(`/dashboard/Folders`);
                                     }}}>
                                 <span className="text-xl">📁</span>
                                 <span className="font-bold text-[var(--text)]">Folders</span>
-                            </button>
+                            </Link>
                         </li>
                         <li>
-                            <button
+                            <Link
+                                href={'/dashboard/Notes'}
                                 className="flex items-center gap-4 w-full p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group"
                                 onClick={() => {
                                     if (session) {
                                         setIsNavOpen(false);
-                                        router.push(`/dashboard/Notes`);
                                     }}}>
                                 <span className="text-xl">📔</span>
                                 <span className="font-bold text-[var(--text)]">Notes</span>
-                            </button>
+                            </Link>
                         </li>
                         <li>
                             <button className="flex items-center gap-4 w-full p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group">

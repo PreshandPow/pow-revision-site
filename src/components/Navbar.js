@@ -112,54 +112,49 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
                         </button>
                     </li>
                     <li>
-                        <button
+                        <Link
+                            href={'/dashboard/Folders'}
                             className="flex items-center gap-3 p-2 [1200px]:p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group"
-                            onClick={() => {
-                                if (session) {
-                                    router.push(`/dashboard/Folders`);
-                                }}}>
-
+                            >
                                 <span className="text-xl w-6 text-center">
                                     <span className="inline group-hover:hidden">📁</span>
                                     <span className="hidden group-hover:inline">📂</span>
                                 </span>
 
                             <span className="text-[var(--text)]">Folders</span>
-                        </button>
+                        </Link>
                     </li>
                     <li>
-                        <button
-                            className="flex items-center gap-3 p-2 [1200px]:p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group"
-                            onClick={() => {
-                                if (session) {
-                                    router.push(`/dashboard/Notes`);
-                                }}}>
+                        <Link
+                            href={'/dashboard/Notes'}
+                            className="flex items-center gap-3 p-2 [1200px]:p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group">
                             <span className="text-xl">📖</span>
                             <span className="text-[var(--text)]">Notes</span>
-                        </button>
+                        </Link>
                     </li>
                     <li>
-                        <button className="flex items-center gap-3 p-2 [1200px]:p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group">
+                        <Link
+                            href={'/dashboard/Folders'}
+                            className="flex items-center gap-3 p-2 [1200px]:p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group">
                             <span className="text-xl">📝</span>
                             <span className="text-[var(--text)]">Flashcards</span>
-                        </button>
+                        </Link>
                     </li>
                     <li>
-                        <button
-                            className="flex items-center gap-3 p-2 [1200px]:p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group"
-                            onClick={() => {
-                                if (session) {
-                                    router.push(`/dashboard/Notes`);
-                                }}}>
+                        <Link
+                            href={'/dashboard/Folders'}
+                            className="flex items-center gap-3 p-2 [1200px]:p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group">
                             <span className="text-xl">🗑️</span>
                             <span className="text-[var(--text)]">Trash</span>
-                        </button>
+                        </Link>
                     </li>
                     <li>
-                        <button className="flex items-center gap-3 p-2 [1200px]:p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group">
+                        <Link
+                            href={'/dashboard/Folders'}
+                            className="flex items-center gap-3 p-2 [1200px]:p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group">
                             <span className="text-xl">❓</span>
                             <span className="text-[var(--text)]">Support</span>
-                        </button>
+                        </Link>
                     </li>
                     <li>
                         <button
