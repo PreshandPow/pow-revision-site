@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr'
 import Link from 'next/link';
 import { ChevronDown } from "lucide-react";
+import {supabase} from "../lib/supabase-client";
 
 export function createClient() {
     return createBrowserClient(
@@ -17,12 +18,31 @@ export function createClient() {
     )
 }
 
-export default function AuthPage( { authMode, setAuthMode, email, setEmail, password, setPassword, name, setName, day, setDay, month, setMonth, year, setYear}) {
+export default function AuthPage( { authMode, setAuthMode}) {
 
     const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
     const [popup, setPopup] = useState(false);
     const supabase = createClient();
+
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [name, setName] = useState("");
+    const [day, setDay] = useState("");
+    const [month, setMonth] = useState("");
+    const [year, setYear] = useState("");
+
+    const updateUser = async () => {
+        const dobString = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+
+        const { data, error } = await supabase
+            .from('profiles')
+            .update({
+                username: name,
+                date_of_birth: dobString,
+            })
+            .eq('id', session.user.id)
+    };
 
     useEffect(() => {
         if (authMode === 'signup' || authMode === 'login' || authMode ===  'resetpassword') {
@@ -34,6 +54,10 @@ export default function AuthPage( { authMode, setAuthMode, email, setEmail, pass
             document.body.style.overflow = 'unset';
         }
     }, [authMode]);
+
+    const handleSignUp = async (e) => {
+
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();

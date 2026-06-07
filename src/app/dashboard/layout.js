@@ -33,7 +33,7 @@ export default function DashboardLayout({ children }) {
 
         fetchSession();
 
-        // Listen for login/logout events to keep session state synced
+        // Listen for login/logout events to keep the session state synced
         const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
             if (session) setSession(session);
         });

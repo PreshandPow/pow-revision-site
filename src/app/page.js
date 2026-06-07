@@ -2,48 +2,33 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useTheme } from 'next-themes';
-import {AnimatePresence, motion, useScroll, useTransform} from "framer-motion";
+import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
+import { useRouter } from 'next/navigation';
+import { supabase } from "../lib/supabase-client";
+
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import Footer from "../components/Footer";
 import AuthPage from "../components/AuthPage";
-import { supabase } from "../lib/supabase-client";
-import { useRouter } from 'next/navigation';
 
 export default function Home() {
-
+    // ─── 1. GLOBAL SETUP & UI STATES ──────────────────────────────────────────────
     const router = useRouter();
+
     const [searchInput, setSearchInput] = useState("");
     const [isNavOpen, setIsNavOpen] = useState(false);
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+
+    // ─── 2. AUTHENTICATION & PROFILE STATES ───────────────────────────────────────
     const [authMode, setAuthMode] = useState('');
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
     const [session, setSession] = useState(null);
-    const [name, setName] = useState("");
-    const [day, setDay] = useState("");
-    const [month, setMonth] = useState("");
-    const [year, setYear] = useState("");
 
-    const { theme, setTheme } = useTheme();
-
-    const updateUser = async () => {
-
-        const dobString = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
-
-        const { data, error } = await supabase
-            .from('profiles')
-            .update({
-                username: name,
-                date_of_birth: dobString,
-            })
-            .eq('id', session.user.id)
-    };
-
+    // ─── 3. AUTHENTICATION EFFECTS ────────────────────────────────────────────────
     const fetchSession = async () => {
         const { data: { session } } = await supabase.auth.getSession();
         setSession(session);
     }
+
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchSession();
@@ -56,29 +41,30 @@ export default function Home() {
         }
     }, []);
 
-    useEffect(() => {
-        const saved = localStorage.getItem("theme");
-        const system = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setTheme(saved || system);
-    }, []);
+    // ─── 4. THEME MANAGEMENT ──────────────────────────────────────────────────────
+    const { theme, setTheme } = useTheme();
+
     useEffect(() => {
         if (!theme) return;
         document.body.classList.remove('light', 'dark');
         document.body.classList.add(theme);
         localStorage.setItem("theme", theme);
     }, [theme]);
+
     const handleThemeChange = (e) => {
         e.preventDefault();
         setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
     };
 
+    // ─── 5. SCROLL & ANIMATION LOGIC (Framer Motion) ──────────────────────────────
     const targetRef = useRef(null);
     const scrollRef = useRef(null);
     const [xOffset, setXOffset] = useState(0);
+
     const { scrollYProgress } = useScroll({
         target: targetRef,
     });
+
     useEffect(() => {
         const updateScrollRange = () => {
             if (scrollRef.current) {
@@ -92,8 +78,10 @@ export default function Home() {
         window.addEventListener("resize", updateScrollRange);
         return () => window.removeEventListener("resize", updateScrollRange);
     }, []);
+
     const x = useTransform(scrollYProgress, [0, 1], [0, -xOffset]);
 
+    // ─── 6. UI EFFECTS ────────────────────────────────────────────────────────────
     useEffect(() => {
         if (isNavOpen || authMode === 'signup' || authMode === 'login' || authMode ===  'resetpassword') {
             document.body.style.overflow = 'hidden';
@@ -105,6 +93,7 @@ export default function Home() {
         }
     }, [isNavOpen, authMode]);
 
+    // ─── 7. RENDER ────────────────────────────────────────────────────────────────
     return (
         <main className="bg-[var(--layer1)] min-h-screen transition-colors duration-300">
             <Navbar
@@ -118,6 +107,7 @@ export default function Home() {
                 session={session}
                 router={router}
             />
+
             <header className="relative z-10 bg-[var(--layer2)] py-20 px-6">
                 <div className="max-w-4xl mx-auto text-center">
                     <h1 className="text-5xl md:text-7xl font-black tracking-tight text-[var(--text)] leading-[1.1]">
@@ -140,6 +130,7 @@ export default function Home() {
                     </div>
                 </div>
             </header>
+
             <section ref={targetRef} className="relative h-[300vh] bg-[var(--layer2)]">
                 <div className="sticky top-0 h-screen flex flex-col justify-center overflow-hidden">
                     <h2 className="text-4xl md:text-6xl font-bold text-center mb-12 text-[var(--text)]">
@@ -281,18 +272,6 @@ export default function Home() {
                     <AuthPage
                         authMode={authMode}
                         setAuthMode={setAuthMode}
-                        email={email}
-                        setEmail={setEmail}
-                        password={password}
-                        setPassword={setPassword}
-                        name={name}
-                        setName={setName}
-                        day={day}
-                        setDay={setDay}
-                        month={month}
-                        setMonth={setMonth}
-                        year={year}
-                        setYear={setYear}
                     />
                 )}
             </AnimatePresence>
