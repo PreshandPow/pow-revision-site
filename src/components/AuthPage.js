@@ -9,7 +9,6 @@ import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr'
 import Link from 'next/link';
 import { ChevronDown } from "lucide-react";
-import {supabase} from "../lib/supabase-client";
 
 export function createClient() {
     return createBrowserClient(
@@ -56,69 +55,79 @@ export default function AuthPage( { authMode, setAuthMode}) {
     }, [authMode]);
 
     const handleSignUp = async (e) => {
-
-    };
-
-    const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!email || !password || (authMode === 'signup' && (!name || !day || !month || !year))) {
+
+        // 1. Validation
+        const allFieldsFilled = email && password && name && day && month && year;
+        if (!allFieldsFilled) {
             setPopup(true);
-            toast.error("Please fill in all fields");
+            toast.error("Please fill in all fields", toastStyle);
             return;
-        } else {
-            setPopup(false);
         }
 
-        if (authMode === 'signup') {
-            const birthDate = new Date(year, month - 1, day);
-            const ageLimitDate = new Date();
-            ageLimitDate.setFullYear(ageLimitDate.getFullYear() - 13);
+        // 2. Age Check
+        const birthDate = new Date(year, month - 1, day);
+        const ageLimitDate = new Date();
+        ageLimitDate.setFullYear(ageLimitDate.getFullYear() - 13);
 
-            if (birthDate > ageLimitDate) {
-                toast.error("You must be at least 13 years old to join POW.");
-                return;
-            }
+        if (birthDate > ageLimitDate) {
+            toast.error("You must be at least 13 years old to join POW.", toastStyle);
+            return;
+        }
 
-            const dobString = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-            const { data, error: signUpError } = await supabase.auth.signUp({
-                email,
-                password,
-                options: {
-                    emailRedirectTo: 'http://localhost:3000/dashboard',
-                    data: { username: name, dob: dobString }
+        // 3. Format DOB (Safely coerced to Strings)
+        const dobString = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+        // 4. Supabase Sign Up
+        const { data, error: signUpError } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+                emailRedirectTo: `${window.location.origin}/dashboard`,
+                data: {
+                    username: name,
+                    dob: dobString
                 }
-            });
-
-            if (signUpError) {
-                console.error("Full error:", JSON.stringify(signUpError, null, 2));
-                toast.error(signUpError.message, toastStyle);
-                return;
             }
-            if (data.user) {
-                const { error: profileError } = await supabase
-                    .from('profiles')
-                    .insert([{
-                        id: data.user.id,
-                        username: name,
-                        date_of_birth: dobString
-                    }]);
+        });
 
-                if (profileError) console.error("Profile sync error:", profileError.message);
-                toast.success('Setting up your account', toastStyle);
+        if (signUpError) {
+            console.error("Full error:", JSON.stringify(signUpError, null, 2));
+            toast.error(signUpError.message, toastStyle);
+            return;
+        }
+
+        // 5. Handle Profile Sync
+        if (data.user) {
+            const { error: profileError } = await supabase
+                .from('profiles')
+                .insert([{
+                    id: data.user.id,
+                    username: name,
+                    date_of_birth: dobString
+                }]);
+
+            if (profileError) {
+                console.error("Profile sync error:", profileError.message);
             }
 
+            toast.success('Account created! Please check your email to verify.', toastStyle);
+        }
+    };
+
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+
+        if (signInError) {
+            handleError(signInError);
+            toast.success('Could not login. Incorrect email or password.', toastStyle);
         } else {
-            const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-
-            if (signInError) {
-                handleError(signInError);
-            } else {
-                const { data: sessionData } = await supabase.auth.getSession();
-                if (sessionData.session) {
-                    toast.success('Successfully logged in!', toastStyle);
-                    router.push('/dashboard');
-                    router.refresh();
-                }
+            const { data: sessionData } = await supabase.auth.getSession();
+            if (sessionData.session) {
+                toast.success('Successfully logged in!', toastStyle);
+                router.push('/dashboard');
+                router.refresh();
             }
         }
     };
@@ -285,7 +294,7 @@ export default function AuthPage( { authMode, setAuthMode}) {
                 <div className="flex-1 flex items-center justify-center w-full">
                     <div className="w-full max-w-md mx-auto">
                         {authMode === "login" && (
-                            <form className="w-full flex flex-col items-center justify-center" onSubmit={handleSubmit}>
+                            <form className="w-full flex flex-col items-center justify-center" onSubmit={handleLogin}>
                                 <button
                                     type="button"
                                     onClick={handleGoogleLogin}
@@ -391,7 +400,8 @@ export default function AuthPage( { authMode, setAuthMode}) {
                             </form>
                         )}
                         {authMode === "signup" && (
-                            <form className="w-full flex flex-col items-center justify-center" onSubmit={handleSubmit}>
+                            <form className="w-full flex flex-col items-center justify-center" onSubmit={(e) => {handleSignUp}
+                            }>
                                 <button
                                     type="button"
                                     onClick={handleGoogleLogin}
