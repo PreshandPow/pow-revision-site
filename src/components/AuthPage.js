@@ -18,7 +18,7 @@ export function createClient() {
 }
 
 export default function AuthPage( { authMode, setAuthMode}) {
-
+    // ─── 1. GLOBAL SETUP & STATES ─────────────────────────────────────────────────
     const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
     const [popup, setPopup] = useState(false);
@@ -31,18 +31,27 @@ export default function AuthPage( { authMode, setAuthMode}) {
     const [month, setMonth] = useState("");
     const [year, setYear] = useState("");
 
-    const updateUser = async () => {
-        const dobString = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
-
-        const { data, error } = await supabase
-            .from('profiles')
-            .update({
-                username: name,
-                date_of_birth: dobString,
-            })
-            .eq('id', session.user.id)
+    const toastStyle = {
+        style: {
+            border: '1px solid var(--nice-blue)',
+            padding: '16px',
+            color: 'var(--text)',
+            background: 'var(--layer2)',
+            zIndex: '9999',
+        },
+        iconTheme: {
+            primary: 'var(--nice-blue)',
+            secondary: '#FFFAEE',
+        },
     };
 
+    // ─── 2. UTILITIES & CONFIG ────────────────────────────────────────────────────
+    const handleError = (error) => {
+        console.error('Auth Error:', error);
+        toast.error(error.message, toastStyle);
+    };
+
+    // ─── 3. LIFECYCLE EFFECTS ─────────────────────────────────────────────────────
     useEffect(() => {
         if (authMode === 'signup' || authMode === 'login' || authMode ===  'resetpassword') {
             document.body.style.overflow = 'hidden';
@@ -54,6 +63,17 @@ export default function AuthPage( { authMode, setAuthMode}) {
         }
     }, [authMode]);
 
+    useEffect(() => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_IN' && session) {
+                window.location.href = '/dashboard';
+            }
+        });
+
+        return () => subscription.unsubscribe();
+    }, []);
+
+    // ─── 4. AUTH ACTION HANDLERS ──────────────────────────────────────────────────
     const handleSignUp = async (e) => {
         e.preventDefault();
 
@@ -132,35 +152,6 @@ export default function AuthPage( { authMode, setAuthMode}) {
         }
     };
 
-    const toastStyle = {
-        style: {
-            border: '1px solid var(--nice-blue)',
-            padding: '16px',
-            color: 'var(--text)',
-            background: 'var(--layer2)',
-            zIndex: '9999',
-        },
-        iconTheme: {
-            primary: 'var(--nice-blue)',
-            secondary: '#FFFAEE',
-        },
-    };
-
-    const handleError = (error) => {
-        console.error('Auth Error:', error);
-        toast.error(error.message, toastStyle);
-    };
-
-    useEffect(() => {
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-            if (event === 'SIGNED_IN' && session) {
-                window.location.href = '/dashboard';
-            }
-        });
-
-        return () => subscription.unsubscribe();
-    }, []);
-
     const sendRecovery = async (e) => {
         if (e) e.preventDefault();
         if (!email) {
@@ -172,33 +163,9 @@ export default function AuthPage( { authMode, setAuthMode}) {
         });
         if (error) {
             console.error("Error sending reset email:", error.message);
-            toast.error(error.message, {
-                style: {
-                    border: '1px solid var(--nice-blue)',
-                    padding: '16px',
-                    color: 'var(--text)',
-                    background: 'var(--layer2)',
-                    zIndex: '9999',
-                },
-                iconTheme: {
-                    primary: 'var(--nice-blue)',
-                    secondary: '#FFFAEE',
-                },
-            });
+            toast.error(error.message, toastStyle);
         } else {
-            toast.success('Password reset link sent to email!', {
-                style: {
-                    border: '1px solid var(--nice-blue)',
-                    padding: '16px',
-                    color: 'var(--text)',
-                    background: 'var(--layer2)',
-                    zIndex: '9999',
-                },
-                iconTheme: {
-                    primary: 'var(--nice-blue)',
-                    secondary: '#FFFAEE',
-                },
-            });
+            toast.success('Password reset link sent to email!', toastStyle);
             setAuthMode('login');
         }
     };
@@ -221,6 +188,7 @@ export default function AuthPage( { authMode, setAuthMode}) {
         }
     };
 
+    // ─── 5. RENDER ────────────────────────────────────────────────────────────────
     return (
         <motion.div
             className="fixed inset-0 flex flex-col lg:flex-row w-full min-h-screen bg-[var(--layer1)]/95 z-[60] backdrop-blur-sm transition-opacity"
@@ -400,8 +368,7 @@ export default function AuthPage( { authMode, setAuthMode}) {
                             </form>
                         )}
                         {authMode === "signup" && (
-                            <form className="w-full flex flex-col items-center justify-center" onSubmit={(e) => {handleSignUp}
-                            }>
+                            <form className="w-full flex flex-col items-center justify-center" onSubmit={handleSignUp}>
                                 <button
                                     type="button"
                                     onClick={handleGoogleLogin}
