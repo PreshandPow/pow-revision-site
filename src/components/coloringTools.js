@@ -2,9 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react';
 import toast from "react-hot-toast";
-import {Eraser} from "lucide-react";
-import {body} from "framer-motion/m";
 
+// ─── 1. UTILITY FUNCTIONS ─────────────────────────────────────────────────────
 export const isValidColor = (value) => {
     if (!value) return false;
     const s = new Option().style;
@@ -49,27 +48,29 @@ export const parseColorToHue = (colorString) => {
     return rgbToHue(r, g, b);
 };
 
-export default function ColorPickerDropdown({
-                                                activeColor,
-                                                setActiveColor,
-                                                onApplyColor,
-                                            }) {
+export default function ColorPickerDropdown({ activeColor, setActiveColor, onApplyColor }) {
+
+    // ─── 2. GLOBAL SETUP & STATES ───────────────────────────────────────────────
+    const colorBoxRef = useRef(null);
+
     const [sliderHue, setSliderHue] = useState(0);
     const [boxSat, setBoxSat] = useState(100);
     const [boxVal, setBoxVal] = useState(100);
     const [isDraggingBox, setIsDraggingBox] = useState(false);
-    const [colourHistory, setColourHistory] = useState(() => {
-        if (typeof window === 'undefined') return [];
+    const [colourHistory, setColourHistory] = useState([]);
+
+    useEffect(() => {
         try {
-            const saved = localStorage.getItem('pow_color_history');
-            return saved ? JSON.parse(saved) : [];
+            const savedColours = localStorage.getItem('pow_color_history');
+            if (savedColours) {
+                setColourHistory(JSON.parse(savedColours));
+            }
         } catch (e) {
-            return [];
+            console.error('Failed to load colours', e);
         }
-    });
+    }, []);
 
-    const colorBoxRef = useRef(null);
-
+    // ─── 3. ACTION HANDLERS ─────────────────────────────────────────────────────
     const handleBoxDrag = (e) => {
         if (!colorBoxRef.current) return;
         const { left, top, width, height } = colorBoxRef.current.getBoundingClientRect();
@@ -95,6 +96,7 @@ export default function ColorPickerDropdown({
         });
     };
 
+    // ─── 4. LIFECYCLE EFFECTS ───────────────────────────────────────────────────
     useEffect(() => {
         if (!isDraggingBox) return;
         const handlePointerMove = (e) => handleBoxDrag(e);
@@ -111,6 +113,7 @@ export default function ColorPickerDropdown({
         };
     }, [isDraggingBox, sliderHue]);
 
+    // ─── 5. RENDER ──────────────────────────────────────────────────────────────
     return (
         <div className="fixed bottom-0 left-0 w-full pb-8 md:pb-1 md:absolute md:bottom-auto md:top-full
                     md:left-0 md:w-[280px] mt-1 bg-[var(--layer2)] border-t md:border border-[var(--layer3)]
