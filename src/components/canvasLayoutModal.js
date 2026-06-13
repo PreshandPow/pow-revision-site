@@ -4,14 +4,19 @@ import { Clipboard, Copy, Trash2, Type } from 'lucide-react';
 
 export default function CanvasLayoutModal({ editorRef, hoveredBlock, onContentChange, toast, toastStyle }) {
 
+    // ─── 1. DOM SELECTION HELPERS ────────────────────────────────────────────────
     const getLineRange = () => {
         if (!hoveredBlock || !editorRef.current?.contains(hoveredBlock)) return null;
 
         const blockRect = hoveredBlock.getBoundingClientRect();
         const midY = blockRect.top + blockRect.height / 2;
 
-        const startRange = document.caretRangeFromPoint(blockRect.left, midY);
-        const endRange = document.caretRangeFromPoint(blockRect.right, midY);
+        let startRange, endRange;
+        if (document.caretRangeFromPoint) {
+            startRange = document.caretRangeFromPoint(blockRect.left, midY);
+        }   else if (document.caretPositionFromPoint) {
+            startRange = document.caretPositionFromPoint(blockRect.left, midY);
+        }
 
         if (!startRange || !endRange) return null;
 
@@ -36,12 +41,14 @@ export default function CanvasLayoutModal({ editorRef, hoveredBlock, onContentCh
         onContentChange?.();
     };
 
+    // ─── 2. RENDER ───────────────────────────────────────────────────────────────
     return (
-        <div className="w-56 bg-[#1a1a1a] border border-[#333] rounded-lg shadow-2xl p-2 text-gray-200">
+        <div className="w-56 bg-[var(--layer2)] border border-[var(--layer1)] rounded-lg shadow-2xl p-2">
             <div className="flex flex-col gap-1">
 
+                {/* Clear Formatting */}
                 <button
-                    className="flex items-center gap-3 w-full p-2 hover:bg-[#2a2a2a] rounded-md transition-colors cursor-pointer text-sm"
+                    className="flex items-center gap-3 w-full p-2 hover:bg-[var(--layer3)] hover:text-[var(--nice-blue)] rounded-md transition-colors cursor-pointer text-sm"
                     onPointerDown={(e) => {
                         e.preventDefault();
                         applyToLine(() => {
@@ -49,12 +56,13 @@ export default function CanvasLayoutModal({ editorRef, hoveredBlock, onContentCh
                         });
                     }}
                 >
-                    <Type size={16} className="text-gray-400" />
+                    <Type size={16} className="text-[var(--text-muted)]" />
                     <span>Clear formatting</span>
                 </button>
 
+                {/* Copy to Clipboard */}
                 <button
-                    className="flex items-center gap-3 w-full p-2 hover:bg-[#2a2a2a] rounded-md transition-colors text-sm cursor-pointer"
+                    className="flex items-center gap-3 w-full p-2 hover:bg-[var(--layer3)] hover:text-[var(--nice-blue)] rounded-md transition-colors text-sm cursor-pointer"
                     onPointerDown={(e) => {
                         e.preventDefault();
                         const range = getLineRange();
@@ -66,12 +74,13 @@ export default function CanvasLayoutModal({ editorRef, hoveredBlock, onContentCh
                             .catch(err => console.error('Failed to copy:', err));
                     }}
                 >
-                    <Clipboard size={16} className="text-gray-400" />
+                    <Clipboard size={16} className="text-[var(--text-muted)]" />
                     <span>Copy to clipboard</span>
                 </button>
 
+                {/* Duplicate Block */}
                 <button
-                    className="flex items-center gap-3 w-full p-2 hover:bg-[#2a2a2a] rounded-md transition-colors text-sm cursor-pointer"
+                    className="flex items-center gap-3 w-full p-2 hover:bg-[var(--layer3)] hover:text-[var(--nice-blue)] rounded-md transition-colors text-sm cursor-pointer"
                     onPointerDown={(e) => {
                         e.preventDefault();
                         if (!hoveredBlock || !editorRef.current?.contains(hoveredBlock)) return;
@@ -81,14 +90,16 @@ export default function CanvasLayoutModal({ editorRef, hoveredBlock, onContentCh
                         onContentChange?.();
                     }}
                 >
-                    <Copy size={16} className="text-gray-400" />
+                    <Copy size={16} className="text-[var(--text-muted)]" />
                     <span>Duplicate</span>
                 </button>
 
-                <div className="h-[1px] bg-[#333] my-1 mx-1" />
+                {/* Divider */}
+                <div className="h-[1px] bg-[var(--text-muted)] my-1 mx-1" />
 
+                {/* Delete Block */}
                 <button
-                    className="flex items-center gap-3 w-full p-2 hover:bg-[#2a2a2a] rounded-md transition-colors text-sm text-[#f87171] hover:text-red-400 cursor-pointer"
+                    className="flex items-center gap-3 w-full p-2 hover:bg-red-500/10 text-red-400 hover:text-red-300 rounded-md transition-colors text-sm cursor-pointer"
                     onPointerDown={(e) => {
                         e.preventDefault();
                         if (!hoveredBlock || !editorRef.current?.contains(hoveredBlock)) return;
