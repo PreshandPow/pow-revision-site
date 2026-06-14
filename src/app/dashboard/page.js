@@ -469,6 +469,7 @@ export default function Dashboard() {
                 <CreateFolderModal
                     createFolderModalRef={createFolderModalRef}
                     setShowCreateFolderModal={setShowCreateFolderModal}
+                    folderName={folderName}
                     setFolderName={setFolderName}
                     handleCreateFolder={handleCreateFolder}
                 />

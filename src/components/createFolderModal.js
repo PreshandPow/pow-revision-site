@@ -2,7 +2,9 @@
 
 import { motion } from "framer-motion";
 
-export default function CreateFolderModal({ createFolderModalRef, setShowCreateFolderModal, setFolderName, handleCreateFolder }) {
+export default function CreateFolderModal({ createFolderModalRef, setShowCreateFolderModal, folderName, setFolderName, handleCreateFolder }) {
+
+    // ─── 1. RENDER ────────────────────────────────────────────────────────────────
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 md:p-6">
             <motion.div
@@ -49,8 +51,10 @@ export default function CreateFolderModal({ createFolderModalRef, setShowCreateF
                     </button>
                     <button
                         onClick={handleCreateFolder}
-                        className="w-full md:w-auto px-4 py-2 text-sm font-semibold rounded-lg bg-[var(--nice-blue)]
-                        text-white shadow-sm hover:opacity-90 active:scale-95 transition-all duration-200 cursor-pointer"
+                        disabled={!folderName.trim()}
+                        className={`w - full md:w-auto px-4 py-2 text-sm font-semibold rounded-lg bg-[var(--nice-blue)]
+                            text-white shadow-sm active:scale-95 transition-all duration-200
+                            ${!folderName.trim() ? 'opacity-50 cursor-not-allowed ' : 'cursor-pointer hover:opacity-90'}`}
                     >
                         Create folder
                     </button>
