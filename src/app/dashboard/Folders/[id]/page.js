@@ -1,8 +1,19 @@
 'use client';
 
 import {useEffect, useState} from 'react';
-import { Folder, FileText, MoreVertical, Plus, ChevronRight, CreditCard, Clock } from "lucide-react";
-import { motion } from "framer-motion";
+import {
+    Folder,
+    FileText,
+    MoreVertical,
+    Plus,
+    ChevronRight,
+    CreditCard,
+    Clock,
+    ExternalLink,
+    Edit2,
+    FolderOutput, Copy, Trash2
+} from "lucide-react";
+import {AnimatePresence, motion} from "framer-motion";
 import { useRouter, useParams } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import toast from "react-hot-toast";
@@ -23,6 +34,7 @@ export default function FolderContentPage() {
     const [loading, setLoading] = useState(true);
     const [prevFolder, setPrevFolder] = useState('Folders');
     const [folders, setFolders] = useState([]);
+    const [showFolderOptionsDropdown, setShowFolderOptionsDropdown] = useState(false);
 
     // Temporary mock items for Notes and Flashcards
     const [items] = useState([
@@ -81,6 +93,16 @@ export default function FolderContentPage() {
         if (id) fetchFolderAndChildren();
     }, [id]);
 
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (!e.target.closest('.folder-dropdown-container')) {
+                setShowFolderOptionsDropdown(null);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
     const formatDate = (date) => new Date(date).toLocaleDateString('en-GB', {
         day: 'numeric', month: 'short', year: 'numeric'
     });
@@ -116,6 +138,80 @@ export default function FolderContentPage() {
                         </button>
                         <ChevronRight size={16} />
                         <span className="text-[var(--text)] font-bold text-lg">{folderName}</span>
+
+                        <div>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setShowFolderOptionsDropdown(true);
+                                }}
+                                className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
+                            >
+                                <MoreVertical size={18} />
+                            </button>
+
+                            <AnimatePresence>
+                                {showFolderOptionsDropdown && (
+                                    <motion.div
+                                        initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                                        exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                                        transition={{ duration: 0.15 }}
+                                        className="absolute top-10 mt-2 w-56 bg-[var(--layer1)] border border-[var(--layer3)] rounded-xl shadow-2xl py-1.5 z-60 overflow-hidden left-25 md:left-40"
+                                    >
+                                        <a href={`${window.location.origin}`}
+                                           target="_blank"
+                                           rel="noopener noreferrer">
+                                            <button onClick={(e) => {
+                                                e.stopPropagation(); setShowFolderOptionsDropdown(null);
+                                            }}
+                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer">
+                                                <ExternalLink size={16} /> Open in new tab
+                                            </button>
+                                        </a>
+
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                            }}
+                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer"
+                                        >
+                                            <Edit2 size={16} /> Rename
+                                        </button>
+
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                            }}
+                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer"
+                                        >
+                                            <FolderOutput size={16} /> Move to
+                                        </button>
+
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                            }}
+                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer"
+                                        >
+                                            <Copy size={16} /> Duplicate
+                                        </button>
+
+                                        <div className="h-px bg-[var(--layer3)] my-1 w-full" />
+
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                            }}
+                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
+                                        >
+                                            <Trash2 size={16} /> Delete folder
+                                        </button>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+
                     </div>
 
                     <button className="flex items-center justify-center gap-2 bg-[var(--nice-blue)] text-white px-4 py-2 rounded-lg font-semibold text-sm hover:opacity-90 transition-all shadow-sm w-fit">
