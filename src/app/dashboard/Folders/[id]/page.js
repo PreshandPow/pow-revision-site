@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {
     Folder,
     FileText,
@@ -17,6 +17,7 @@ import {AnimatePresence, motion} from "framer-motion";
 import { useRouter, useParams } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import toast from "react-hot-toast";
+import RenameItemModal from "../../../../components/RenameItemModal";
 
 export function createClient() {
     return createBrowserClient(
@@ -35,6 +36,8 @@ export default function FolderContentPage() {
     const [prevFolder, setPrevFolder] = useState('Folders');
     const [folders, setFolders] = useState([]);
     const [showFolderOptionsDropdown, setShowFolderOptionsDropdown] = useState(false);
+    const [showRenameItemModal, setShowRenameItemModal] = useState(false);
+    const showRenameFolderModalRef = useRef(null);
 
     // Temporary mock items for Notes and Flashcards
     const [items] = useState([
@@ -145,69 +148,74 @@ export default function FolderContentPage() {
                                     e.stopPropagation();
                                     setShowFolderOptionsDropdown(true);
                                 }}
-                                className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
+                                className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text)]
+                                hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                             >
                                 <MoreVertical size={18} />
                             </button>
 
                             <AnimatePresence>
                                 {showFolderOptionsDropdown && (
-                                    <motion.div
-                                        initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                                        exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                                        transition={{ duration: 0.15 }}
-                                        className="absolute top-10 mt-2 w-56 bg-[var(--layer1)] border border-[var(--layer3)] rounded-xl shadow-2xl py-1.5 z-60 overflow-hidden left-25 md:left-40"
-                                    >
-                                        <a href={`${window.location.origin}`}
-                                           target="_blank"
-                                           rel="noopener noreferrer">
-                                            <button onClick={(e) => {
-                                                e.stopPropagation(); setShowFolderOptionsDropdown(null);
-                                            }}
-                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer">
-                                                <ExternalLink size={16} /> Open in new tab
+                                    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-[1px] p-0 md:p-6">
+                                        <motion.div
+                                            initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                                            exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                                            transition={{ duration: 0.15 }}
+                                            className="absolute left-25 top-65 mt-2 w-56 bg-[var(--layer1)] border border-[var(--layer3)]
+                                        rounded-xl shadow-2xl py-1.5 z-60 overflow-hidden md:left-40"
+                                        >
+                                            <a href={`${window.location}`}
+                                               target="_blank"
+                                               rel="noopener noreferrer">
+                                                <button onClick={(e) => {
+                                                    e.stopPropagation(); setShowFolderOptionsDropdown(null);
+                                                }}
+                                                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer">
+                                                    <ExternalLink size={16} /> Open in new tab
+                                                </button>
+                                            </a>
+
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setShowRenameItemModal(!showRenameItemModal);
+                                                }}
+                                                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer"
+                                            >
+                                                <Edit2 size={16} /> Rename
                                             </button>
-                                        </a>
 
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                            }}
-                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer"
-                                        >
-                                            <Edit2 size={16} /> Rename
-                                        </button>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                }}
+                                                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer"
+                                            >
+                                                <FolderOutput size={16} /> Move to
+                                            </button>
 
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                            }}
-                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer"
-                                        >
-                                            <FolderOutput size={16} /> Move to
-                                        </button>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                }}
+                                                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer"
+                                            >
+                                                <Copy size={16} /> Duplicate
+                                            </button>
 
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                            }}
-                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer"
-                                        >
-                                            <Copy size={16} /> Duplicate
-                                        </button>
+                                            <div className="h-px bg-[var(--layer3)] my-1 w-full" />
 
-                                        <div className="h-px bg-[var(--layer3)] my-1 w-full" />
-
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                            }}
-                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
-                                        >
-                                            <Trash2 size={16} /> Delete folder
-                                        </button>
-                                    </motion.div>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                }}
+                                                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
+                                            >
+                                                <Trash2 size={16} /> Delete folder
+                                            </button>
+                                        </motion.div>
+                                    </div>
                                 )}
                             </AnimatePresence>
                         </div>
@@ -336,7 +344,15 @@ export default function FolderContentPage() {
                         ))}
                     </div>
                 </div>
-
+                {showRenameItemModal && (
+                    <RenameItemModal
+                        renameModalRef={showRenameFolderModalRef}
+                        currentName={folderName}
+                        handleRename={handleFolderRename}
+                        setItemName={setFolderName}
+                        setShowRenameItemModal={setShowRenameItemModal}
+                    />
+                )}
             </div>
         </div>
     );
