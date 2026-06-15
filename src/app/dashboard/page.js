@@ -460,7 +460,6 @@ export default function Dashboard() {
                     activeTaskModal={activeTaskModal}
                     setActiveTaskModal={setActiveTaskModal}
                     handleCreateNote={handleCreateNote}
-                    showCreateFolderModal={showCreateFolderModal}
                     setShowCreateFolderModal={setShowCreateFolderModal}
                 />
             )}

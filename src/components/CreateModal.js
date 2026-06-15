@@ -2,10 +2,16 @@
 
 import { motion } from "framer-motion";
 import { X, Folder, FileText, BookOpen } from "lucide-react";
-import {useEffect, useState} from "react";
 
-export default function CreateModal({ setOpenCreateModal, activeTaskModal, setActiveTaskModal, handleCreateNote, showCreateFolderModal, setShowCreateFolderModal }) {
+export default function CreateModal({
+                                        setOpenCreateModal,
+                                        activeTaskModal,
+                                        setActiveTaskModal,
+                                        handleCreateNote,
+                                        setShowCreateFolderModal
+                                    }) {
 
+    // ─── 1. CONFIGURATION & DATA ──────────────────────────────────────────────────
     const SIDEBAR_ITEMS = [
         {
             id: 'folders',
@@ -72,6 +78,7 @@ export default function CreateModal({ setOpenCreateModal, activeTaskModal, setAc
 
     const current = SIDEBAR_ITEMS.find(i => i.id === activeTaskModal);
 
+    // ─── 2. RENDER ────────────────────────────────────────────────────────────────
     return (
         <div
             className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-md p-0 md:p-6"
@@ -85,6 +92,7 @@ export default function CreateModal({ setOpenCreateModal, activeTaskModal, setAc
                 transition={{ duration: 0.3, ease: 'easeOut' }}
                 onClick={(e) => e.stopPropagation()}
             >
+                {/* Sidebar Navigation */}
                 <div className="w-3/7 md:w-52 flex-shrink-0 bg-[var(--layer2)] border-r border-[var(--layer3)] flex flex-col p-4 gap-1">
                     {SIDEBAR_ITEMS.map(item => (
                         <button
@@ -102,7 +110,10 @@ export default function CreateModal({ setOpenCreateModal, activeTaskModal, setAc
                     ))}
                 </div>
 
+                {/* Main Content Area */}
                 <div className="flex-1 p-8 overflow-y-auto">
+
+                    {/* Header */}
                     <div className="flex justify-between items-start mb-1">
                         <div>
                             <h2 className="text-2xl font-bold text-[var(--text)]">Create</h2>
@@ -116,11 +127,13 @@ export default function CreateModal({ setOpenCreateModal, activeTaskModal, setAc
                         </button>
                     </div>
 
+                    {/* Cards Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
                         {current.cards.map((card, idx) => (
                             <div
                                 key={idx}
-                                className="bg-[var(--layer2)] border border-[var(--layer3)] rounded-2xl p-5 flex flex-col gap-3 cursor-pointer hover:border-[var(--nice-blue)] transition-colors"
+                                className="bg-[var(--layer2)] border border-[var(--layer3)] rounded-2xl p-5 flex flex-col
+                                 gap-3 cursor-pointer hover:border-[var(--nice-blue)] transition-colors"
                                 onClick={(e) => {
                                     if (card.action) {
                                         card.action();
