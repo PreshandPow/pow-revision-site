@@ -158,7 +158,8 @@ export default function Dashboard() {
 
     // ─── 6. ACTION HANDLERS ───────────────────────────────────────────────────────
 
-    const handleSaveDetails = async () => {
+    const handleSaveDetails = async (e) => {
+        e.preventDefault();
         const profileUpdates = {};
 
         if (needsDate) {
