@@ -8,24 +8,23 @@ import toast from "react-hot-toast";
 import Image from "next/image";
 import { useTheme } from 'next-themes';
 
+// ─── 1. SUPABASE CLIENT ───────────────────────────────────────────────────────
 const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
 export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAuthMode, router }) {
+
+    // ─── 2. GLOBAL SETUP & STATES ───────────────────────────────────────────────
     const [session, setSession] = useState(null);
     const [userProfile, setUserProfile] = useState(null);
     const [email, setEmail] = useState(null);
-    const [mounted, setMounted] = useState(false);
 
-    useEffect(() => {
-        setMounted(true);
-    }, []);
+    const [mounted, setMounted] = useState(false);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     const { theme, setTheme } = useTheme();
-
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     const toastStyle = {
         style: {
@@ -41,6 +40,7 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
         },
     };
 
+    // ─── 3. ACTION HANDLERS ─────────────────────────────────────────────────────
     const handleSignOut = async () => {
         await supabase.auth.signOut();
         localStorage.clear();
@@ -48,6 +48,11 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
         window.location.href = '/';
         router.refresh();
     };
+
+    // ─── 4. LIFECYCLE EFFECTS ───────────────────────────────────────────────────
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     useEffect(() => {
         supabase.auth.getSession().then(({ data }) => {
@@ -79,15 +84,20 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
                 }
                 setUserProfile(profile);
             } else {
-                router.replace('/');
+                if (window.location.pathname !== '/') {
+                    router.replace('/');
+                }
             }
         }
         getUser();
     }, [supabase, router]);
 
+    // ─── 5. RENDER ──────────────────────────────────────────────────────────────
     return (
         <nav className="sticky top-0 z-50 flex flex-col gap-6 w-full bg-[var(--layer1)] p-4 md:p-6 shadow-sm border-b border-[var(--layer3)] mb-4">
             <div className="flex items-center justify-between w-full max-w-7xl mx-auto">
+
+                {/* Mobile Menu Toggle */}
                 <button
                     className="cursor-pointer min-[1200px]:hidden p-3 hover:bg-[var(--layer2)] rounded-full transition-colors"
                     onClick={() => setIsNavOpen(!isNavOpen)}
@@ -95,9 +105,13 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
                 >
                     <Menu className="w-6 h-6 text-[var(--text)]" />
                 </button>
+
+                {/* Logo */}
                 <Link href="/" className="font-brand font-black tracking-tighter z-20 text-3xl lg:text-5xl text-[var(--nice-blue)]">
                     POW
                 </Link>
+
+                {/* Desktop Navigation Links */}
                 <ul className="hidden min-[1200px]:flex items-center gap-3 [1200px]:gap-4 font-semibold">
                     <li>
                         <button
@@ -115,12 +129,11 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
                         <Link
                             href={'/dashboard/Folders'}
                             className="flex items-center gap-3 p-2 [1200px]:p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group"
-                            >
-                                <span className="text-xl w-6 text-center">
-                                    <span className="inline group-hover:hidden">📁</span>
-                                    <span className="hidden group-hover:inline">📂</span>
-                                </span>
-
+                        >
+                            <span className="text-xl w-6 text-center">
+                                <span className="inline group-hover:hidden">📁</span>
+                                <span className="hidden group-hover:inline">📂</span>
+                            </span>
                             <span className="text-[var(--text)]">Folders</span>
                         </Link>
                     </li>
@@ -167,6 +180,7 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
                     </li>
                 </ul>
 
+                {/* Auth Section & Dropdown */}
                 <div className="flex items-center gap-2">
                     {session ? (
                         <div className="relative">
@@ -206,6 +220,8 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
                                     </div>
                                 )}
                             </button>
+
+                            {/* Dropdown Menu */}
                             <div className={`absolute right-0 top-full pt-2 w-80 md:w-96 transition-all duration-200 z-50 ${isDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible translate-y-2'}`}>
                                 <div className="bg-[var(--layer2)] rounded-xl shadow-lg border border-[var(--layer1)] flex flex-col overflow-hidden">
                                     <div
@@ -215,23 +231,13 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
                                         }}
                                     >
                                         {userProfile?.avatar_url ? (
-                                            userProfile.avatar_url.includes('dicebear') ? (
-                                                <img
-                                                    src={userProfile.avatar_url}
-                                                    alt="avatar"
-                                                    width={48}
-                                                    height={48}
-                                                    className="rounded-full object-cover shadow-sm"
-                                                />
-                                            ) : (
-                                                <Image
-                                                    src={userProfile.avatar_url}
-                                                    alt="avatar"
-                                                    width={48}
-                                                    height={48}
-                                                    className="rounded-full object-cover shadow-sm"
-                                                />
-                                            )
+                                            <Image
+                                                src={userProfile.avatar_url}
+                                                alt="avatar"
+                                                width={48}
+                                                height={48}
+                                                className="rounded-full object-cover shadow-sm"
+                                            />
                                         ) : (
                                             <div className="w-[48px] h-[48px] bg-white rounded-full shadow-md border border-[var(--layer3)] flex items-center justify-center">
                                                 <span className="text-[var(--nice-blue)] text-xs font-black">
@@ -244,7 +250,9 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
                                             <p className={'whitespace-nowrap text-sm text-[var(--text-muted)] truncate max-w-[180px]'}>{email}</p>
                                         </div>
                                     </div>
+
                                     <div className="h-[1px] bg-[var(--layer3)] w-full"></div>
+
                                     <button
                                         className="flex flex-row gap-4 px-5 py-4 text-left font-bold text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                                         onClick={() => {
@@ -254,13 +262,15 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
                                         <UserCircle className="w-5 h-5 text-[var(--text-muted)] hover:text-[var(--text)] shrink-0"/>
                                         <span>Profile</span>
                                     </button>
+
                                     <button
                                         onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                                         className="px-5 py-4 text-left font-bold text-[var(--text)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                                         aria-label="Toggle theme"
                                     >
-                                        {theme === 'light' ? '☀️ Dark Mode' : `🌙 Light Mode`}
+                                        {mounted ? (theme === 'light' ? '☀️ Dark Mode' : '🌙 Light Mode') : '☀️ Dark Mode'}
                                     </button>
+
                                     <button
                                         className="flex flex-row gap-4 whitespace-nowrap px-5 py-4 text-left font-bold text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                                         onClick={() => {
@@ -270,6 +280,7 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
                                         <Settings className="w-5 h-5 text-[var(--text-muted)] shrink-0"/>
                                         <span>Settings</span>
                                     </button>
+
                                     <button
                                         className="flex flex-row gap-4 px-5 py-4 text-left font-bold text-yellow-600 hover:text-yellow-400 hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                                         onClick={() => {
@@ -279,7 +290,9 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
                                         <Sparkles className="w-5 h-5 text-yellow-400 shrink-0"/>
                                         <span>Upgrade</span>
                                     </button>
+
                                     <div className="h-[1px] bg-[var(--layer3)] w-full"></div>
+
                                     <button
                                         className="flex flex-row gap-4 px-5 py-4 text-left font-bold text-red-400 hover:text-red-600 transition-colors cursor-pointer hover:bg-[var(--layer3)]"
                                         onClick={handleSignOut}
@@ -306,6 +319,8 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
                     )}
                 </div>
             </div>
+
+            {/* Global Search Bar */}
             <div className="relative w-full max-w-4xl mx-auto -mt-5">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] w-5 h-5" />
                 <input
