@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import { useTheme } from 'next-themes';
 import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
 import { useRouter } from 'next/navigation';
+
+// ─── 1. SUPABASE CLIENT ───────────────────────────────────────────────────────
 import { supabase } from "../lib/supabase-client";
 
 import Navbar from "../components/Navbar";
@@ -256,7 +258,7 @@ export default function Home() {
                 </div>
             </section>
             {isNavOpen && (
-                <div className="fixed inset-0 bg-black/60 z-[60] backdrop-blur-sm transition-opacity" onClick={() => setIsNavOpen(!isNavOpen)} />
+                <div className="fixed inset-0 transition-opacity" onClick={() => setIsNavOpen(!isNavOpen)} />
             )}
             <Sidebar
                 isNavOpen={isNavOpen}

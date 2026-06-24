@@ -1,12 +1,12 @@
 "use client";
 
 import { Search, Menu, Settings, LogOut, UserCircle, Sparkles } from "lucide-react";
-import { createBrowserClient } from '@supabase/ssr';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import toast from "react-hot-toast";
 import Image from "next/image";
 import { useTheme } from 'next-themes';
+import { createBrowserClient } from "@supabase/ssr";
 
 // ─── 1. SUPABASE CLIENT ───────────────────────────────────────────────────────
 const supabase = createBrowserClient(
@@ -49,33 +49,23 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
         router.refresh();
     };
 
-    // ─── 4. LIFECYCLE EFFECTS ───────────────────────────────────────────────────
+    // ─── 4. UNIFIED AUTHENTICATION EFFECT ───────────────────────────────────────
     useEffect(() => {
         setMounted(true);
-    }, []);
 
-    useEffect(() => {
-        supabase.auth.getSession().then(({ data }) => {
-            setSession(data.session);
-        });
+        const initializeAuth = async () => {
+            // 1. Fetch the session (Single Source of Truth)
+            const { data: { session: currentSession } } = await supabase.auth.getSession();
+            setSession(currentSession);
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            setSession(session);
-        });
+            // 2. If a session exists, use its data to fetch the profile
+            if (currentSession?.user) {
+                setEmail(currentSession.user.email);
 
-        return () => subscription.unsubscribe();
-    }, []);
-
-    useEffect(() => {
-        const getUser = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-
-            if (user) {
-                setEmail(user.email);
-                const {data: profile, error} = await supabase
+                const { data: profile, error } = await supabase
                     .from('profiles')
                     .select('*')
-                    .eq('id', user.id)
+                    .eq('id', currentSession.user.id)
                     .maybeSingle();
 
                 if (error) {
@@ -84,13 +74,26 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
                 }
                 setUserProfile(profile);
             } else {
+                // 3. If no session exists, boot them to the homepage safely
                 if (window.location.pathname !== '/') {
                     router.replace('/');
                 }
             }
-        }
-        getUser();
-    }, [supabase, router]);
+        };
+
+        initializeAuth();
+
+        // 4. Listen for Login / Logout events
+        const { data: authListener } = supabase.auth.onAuthStateChange((_event, newSession) => {
+            // Unconditionally set the session (so logouts actually clear the state to null!)
+            setSession(newSession);
+        });
+
+        return () => {
+            authListener.subscription.unsubscribe();
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Removed 'supabase' and 'router' from dependencies to prevent infinite loops
 
     // ─── 5. RENDER ──────────────────────────────────────────────────────────────
     return (

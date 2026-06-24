@@ -6,6 +6,8 @@ import { useRouter, usePathname } from 'next/navigation';
 import Navbar from "../../components/Navbar";
 import Sidebar from "../../components/Sidebar";
 import Footer from "../../components/Footer";
+
+// ─── 1. SUPABASE CLIENT ───────────────────────────────────────────────────────
 import { supabase } from "../../lib/supabase-client";
 
 export default function DashboardLayout({ children }) {
