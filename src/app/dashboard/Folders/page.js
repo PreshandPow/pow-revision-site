@@ -7,14 +7,16 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from 'next/navigation';
-import { createBrowserClient } from '@supabase/ssr';
 import toast from 'react-hot-toast';
 
 import CreateFolderModal from '../../../components/createFolderModal';
 import RenameItemModal from "../../../components/RenameItemModal";
 import MoveItemModal from "../../../components/MoveItemModal";
 
-export function createClient() {
+import { useRenameItem } from '../../hooks/useItemActions';
+import { createBrowserClient } from '@supabase/ssr';
+
+function createClient() {
     return createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -23,12 +25,14 @@ export function createClient() {
 
 export default function FolderContentPage() {
     // ─── 1. GLOBAL SETUP & STATES ─────────────────────────────────────────────────
-    const router = useRouter();
     const supabase = createClient();
+    const router = useRouter();
 
     const [folders, setFolders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeDropdown, setActiveDropdown] = useState(null);
+
+    const { rename, isRenaming } = useRenameItem();
 
     const toastStyle = {
         style: {
@@ -68,18 +72,9 @@ export default function FolderContentPage() {
     const showRenameFolderModalRef = useRef(null);
 
     const handleFolderRename = async (newName) => {
-        if (!folderToRename || !newName.trim()) return;
+        const success = await rename('folder', folderToRename.id, newName);
 
-        const { error } = await supabase
-            .from('folders')
-            .update({ name: newName })
-            .eq('id', folderToRename.id);
-
-        if (error) {
-            toast.error('Could not change folder name', toastStyle);
-        } else {
-            toast.success('Folder renamed', toastStyle);
-
+        if (success) {
             setFolders(prevFolders =>
                 prevFolders.map(f =>
                     f.id === folderToRename.id ? { ...f, name: newName } : f

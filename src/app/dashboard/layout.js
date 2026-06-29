@@ -6,12 +6,18 @@ import { useRouter, usePathname } from 'next/navigation';
 import Navbar from "../../components/Navbar";
 import Sidebar from "../../components/Sidebar";
 import Footer from "../../components/Footer";
+import { createBrowserClient } from '@supabase/ssr';
 
-// ─── 1. SUPABASE CLIENT ───────────────────────────────────────────────────────
-import { supabase } from "../../lib/supabase-client";
+function createClient() {
+    return createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    );
+}
 
 export default function DashboardLayout({ children }) {
     // ─── 1. GLOBAL SETUP & UI STATES ──────────────────────────────────────────────
+    const supabase = createClient();
     const router = useRouter();
     const pathname = usePathname();
 
@@ -35,7 +41,7 @@ export default function DashboardLayout({ children }) {
 
         fetchSession();
 
-        // Listen for login/logout events to keep the session state synced
+        // Listen for login/logout events to keep session state synced
         const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
             if (session) setSession(session);
         });

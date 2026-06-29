@@ -1,8 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import { motion } from "framer-motion";
 
 export default function RenameItemModal({ renameModalRef, currentName, handleRename, setItemName, setShowRenameItemModal }) {
+
+    const [newName, setNewName] = useState('');
 
     return (
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
@@ -18,7 +21,7 @@ export default function RenameItemModal({ renameModalRef, currentName, handleRen
                     <input
                         type="text"
                         defaultValue={currentName}
-                        onChange={(e) => setItemName(e.target.value)}
+                        onChange={(e) => setNewName(e.target.value)}
                         autoFocus
                         className="w-full px-4 py-2.5 rounded-lg bg-[var(--layer2)] text-[var(--text)] border border-[var(--layer3)] outline-none focus:border-[var(--nice-blue)]"
                     />
@@ -31,11 +34,14 @@ export default function RenameItemModal({ renameModalRef, currentName, handleRen
                     </button>
                     <button
                         onClick={() => {
+                            setItemName(newName);
                             setShowRenameItemModal(false);
-                            handleRename(currentName);
+                            handleRename(newName);
                         }}
-                        className="px-4 py-2 text-sm font-semibold bg-[var(--nice-blue)] text-[var(--text)] rounded-lg cursor-pointer
-                        hover:transform hover:scale-105 transition-transform duration-200"
+                        disabled={!newName.trim() || currentName.trim() === newName.trim()}
+                        className={`px-4 py-2 text-sm font-semibold bg-[var(--nice-blue)] text-[var(--text)] rounded-lg cursor-pointer
+                            hover:transform hover:scale-105 transition-transform duration-200
+                            ${!newName.trim() || currentName.trim() === newName.trim() ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:opacity-90'}`}
                     >
                         Save Changes
                     </button>
