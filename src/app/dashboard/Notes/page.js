@@ -9,6 +9,7 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import RenameItemModal from "../../../components/RenameItemModal";
 import MoveItemModal from "../../../components/MoveItemModal";
+import { useRenameItem } from '../../hooks/useItemActions';
 
 export function createClient() {
     return createBrowserClient(
@@ -26,6 +27,8 @@ export default function NotesPage() {
     const [folders, setFolders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeDropdown, setActiveDropdown] = useState(null);
+
+    const { rename, isRenaming } = useRenameItem();
 
     const toastStyle = {
         style: {
@@ -61,17 +64,9 @@ export default function NotesPage() {
     const showRenameNoteModalRef = useRef(null);
 
     const handleNoteRename = async (newName) => {
-        if (!noteToRename || !newName.trim()) return;
+        const success = await rename('note', noteToRename.id, newName);
 
-        const { error } = await supabase
-            .from('notes')
-            .update({ title: newName })
-            .eq('id', noteToRename.id);
-
-        if (error) {
-            toast.error(`Could not change note name: ${error}`, toastStyle);
-        } else {
-            toast.success('Note renamed', toastStyle);
+        if (success) {
             setNotes(prevNotes =>
                 prevNotes.map(n =>
                     n.id === noteToRename.id ? { ...n, title: newName } : n
@@ -414,7 +409,7 @@ export default function NotesPage() {
                             currentName={noteName}
                             handleRename={handleNoteRename}
                             setItemName={setNoteName}
-                            setShowRenameModal={setShowRenameNoteModal}
+                            setShowRenameItemModal={setShowRenameNoteModal}
                         />
                     )}
 

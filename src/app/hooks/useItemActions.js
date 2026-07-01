@@ -18,12 +18,19 @@ export function useRenameItem() {
         console.log("DEBUG RENAME:", { itemType, itemId, newName });
         try {
             let tableName = '';
-            if (itemType === 'folder') tableName = 'folders';
-            else if (itemType === 'note') tableName= 'notes';
+            let tableRow = '';
+            if (itemType === 'folder') {
+                tableName = 'folders';
+                tableRow = 'name';
+            }
+            else if (itemType === 'note') {
+                tableName = 'notes';
+                tableRow = 'title';
+            }
 
             const { error } = await supabase
                 .from(tableName)
-                .update({ name: newName })
+                .update({ [tableRow]: newName })
                 .eq('id', itemId);
 
             if (error) throw error;
