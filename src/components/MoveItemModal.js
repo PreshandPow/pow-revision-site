@@ -21,7 +21,6 @@ export default function MoveItemModal({ moveModalRef, onClose, folders, currentI
             setParentRowName('parent_folder_id');
             setRowName('name');
         }
-        console.log("DEBUG MOVE ITEM:", { rowName, itemType });
     })
 
     console.log("DEBUG MOVE ITEM:", { rowName });

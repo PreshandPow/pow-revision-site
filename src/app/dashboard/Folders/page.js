@@ -13,7 +13,7 @@ import CreateFolderModal from '../../../components/createFolderModal';
 import RenameItemModal from "../../../components/RenameItemModal";
 import MoveItemModal from "../../../components/MoveItemModal";
 
-import { useRenameItem } from '../../hooks/useItemActions';
+import { useRenameItem, useMoveItem } from '../../hooks/useItemActions';
 import { createBrowserClient } from '@supabase/ssr';
 
 function createClient() {
@@ -86,29 +86,21 @@ export default function FolderContentPage() {
 
     // ─── 4. MOVE FOLDER FEATURE ───────────────────────────────────────────────────
     const [showMoveItemModal, setShowMoveItemModal] = useState(false);
-    const [itemToMove, setItemToMove] = useState(null);
+    const [folderToMove, setFolderToMove] = useState(null);
     const [targetFolder, setTargetFolder] = useState(null);
-    const itemToMoveRef = useRef(null);
+    const folderToMoveRef = useRef(null);
+
+    const { moveItem, setMoveItem } = useMoveItem();
 
     const handleMove = async (destinationId) => {
-        if (!itemToMove) return;
-        const targetTable = 'folders';
+        const success = await moveItem('folder', folderToMove.id, destinationId);
 
-        const { error } = await supabase
-            .from(targetTable)
-            .update({ parent_folder_id: destinationId === 'root' ? null : destinationId })
-            .eq('id', itemToMove.id);
-
-        if (error) {
-            toast.error('Could not move folder', toastStyle);
-        } else {
+        if (success) {
             setShowMoveItemModal(false);
-            setFolders(prev => prev.filter(n => n.id !== itemToMove.id));
+            setFolders(prev => prev.filter(n => n.id !== folderToMove.id));
             toast.success('Folder moved successfully', toastStyle);
-            setItemToMove(null);
+            setFolderToMove(false);
         }
-
-
     };
 
     // ─── 5. DELETE FOLDER FEATURE ─────────────────────────────────────────────────
@@ -179,7 +171,7 @@ export default function FolderContentPage() {
             if (showRenameFolderModalRef.current && !showRenameFolderModalRef.current.contains(e.target)) {
                 setShowRenameItemModal(false);
             }
-            if (itemToMoveRef.current && !itemToMoveRef.current.contains(e.target)) {
+            if (folderToMove.current && !folderToMoveRef.current.contains(e.target)) {
                 setShowMoveItemModal(false);
             }
         };
@@ -290,7 +282,7 @@ export default function FolderContentPage() {
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        setItemToMove(folder);
+                                                        setFolderToMove(folder);
                                                         setShowMoveItemModal(true);
                                                         setActiveDropdown(null);
                                                     }}
@@ -399,17 +391,17 @@ export default function FolderContentPage() {
                         />
                     )}
 
-                    {showMoveItemModal && itemToMove && (
+                    {showMoveItemModal && folderToMove && (
                         <MoveItemModal
-                            moveModalRef={itemToMoveRef}
+                            moveModalRef={folderToMoveRef}
                             folders={folders}
-                            currentItem={itemToMove}
+                            currentItem={folderToMove}
                             onMove={handleMove}
                             targetFolder={targetFolder}
                             setTargetFolder={setTargetFolder}
                             onClose={() => {
                                 setShowMoveItemModal(false);
-                                setItemToMove(null);
+                                setFolderToMove(null);
                             }}
                             itemType={'folder'}
                         />
