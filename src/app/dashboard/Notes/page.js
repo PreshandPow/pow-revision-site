@@ -9,7 +9,7 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import RenameItemModal from "../../../components/RenameItemModal";
 import MoveItemModal from "../../../components/MoveItemModal";
-import { useRenameItem } from '../../hooks/useItemActions';
+import { useRenameItem, useMoveItem } from '../../hooks/useItemActions';
 
 export function createClient() {
     return createBrowserClient(
@@ -27,8 +27,6 @@ export default function NotesPage() {
     const [folders, setFolders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeDropdown, setActiveDropdown] = useState(null);
-
-    const { rename, isRenaming } = useRenameItem();
 
     const toastStyle = {
         style: {
@@ -63,6 +61,8 @@ export default function NotesPage() {
     const [noteName, setNoteName] = useState('Untitled Note');
     const showRenameNoteModalRef = useRef(null);
 
+    const { rename, isRenaming } = useRenameItem();
+
     const handleNoteRename = async (newName) => {
         const success = await rename('note', noteToRename.id, newName);
 
@@ -81,23 +81,18 @@ export default function NotesPage() {
     const [noteToMove, setNoteToMove] = useState(null);
     const itemToMoveRef = useRef(null);
 
+    const { moveItem, isMovingItem } = useMoveItem();
+
     const handleMove = async (destinationId) => {
-        if (!noteToMove) return;
-        const targetTable = 'notes';
+        const success = await moveItem('note', noteToMove.id, destinationId);
 
-        const { error } = await supabase
-            .from(targetTable)
-            .update({ folder_id: destinationId === 'root' ? null : destinationId })
-            .eq('id', noteToMove.id);
-
-        if (error) {
-            toast.error('Could not move note', toastStyle);
-        } else {
+        if (success) {
             setShowMoveItemModal(false);
-            toast.success('Note moved successfully', toastStyle);
-            setNoteToMove(null);
+            setFolders(prev => prev.filter(n => n.id !== noteToMove.id));
+            toast.success('Folder moved successfully', toastStyle);
+            setNoteToMove(false);
         }
-    };
+    }
 
     // ─── 5. DELETE NOTE FEATURE ───────────────────────────────────────────────────
     const [noteToDelete, setNoteToDelete] = useState(null);

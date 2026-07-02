@@ -47,3 +47,42 @@ export function useRenameItem() {
     };
     return { rename, isRenaming };
 }
+
+export function useMoveItem() {
+    const supabase = createClient();
+    const [isMovingItem, setIsMovingItem] = useState(false);
+
+    const moveItem = async(itemType, itemId, destinationId) => {
+        setIsMovingItem(true);
+        console.log("DEBUG MOVE ITEM:", { itemType, itemId, destinationId });
+
+        try {
+            let tableName = '';
+            let tableRow = '';
+            if (itemType === 'folder') {
+                tableName = 'folders';
+                tableRow = 'parent_folder_id';
+            }
+            if (itemType === 'note') {
+                tableName = 'notes';
+                tableRow = 'folder_id';
+            }
+            const { error } = await supabase
+                .from(tableName)
+                .update({ [tableRow]: destinationId })
+                .eq('id', itemId)
+
+            if (error) throw error;
+
+            toast.success(`${itemType} moved successfully`);
+            return true;
+        } catch (error) {
+            console.error('SUPABASE ERROR', error);
+            toast.error(`Failed to move your ${itemType}`);
+            return false;
+        }   finally {
+            setIsMovingItem(false);
+        }
+    };
+    return { moveItem, isMovingItem  }
+}

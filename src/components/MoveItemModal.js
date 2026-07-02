@@ -34,21 +34,6 @@ export default function MoveItemModal({ moveModalRef, onClose, folders, currentI
                         </div>
                     ) : (
                         <div className="flex flex-col gap-2">
-                            <button
-                                onClick={() => setSelectedDestination('root')}
-                                className={`flex items-center gap-3 w-full p-3 rounded-lg border transition-all duration-200 text-left cursor-pointer
-                                ${selectedDestination === 'root'
-                                    ? 'border-[var(--nice-blue)] bg-[var(--nice-blue)]/5'
-                                    : 'border-[var(--layer3)] bg-[var(--layer2)] hover:border-[var(--text-muted)]'}`}
-                            >
-                                <div className={`p-1.5 rounded-md ${selectedDestination === 'root' ? 'bg-[var(--nice-blue)] text-white' : 'bg-[var(--layer3)] text-[var(--text-muted)]'}`}>
-                                    <Folder size={18} />
-                                </div>
-                                <span className={`text-sm font-medium ${selectedDestination === 'root' ? 'text-[var(--nice-blue)]' : 'text-[var(--text)]'}`}>
-                                    Main Directory (Root)
-                                </span>
-                            </button>
-
                             {availableFolders.map((folder) => (
                                 <button
                                     key={folder.id}
