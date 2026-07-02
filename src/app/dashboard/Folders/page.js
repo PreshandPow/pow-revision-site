@@ -107,6 +107,8 @@ export default function FolderContentPage() {
             toast.success('Folder moved successfully', toastStyle);
             setItemToMove(null);
         }
+
+
     };
 
     // ─── 5. DELETE FOLDER FEATURE ─────────────────────────────────────────────────
@@ -409,6 +411,7 @@ export default function FolderContentPage() {
                                 setShowMoveItemModal(false);
                                 setItemToMove(null);
                             }}
+                            itemType={'folder'}
                         />
                     )}
                 </AnimatePresence>

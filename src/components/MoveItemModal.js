@@ -10,11 +10,21 @@ export default function MoveItemModal({ moveModalRef, onClose, folders, currentI
     const availableFolders = folders.filter(f => f.id !== currentItem?.id);
 
     const [parentRowName, setParentRowName] = useState(null);
+    const [rowName, setRowName] = useState(null);
 
     useEffect(() => {
-        if (itemType === 'note') setParentRowName('folder_id');
-        if (itemType === 'folder') setParentRowName('parent_folder_id');
+        if (itemType === 'note') {
+            setParentRowName('folder_id');
+            setRowName('title');
+        }
+        if (itemType === 'folder') {
+            setParentRowName('parent_folder_id');
+            setRowName('name');
+        }
+        console.log("DEBUG MOVE ITEM:", { rowName, itemType });
     })
+
+    console.log("DEBUG MOVE ITEM:", { rowName });
 
     return (
         <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
@@ -30,7 +40,7 @@ export default function MoveItemModal({ moveModalRef, onClose, folders, currentI
                 <div className="px-6 pt-6 pb-4">
                     <h2 className="text-xl font-semibold text-[var(--text)] tracking-tight">Move item</h2>
                     <p className="text-sm text-[var(--text-muted)] mt-1.5 leading-relaxed">
-                        Select a destination for <span className="font-bold text-[var(--text)]">{currentItem?.title || 'this item'}</span>.
+                        Select a destination for <span className="font-bold text-[var(--text)]">{currentItem?.[rowName] || 'this item'}</span>.
                     </p>
                 </div>
 
