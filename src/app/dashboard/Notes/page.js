@@ -175,6 +175,9 @@ export default function NotesPage() {
             if (showRenameNoteModalRef.current && !showRenameNoteModalRef.current.contains(e.target)) {
                 setShowRenameNoteModal(false);
             }
+            if (itemToMoveRef.current && !itemToMoveRef.current.contains(e.target)) {
+                setShowMoveItemModal(false);
+            }
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);

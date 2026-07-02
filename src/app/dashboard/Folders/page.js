@@ -177,6 +177,9 @@ export default function FolderContentPage() {
             if (showRenameFolderModalRef.current && !showRenameFolderModalRef.current.contains(e.target)) {
                 setShowRenameItemModal(false);
             }
+            if (itemToMoveRef.current && !itemToMoveRef.current.contains(e.target)) {
+                setShowMoveItemModal(false);
+            }
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
