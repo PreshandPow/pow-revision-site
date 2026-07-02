@@ -32,8 +32,6 @@ export default function FolderContentPage() {
     const [loading, setLoading] = useState(true);
     const [activeDropdown, setActiveDropdown] = useState(null);
 
-    const { rename, isRenaming } = useRenameItem();
-
     const toastStyle = {
         style: {
             border: '1px solid var(--nice-blue)',
@@ -70,6 +68,7 @@ export default function FolderContentPage() {
     const [showRenameItemModal, setShowRenameItemModal] = useState(false);
     const [folderToRename, setFolderToRename] = useState(null);
     const showRenameFolderModalRef = useRef(null);
+    const { rename, isRenaming } = useRenameItem();
 
     const handleFolderRename = async (newName) => {
         const success = await rename('folder', folderToRename.id, newName);

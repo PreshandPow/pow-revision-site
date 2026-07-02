@@ -1,24 +1,18 @@
 'use client';
 
-import {useEffect, useRef, useState} from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
-    Folder,
-    FileText,
-    MoreVertical,
-    Plus,
-    ChevronRight,
-    CreditCard,
-    Clock,
-    ExternalLink,
-    Edit2,
-    FolderOutput, Copy, Trash2
+    Folder, FileText, MoreVertical, Plus, ChevronRight,
+    CreditCard, Clock, ExternalLink, Edit2, FolderOutput, Copy, Trash2
 } from "lucide-react";
-import {AnimatePresence, motion} from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useRouter, useParams } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import toast from "react-hot-toast";
 import RenameItemModal from "../../../../components/RenameItemModal";
+import { useRenameItem } from "../../../hooks/useItemActions";
 
+// ─── 1. SUPABASE CLIENT ───────────────────────────────────────────────────────
 export function createClient() {
     return createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -27,6 +21,8 @@ export function createClient() {
 }
 
 export default function FolderContentPage() {
+
+    // ─── 2. GLOBAL SETUP & STATES ───────────────────────────────────────────────
     const router = useRouter();
     const { id } = useParams();
     const supabase = createClient();
@@ -35,9 +31,9 @@ export default function FolderContentPage() {
     const [loading, setLoading] = useState(true);
     const [prevFolder, setPrevFolder] = useState('Folders');
     const [folders, setFolders] = useState([]);
+    const [currentFolder, setCurrentFolder] = useState(null);
+
     const [showFolderOptionsDropdown, setShowFolderOptionsDropdown] = useState(false);
-    const [showRenameItemModal, setShowRenameItemModal] = useState(false);
-    const showRenameFolderModalRef = useRef(null);
 
     // Temporary mock items for Notes and Flashcards
     const [items] = useState([
@@ -59,7 +55,7 @@ export default function FolderContentPage() {
         },
     };
 
-    // ── data fetching ─────────────────────────────────────────────────────────
+    // ─── 3. LIFECYCLE EFFECTS ───────────────────────────────────────────────────
     useEffect(() => {
         const fetchFolderAndChildren = async () => {
             const { data: currentFolder, error: folderError } = await supabase
@@ -74,8 +70,8 @@ export default function FolderContentPage() {
                 return;
             }
 
+            setCurrentFolder(currentFolder);
             setFolderName(currentFolder?.name || '');
-
             setPrevFolder(currentFolder?.parent_folder_id ? 'Back' : 'Folders');
 
             const { data: childFolders, error: childrenError } = await supabase
@@ -106,10 +102,30 @@ export default function FolderContentPage() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    // ─── 4. ACTION HANDLERS ─────────────────────────────────────────────────────
+    const [showRenameItemModal, setShowRenameItemModal] = useState(false);
+    const showRenameFolderModalRef = useRef(null);
+    const { rename, isRenaming } = useRenameItem();
+
+    const handleFolderRename = async (newName) => {
+        const success = await rename('folder', currentFolder.id, newName);
+
+        if (success) {
+            setFolders(prevFolders =>
+                prevFolders.map(f =>
+                    f.id === currentFolder.id ? { ...f, name: newName } : f
+                )
+            );
+
+            currentFolder(null);
+        }
+    };
+
     const formatDate = (date) => new Date(date).toLocaleDateString('en-GB', {
         day: 'numeric', month: 'short', year: 'numeric'
     });
 
+    // ─── 5. RENDER ──────────────────────────────────────────────────────────────
     if (loading) return (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--layer1)] backdrop-blur-xl p-6">
             <div className="w-16 h-16 mb-8 rounded-2xl bg-[var(--nice-blue)] animate-pulse shadow-[0_0_40px_rgba(var(--blue-rgb),0.3)] flex items-center justify-center">
@@ -142,14 +158,13 @@ export default function FolderContentPage() {
                         <ChevronRight size={16} />
                         <span className="text-[var(--text)] font-bold text-lg">{folderName}</span>
 
-                        <div>
+                        <div className="folder-dropdown-container relative">
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setShowFolderOptionsDropdown(true);
                                 }}
-                                className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text)]
-                                hover:bg-[var(--layer3)] transition-colors cursor-pointer"
+                                className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                             >
                                 <MoreVertical size={18} />
                             </button>
@@ -162,8 +177,7 @@ export default function FolderContentPage() {
                                             animate={{ opacity: 1, scale: 1, y: 0 }}
                                             exit={{ opacity: 0, scale: 0.95, y: -10 }}
                                             transition={{ duration: 0.15 }}
-                                            className="absolute left-25 top-65 mt-2 w-56 bg-[var(--layer1)] border border-[var(--layer3)]
-                                        rounded-xl shadow-2xl py-1.5 z-60 overflow-hidden md:left-40"
+                                            className="absolute left-25 top-65 mt-2 w-56 bg-[var(--layer1)] border border-[var(--layer3)] rounded-xl shadow-2xl py-1.5 z-60 overflow-hidden md:left-40"
                                         >
                                             <a href={`${window.location}`}
                                                target="_blank"
@@ -187,18 +201,14 @@ export default function FolderContentPage() {
                                             </button>
 
                                             <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                }}
+                                                onClick={(e) => e.stopPropagation()}
                                                 className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer"
                                             >
                                                 <FolderOutput size={16} /> Move to
                                             </button>
 
                                             <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                }}
+                                                onClick={(e) => e.stopPropagation()}
                                                 className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer"
                                             >
                                                 <Copy size={16} /> Duplicate
@@ -207,9 +217,7 @@ export default function FolderContentPage() {
                                             <div className="h-px bg-[var(--layer3)] my-1 w-full" />
 
                                             <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                }}
+                                                onClick={(e) => e.stopPropagation()}
                                                 className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
                                             >
                                                 <Trash2 size={16} /> Delete folder
@@ -219,7 +227,6 @@ export default function FolderContentPage() {
                                 )}
                             </AnimatePresence>
                         </div>
-
                     </div>
 
                     <button className="flex items-center justify-center gap-2 bg-[var(--nice-blue)] text-white px-4 py-2 rounded-lg font-semibold text-sm hover:opacity-90 transition-all shadow-sm w-fit">
@@ -242,9 +249,7 @@ export default function FolderContentPage() {
                                     onClick={() => router.push(`/dashboard/Folders/${folder.id}`)}
                                     className="group relative cursor-pointer"
                                 >
-                                    {/* The Folder Tab */}
                                     <div className="absolute -top-2 left-0 w-16 h-4 bg-[var(--layer3)] rounded-t-lg group-hover:bg-[var(--nice-blue)] transition-colors duration-300" />
-
                                     <div className="relative bg-[var(--layer2)] border border-[var(--layer3)] rounded-xl rounded-tl-none p-5 flex flex-col min-h-[140px] shadow-sm group-hover:border-[var(--nice-blue)] group-hover:shadow-md transition-all duration-300">
                                         <div className="flex items-start justify-between mb-3">
                                             <div className="p-2 bg-[var(--nice-blue)]/10 rounded-lg text-[var(--nice-blue)]">
@@ -287,7 +292,6 @@ export default function FolderContentPage() {
                                 whileHover={{ y: -4 }}
                                 className="group relative aspect-[4/3] p-5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-xl cursor-pointer hover:shadow-lg hover:border-[var(--nice-blue)] transition-all overflow-hidden"
                             >
-                                {/* Folded Paper Corner Effect */}
                                 <div className="absolute top-0 right-0 w-8 h-8 bg-gradient-to-bl from-[var(--layer2)] to-[var(--layer3)] border-b border-l border-[var(--layer3)] rounded-bl-xl shadow-sm z-10" />
 
                                 <div className="flex flex-col h-full justify-between relative z-20">
@@ -318,11 +322,9 @@ export default function FolderContentPage() {
                                 whileHover={{ y: -6 }}
                                 className="group relative aspect-[4/3] cursor-pointer"
                             >
-                                {/* Stacked Deck Visual Effect */}
                                 <div className="absolute -bottom-2 inset-x-4 h-full bg-[var(--layer3)] border border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-1" />
                                 <div className="absolute -bottom-1 inset-x-2 h-full bg-[var(--layer2)] border border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-0.5" />
 
-                                {/* Main Front Card */}
                                 <div className="relative h-full p-5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-xl group-hover:border-[var(--nice-blue)] transition-colors shadow-sm z-10 flex flex-col justify-between">
                                     <div className="flex justify-between items-start">
                                         <div className="p-2 bg-purple-500/10 rounded-lg text-purple-500">
@@ -344,6 +346,8 @@ export default function FolderContentPage() {
                         ))}
                     </div>
                 </div>
+
+                {/* Rename Modal */}
                 {showRenameItemModal && (
                     <RenameItemModal
                         renameModalRef={showRenameFolderModalRef}
