@@ -67,12 +67,22 @@ export function useMoveItem() {
                 tableName = 'notes';
                 tableRow = 'folder_id';
             }
-            const { error } = await supabase
-                .from(tableName)
-                .update({ [tableRow]: destinationId })
-                .eq('id', itemId)
+            if (destinationId === 'root') {
+                const { error } = await supabase
+                    .from(tableName)
+                    .update({ [tableRow]: null })
+                    .eq('id', itemId)
 
-            if (error) throw error;
+                if (error) throw error;
+            }   else {
+                const { error } = await supabase
+                    .from(tableName)
+                    .update({ [tableRow]: destinationId })
+                    .eq('id', itemId)
+
+                if (error) throw error;
+            }
+
 
             toast.success(`${itemType} moved successfully`);
             return true;

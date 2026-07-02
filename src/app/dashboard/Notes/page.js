@@ -419,6 +419,7 @@ export default function NotesPage() {
                                 setShowMoveItemModal(false);
                                 setNoteToMove(null);
                             }}
+                            itemType={'note'}
                         />
                     )}
                 </AnimatePresence>

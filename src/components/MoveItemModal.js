@@ -1,13 +1,20 @@
 'use client';
 
 import { motion } from "framer-motion";
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import { Folder } from "lucide-react";
 
-export default function MoveItemModal({ moveModalRef, onClose, folders, currentItem, onMove }) {
+export default function MoveItemModal({ moveModalRef, onClose, folders, currentItem, onMove, itemType }) {
     const [selectedDestination, setSelectedDestination] = useState(null);
 
     const availableFolders = folders.filter(f => f.id !== currentItem?.id);
+
+    const [parentRowName, setParentRowName] = useState(null);
+
+    useEffect(() => {
+        if (itemType === 'note') setParentRowName('folder_id');
+        if (itemType === 'folder') setParentRowName('parent_folder_id');
+    })
 
     return (
         <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
@@ -28,6 +35,22 @@ export default function MoveItemModal({ moveModalRef, onClose, folders, currentI
                 </div>
 
                 <div className="px-6 pb-6 max-h-[300px] overflow-y-auto custom-scrollbar">
+                    {parentRowName && (
+                        <button
+                            onClick={() => setSelectedDestination('root')}
+                            className={`flex items-center gap-3 w-full p-3 rounded-lg border transition-all duration-200 text-left cursor-pointer
+                                ${selectedDestination === 'root'
+                                ? 'border-[var(--nice-blue)] bg-[var(--nice-blue)]/5'
+                                : 'border-[var(--layer3)] bg-[var(--layer2)] hover:border-[var(--text-muted)]'}`}
+                        >
+                            <div className={`p-1.5 text-[var(--vanilla-cream)] rounded-md ${selectedDestination === 'root' ? 'bg-[var(--nice-blue)] text-white' : 'bg-[var(--layer3)] text-[var(--text-muted)]'}`}>
+                                <Folder size={18}/>
+                            </div>
+                            <span className={`text-sm font-medium text-[var(--nice-blue)]`}>
+                                    Main Directory (Root)
+                                </span>
+                        </button>
+                    )}
                     {availableFolders.length === 0 ? (
                         <div className="text-center py-8 text-sm text-[var(--text-muted)] border border-dashed border-[var(--layer3)] rounded-xl bg-[var(--layer2)]/50">
                             No other folders available.
@@ -46,7 +69,7 @@ export default function MoveItemModal({ moveModalRef, onClose, folders, currentI
                                     <div className={`p-1.5 rounded-md ${selectedDestination === folder.id ? 'bg-[var(--nice-blue)] text-white' : 'bg-[var(--layer3)] text-[var(--text-muted)]'}`}>
                                         <Folder size={18} fill={selectedDestination === folder.id ? "currentColor" : "none"} />
                                     </div>
-                                    <span className={`text-sm font-medium truncate ${selectedDestination === folder.id ? 'text-[var(--nice-blue)]' : 'text-[var(--text)]'}`}>
+                                    <span className={`text-sm font-medium truncate`}>
                                         {folder.name || 'Untitled Folder'}
                                     </span>
                                 </button>
