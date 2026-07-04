@@ -12,7 +12,7 @@ import toast from "react-hot-toast";
 import RenameItemModal from "../../../../components/RenameItemModal";
 import { useRenameItem } from "../../../hooks/useItemActions";
 
-// ─── 1. SUPABASE CLIENT ───────────────────────────────────────────────────────
+// ───  SUPABASE CLIENT ───────────────────────────────────────────────────────
 export function createClient() {
     return createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -22,7 +22,7 @@ export function createClient() {
 
 export default function FolderContentPage() {
 
-    // ─── 2. GLOBAL SETUP & STATES ───────────────────────────────────────────────
+    // ───  GLOBAL SETUP & STATES ───────────────────────────────────────────────
     const router = useRouter();
     const { id } = useParams();
     const supabase = createClient();
@@ -34,6 +34,7 @@ export default function FolderContentPage() {
     const [currentFolder, setCurrentFolder] = useState(null);
 
     const [showFolderOptionsDropdown, setShowFolderOptionsDropdown] = useState(false);
+    const [nestedFolderBreadcrumbs, setNestedFolderBreadcrumbs] = useState([]);
 
     // Temporary mock items for Notes and Flashcards
     const [items] = useState([
@@ -55,7 +56,7 @@ export default function FolderContentPage() {
         },
     };
 
-    // ─── 3. LIFECYCLE EFFECTS ───────────────────────────────────────────────────
+    // ───  LIFECYCLE EFFECTS ───────────────────────────────────────────────────
     useEffect(() => {
         const fetchFolderAndChildren = async () => {
             const { data: currentFolder, error: folderError } = await supabase
@@ -86,6 +87,22 @@ export default function FolderContentPage() {
                 setFolders(childFolders || []);
             }
 
+            const crumbs = [];
+            let folder = currentFolder;
+
+            while (folder?.parent_folder_id) {
+                const { data: parent } = await supabase
+                    .from('folders')
+                    .select('*')
+                    .eq('id', folder.parent_folder_id)
+                    .single();
+
+                if (!parent) break;
+                crumbs.unshift({ id: parent.id, name: parent.name });
+                folder = parent;
+            }
+
+            setNestedFolderBreadcrumbs(crumbs);
             setLoading(false);
         };
 
@@ -102,7 +119,7 @@ export default function FolderContentPage() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // ─── 4. ACTION HANDLERS ─────────────────────────────────────────────────────
+    // ───  ACTION HANDLERS ─────────────────────────────────────────────────────
     const [showRenameItemModal, setShowRenameItemModal] = useState(false);
     const showRenameFolderModalRef = useRef(null);
     const { rename, isRenaming } = useRenameItem();
@@ -125,7 +142,7 @@ export default function FolderContentPage() {
         day: 'numeric', month: 'short', year: 'numeric'
     });
 
-    // ─── 5. RENDER ──────────────────────────────────────────────────────────────
+    // ─── RENDER ──────────────────────────────────────────────────────────────
     if (loading) return (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--layer1)] backdrop-blur-xl p-6">
             <div className="w-16 h-16 mb-8 rounded-2xl bg-[var(--nice-blue)] animate-pulse shadow-[0_0_40px_rgba(var(--blue-rgb),0.3)] flex items-center justify-center">
@@ -146,15 +163,26 @@ export default function FolderContentPage() {
     return (
         <div className="min-h-screen bg-[var(--layer1)] p-4 md:p-8">
             <div className="max-w-7xl mx-auto">
-
-                {/* Header and Breadcrumbs */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
                     <div className="flex items-center gap-2 text-sm font-medium text-[var(--text-muted)]">
                         <button
                             onClick={() => router.push('/dashboard/Folders')}
-                            className="hover:text-[var(--text)] cursor-pointer transition-colors text-lg">
-                            {prevFolder}
+                            className="hover:text-[var(--text)] cursor-pointer transition-colors text-lg"
+                        >
+                            Folders
                         </button>
+                        {nestedFolderBreadcrumbs.map(crumb => (
+                            <>
+                                <ChevronRight size={16} />
+                                <button
+                                    key={crumb.id}
+                                    onClick={() => router.push(`/dashboard/Folders/${crumb.id}`)}
+                                    className="hover:text-[var(--text)] cursor-pointer transition-colors text-lg"
+                                >
+                                    {crumb.name}
+                                </button>
+                            </>
+                        ))}
                         <ChevronRight size={16} />
                         <span className="text-[var(--text)] font-bold text-lg">{folderName}</span>
 
