@@ -48,9 +48,9 @@ export function useRenameItem() {
 
 export function useMoveItem() {
     const supabase = createClient();
-    const [isMovingItem, setIsMovingItem] = useState(false);
+    const [isMoving, setIsMoving] = useState(false);
     const moveItem = async(itemType, itemId, destinationId) => {
-        setIsMovingItem(true);
+        setIsMoving(true);
         console.log("DEBUG MOVE ITEM:", { itemType, itemId, destinationId });
 
         try {
@@ -86,10 +86,10 @@ export function useMoveItem() {
             toast.error(`Failed to move your ${itemType}`);
             return false;
         }   finally {
-            setIsMovingItem(false);
+            setIsMoving(false);
         }
     };
-    return { moveItem, isMovingItem };
+    return { moveItem, isMoving };
 }
 
 export function useDeleteItem () {
@@ -120,4 +120,56 @@ export function useDeleteItem () {
         }
     };
     return { deleteItem, isDeleting };
+}
+
+export function useDuplicateItem () {
+    const supabase = createClient();
+    const [isDuplicating, setIsDuplicating] = useState(false);
+
+    const duplicateItem = async (itemType, item) => {
+        setIsDuplicating(true);
+        let newItem = null;
+
+        try {
+            if (itemType === 'note') {
+                const { data: { user } } = await supabase.auth.getUser();
+                const { data: newNote, error } = await supabase
+                    .from('notes')
+                    .insert({
+                        title: `${item?.title} (copy)`,
+                        user_id: user?.id,
+                        folder_id: item?.folder_id,
+                        content: item?.content,
+                        tags: item?.tags
+                    })
+                    .select()
+                    .single();
+                if (error) throw error;
+                newItem = newNote;
+            }
+            if (itemType === 'folder') {
+                const { data: { user } } = await supabase.auth.getUser();
+                const { data: newFolder, error } = await supabase
+                    .from('folders')
+                    .insert({
+                        name: `${item?.name} (copy)`,
+                        user_id: user?.id,
+                        parent_folder_id: item?.parent_folder_id,
+                    })
+                    .select()
+                    .single();
+                if (error) throw error;
+                newItem = newFolder;
+            }
+
+            return newItem;
+        } catch (error) {
+            console.error('SUPABASE ERROR', error);
+            toast.error(`Failed to duplicate your ${itemType}`);
+            return null;
+        } finally {
+            setIsDuplicating(false);
+        }
+    };
+    return { duplicateItem, isDuplicating }
 }

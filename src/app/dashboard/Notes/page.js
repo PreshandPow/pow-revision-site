@@ -9,7 +9,7 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import RenameItemModal from "../../../components/RenameItemModal";
 import MoveItemModal from "../../../components/MoveItemModal";
-import { useRenameItem, useMoveItem, useDeleteItem } from '../../hooks/useItemActions';
+import { useRenameItem, useMoveItem, useDeleteItem, useDuplicateItem } from '../../hooks/useItemActions';
 
 export function createClient() {
     return createBrowserClient(
@@ -81,7 +81,7 @@ export default function NotesPage() {
     const [noteToMove, setNoteToMove] = useState(null);
     const itemToMoveRef = useRef(null);
 
-    const { moveItem, isMovingItem } = useMoveItem();
+    const { moveItem, isMoving } = useMoveItem();
 
     const handleMove = async (destinationId) => {
         const success = await moveItem('note', noteToMove.id, destinationId);
@@ -98,7 +98,7 @@ export default function NotesPage() {
     const [noteToDelete, setNoteToDelete] = useState(null);
     const deleteNoteModalRef = useRef(null);
 
-    const { deleteItem, setIsDeleting } = useDeleteItem();
+    const { deleteItem, issDeleting } = useDeleteItem();
 
     const handleDeleteConfirm = async () => {
         const success = await deleteItem('note', noteToDelete.id);
@@ -110,24 +110,14 @@ export default function NotesPage() {
     };
 
     // ─── 6. DUPLICATE NOTE FEATURE ────────────────────────────────────────────────
+    const { duplicateItem, isDuplicating } = useDuplicateItem();
+
     const handleDuplicateNote = async (note) => {
-        const { data: { user } } = await supabase.auth.getUser();
+        const loadingToast = toast.loading('Duplicating note...', toastStyle);
+        const newNote = await duplicateItem('note', note);
+        toast.dismiss(loadingToast);
 
-        const { data: newNote, error } = await supabase
-            .from('notes')
-            .insert({
-                title: `${note?.title} (copy)`,
-                user_id: user?.id,
-                folder_id: note?.folder_id,
-                content: note?.content,
-                tags: note?.tags
-            })
-            .select()
-            .single();
-
-        if (error) {
-            toast.error(`Could not duplicate note: ${error}`, toastStyle);
-        } else {
+        if (newNote) {
             setNotes(prev => [newNote, ...prev]);
             toast.success('Note duplicated', toastStyle);
         }

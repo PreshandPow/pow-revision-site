@@ -13,7 +13,7 @@ import CreateFolderModal from '../../../components/createFolderModal';
 import RenameItemModal from "../../../components/RenameItemModal";
 import MoveItemModal from "../../../components/MoveItemModal";
 
-import { useRenameItem, useMoveItem, useDeleteItem } from '../../hooks/useItemActions';
+import { useRenameItem, useMoveItem, useDeleteItem, useDuplicateItem } from '../../hooks/useItemActions';
 import { createBrowserClient } from '@supabase/ssr';
 
 function createClient() {
@@ -68,6 +68,7 @@ export default function FolderContentPage() {
     const [showRenameItemModal, setShowRenameItemModal] = useState(false);
     const [folderToRename, setFolderToRename] = useState(null);
     const showRenameFolderModalRef = useRef(null);
+
     const { rename, isRenaming } = useRenameItem();
 
     const handleFolderRename = async (newName) => {
@@ -90,7 +91,7 @@ export default function FolderContentPage() {
     const [targetFolder, setTargetFolder] = useState(null);
     const folderToMoveRef = useRef(null);
 
-    const { moveItem, setMoveItem } = useMoveItem();
+    const { moveItem, isMoving } = useMoveItem();
 
     const handleMove = async (destinationId) => {
         const success = await moveItem('folder', folderToMove.id, destinationId);
@@ -107,7 +108,7 @@ export default function FolderContentPage() {
     const [folderToDelete, setFolderToDelete] = useState(null);
     const deleteFolderModalRef = useRef(null);
 
-    const { deleteItem, setIsDeleting } = useDeleteItem();
+    const { deleteItem, isDeleting } = useDeleteItem();
 
     const handleDeleteConfirm = async () => {
         const success = await deleteItem('folder', folderToDelete.id);
@@ -119,18 +120,12 @@ export default function FolderContentPage() {
     };
 
     // ─── 6. DUPLICATE FOLDER FEATURE ──────────────────────────────────────────────
+    const { duplicateItem, isDuplicating } = useDuplicateItem();
+
     const handleDuplicateFolder = async (folder) => {
-        const { data: { user } } = await supabase.auth.getUser();
+        const newFolder = await duplicateItem('folder', folder);
 
-        const { data: newFolder, error } = await supabase
-            .from('folders')
-            .insert({ name: `${folder?.name} (copy)`, user_id: user?.id, parent_folder_id: folder?.parent_folder_id })
-            .select()
-            .single();
-
-        if (error) {
-            toast.error('Could not duplicate folder', toastStyle);
-        } else {
+        if (newFolder) {
             setFolders(prev => [newFolder, ...prev]);
             toast.success('Folder duplicated', toastStyle);
         }
