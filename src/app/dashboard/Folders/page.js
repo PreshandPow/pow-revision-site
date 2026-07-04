@@ -13,7 +13,7 @@ import CreateFolderModal from '../../../components/createFolderModal';
 import RenameItemModal from "../../../components/RenameItemModal";
 import MoveItemModal from "../../../components/MoveItemModal";
 
-import { useRenameItem, useMoveItem } from '../../hooks/useItemActions';
+import { useRenameItem, useMoveItem, useDeleteItem } from '../../hooks/useItemActions';
 import { createBrowserClient } from '@supabase/ssr';
 
 function createClient() {
@@ -97,7 +97,7 @@ export default function FolderContentPage() {
 
         if (success) {
             setShowMoveItemModal(false);
-            setFolders(prev => prev.filter(n => n.id !== folderToMove.id));
+            setFolders(prev => prev.filter(f => f.id !== folderToMove.id));
             toast.success('Folder moved successfully', toastStyle);
             setFolderToMove(false);
         }
@@ -107,19 +107,15 @@ export default function FolderContentPage() {
     const [folderToDelete, setFolderToDelete] = useState(null);
     const deleteFolderModalRef = useRef(null);
 
+    const { deleteItem, setIsDeleting } = useDeleteItem();
+
     const handleDeleteConfirm = async () => {
-        if (!folderToDelete) return;
+        const success = await deleteItem('folder', folderToDelete.id);
 
-        const { error } = await supabase.from('folders').delete().eq('id', folderToDelete);
-        if (error) {
-            toast.error('Could not delete folder', toastStyle);
+        if (success) {
+            setFolders(prev => prev.filter(f => f.id !== folderToDelete.id));
             setFolderToDelete(null);
-            return;
         }
-
-        setFolders(prev => prev.filter(n => n.id !== folderToDelete));
-        toast.success('Folder deleted', toastStyle);
-        setFolderToDelete(null);
     };
 
     // ─── 6. DUPLICATE FOLDER FEATURE ──────────────────────────────────────────────
@@ -307,7 +303,7 @@ export default function FolderContentPage() {
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        setFolderToDelete(folder.id);
+                                                        setFolderToDelete(folder);
                                                         setActiveDropdown(null);
                                                     }}
                                                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"

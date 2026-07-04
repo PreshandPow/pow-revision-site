@@ -12,7 +12,6 @@ function createClient() {
 export function useRenameItem() {
     const supabase = createClient();
     const [isRenaming, setIsRenaming] = useState(false);
-
     const rename = async (itemType, itemId, newName) => {
         setIsRenaming(true);
         console.log("DEBUG RENAME:", { itemType, itemId, newName });
@@ -27,7 +26,6 @@ export function useRenameItem() {
                 tableName = 'notes';
                 tableRow = 'title';
             }
-
             const { error } = await supabase
                 .from(tableName)
                 .update({ [tableRow]: newName })
@@ -51,7 +49,6 @@ export function useRenameItem() {
 export function useMoveItem() {
     const supabase = createClient();
     const [isMovingItem, setIsMovingItem] = useState(false);
-
     const moveItem = async(itemType, itemId, destinationId) => {
         setIsMovingItem(true);
         console.log("DEBUG MOVE ITEM:", { itemType, itemId, destinationId });
@@ -82,8 +79,6 @@ export function useMoveItem() {
 
                 if (error) throw error;
             }
-
-
             toast.success(`${itemType} moved successfully`);
             return true;
         } catch (error) {
@@ -94,5 +89,35 @@ export function useMoveItem() {
             setIsMovingItem(false);
         }
     };
-    return { moveItem, isMovingItem  }
+    return { moveItem, isMovingItem };
+}
+
+export function useDeleteItem () {
+    const supabase = createClient();
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const deleteItem = async(itemType, itemId) => {
+        setIsDeleting(true);
+        console.log("DEBUG MOVE ITEM:", { itemType, itemId });
+        try {
+            let tableName = '';
+            if (itemType === 'note') tableName= 'notes';
+            if (itemType === 'folder') tableName= 'folders';
+            const { error } = await supabase
+                .from(tableName)
+                .delete()
+                .eq('id', itemId)
+
+            if (error) throw error;
+            toast.success(`${itemType} deleted successfully`);
+            return true;
+        } catch (error) {
+            console.error('SUPABASE ERROR', error);
+            toast.error(`Failed to delete your ${itemType}`);
+            return false;
+        }   finally {
+            setIsDeleting(false);
+        }
+    };
+    return { deleteItem, isDeleting };
 }

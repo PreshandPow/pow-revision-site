@@ -9,7 +9,7 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import RenameItemModal from "../../../components/RenameItemModal";
 import MoveItemModal from "../../../components/MoveItemModal";
-import { useRenameItem, useMoveItem } from '../../hooks/useItemActions';
+import { useRenameItem, useMoveItem, useDeleteItem } from '../../hooks/useItemActions';
 
 export function createClient() {
     return createBrowserClient(
@@ -98,19 +98,15 @@ export default function NotesPage() {
     const [noteToDelete, setNoteToDelete] = useState(null);
     const deleteNoteModalRef = useRef(null);
 
+    const { deleteItem, setIsDeleting } = useDeleteItem();
+
     const handleDeleteConfirm = async () => {
-        if (!noteToDelete) return;
+        const success = await deleteItem('note', noteToDelete.id);
 
-        const { error } = await supabase.from('notes').delete().eq('id', noteToDelete.id);
-        if (error) {
-            toast.error('Could not delete note', toastStyle);
+        if (success) {
+            setNotes(prev => prev.filter(n => n.id !== noteToDelete.id));
             setNoteToDelete(null);
-            return;
         }
-
-        setNotes(prev => prev.filter(n => n.id !== noteToDelete.id));
-        toast.success('Note deleted', toastStyle);
-        setNoteToDelete(null);
     };
 
     // ─── 6. DUPLICATE NOTE FEATURE ────────────────────────────────────────────────
