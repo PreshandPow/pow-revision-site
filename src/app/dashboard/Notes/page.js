@@ -84,7 +84,9 @@ export default function NotesPage() {
     const { moveItem, isMoving } = useMoveItem();
 
     const handleMove = async (destinationId) => {
+        const loadingToast = toast.loading('Moving note...', toastStyle);
         const success = await moveItem('note', noteToMove.id, destinationId);
+        toast.dismiss(loadingToast);
 
         if (success) {
             setShowMoveItemModal(false);
@@ -101,7 +103,9 @@ export default function NotesPage() {
     const { deleteItem, issDeleting } = useDeleteItem();
 
     const handleDeleteConfirm = async () => {
+        const loadingToast = toast.loading('Deleting note...', toastStyle);
         const success = await deleteItem('note', noteToDelete.id);
+        toast.dismiss(loadingToast);
 
         if (success) {
             setNotes(prev => prev.filter(n => n.id !== noteToDelete.id));

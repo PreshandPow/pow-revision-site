@@ -94,7 +94,9 @@ export default function FolderContentPage() {
     const { moveItem, isMoving } = useMoveItem();
 
     const handleMove = async (destinationId) => {
+        const loadingToast = toast.loading('Moving folder...', toastStyle);
         const success = await moveItem('folder', folderToMove.id, destinationId);
+        toast.dismiss(loadingToast);
 
         if (success) {
             setShowMoveItemModal(false);
@@ -111,7 +113,9 @@ export default function FolderContentPage() {
     const { deleteItem, isDeleting } = useDeleteItem();
 
     const handleDeleteConfirm = async () => {
+        const loadingToast = toast.loading('Deleting folder...', toastStyle);
         const success = await deleteItem('folder', folderToDelete.id);
+        toast.dismiss(loadingToast);
 
         if (success) {
             setFolders(prev => prev.filter(f => f.id !== folderToDelete.id));
@@ -123,7 +127,9 @@ export default function FolderContentPage() {
     const { duplicateItem, isDuplicating } = useDuplicateItem();
 
     const handleDuplicateFolder = async (folder) => {
+        const loadingToast = toast.loading('Duplicating folder...', toastStyle);
         const newFolder = await duplicateItem('folder', folder);
+        toast.dismiss(loadingToast);
 
         if (newFolder) {
             setFolders(prev => [newFolder, ...prev]);
