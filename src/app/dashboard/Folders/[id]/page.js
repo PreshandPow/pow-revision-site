@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import {
     Folder, FileText, MoreVertical, Plus, ChevronRight,
-    CreditCard, Clock, ExternalLink, Edit2, FolderOutput, Copy, Trash2
+    CreditCard, Clock, ExternalLink, Edit2, FolderOutput, Copy, Trash2,
+    Notebook
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter, useParams } from 'next/navigation';
@@ -12,7 +13,7 @@ import toast from "react-hot-toast";
 import RenameItemModal from "../../../../components/RenameItemModal";
 import { useRenameItem } from "../../../hooks/useItemActions";
 
-// ───  SUPABASE CLIENT ───────────────────────────────────────────────────────
+// ─── 1. SUPABASE CLIENT ───────────────────────────────────────────────────────
 export function createClient() {
     return createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -22,7 +23,7 @@ export function createClient() {
 
 export default function FolderContentPage() {
 
-    // ───  GLOBAL SETUP & STATES ───────────────────────────────────────────────
+    // ─── 2. GLOBAL SETUP & STATES ───────────────────────────────────────────────
     const router = useRouter();
     const { id } = useParams();
     const supabase = createClient();
@@ -32,14 +33,13 @@ export default function FolderContentPage() {
     const [prevFolder, setPrevFolder] = useState('Folders');
     const [folders, setFolders] = useState([]);
     const [currentFolder, setCurrentFolder] = useState(null);
+    const [notes, setNotes] = useState([]);
 
     const [showFolderOptionsDropdown, setShowFolderOptionsDropdown] = useState(false);
     const [nestedFolderBreadcrumbs, setNestedFolderBreadcrumbs] = useState([]);
 
-    // Temporary mock items for Notes and Flashcards
+    // Temporary mock items for Flashcards
     const [items] = useState([
-        { id: 3, name: 'Matrix Transformations', type: 'note', date: '2 days ago' },
-        { id: 4, name: 'Complex Numbers Intro', type: 'note', date: 'May 15' },
         { id: 5, name: 'Calculus Definitions', type: 'flashcard', date: 'May 10' },
     ]);
 
@@ -56,7 +56,7 @@ export default function FolderContentPage() {
         },
     };
 
-    // ───  LIFECYCLE EFFECTS ───────────────────────────────────────────────────
+    // ─── 3. LIFECYCLE EFFECTS ───────────────────────────────────────────────────
     useEffect(() => {
         const fetchFolderAndChildren = async () => {
             const { data: currentFolder, error: folderError } = await supabase
@@ -103,10 +103,32 @@ export default function FolderContentPage() {
             }
 
             setNestedFolderBreadcrumbs(crumbs);
-            setLoading(false);
         };
 
-        if (id) fetchFolderAndChildren();
+        const fetchNotes = async () => {
+            const { data: notes, error } = await supabase
+                .from('notes')
+                .select('*')
+                .eq('folder_id', id)
+                .order('updated_at', { ascending: false })
+
+            if (error) {
+                toast.error('Error fetching this folder\'s notes', toastStyle);
+            } else {
+                setNotes(notes || []);
+            }
+        };
+
+        const init = async () => {
+            if (id) {
+                // Ensure BOTH fetches complete before dropping the loading screen
+                await Promise.all([fetchFolderAndChildren(), fetchNotes()]);
+                setLoading(false);
+            }
+        };
+
+        init();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
 
     useEffect(() => {
@@ -119,7 +141,7 @@ export default function FolderContentPage() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // ───  ACTION HANDLERS ─────────────────────────────────────────────────────
+    // ─── 4. ACTION HANDLERS ─────────────────────────────────────────────────────
     const [showRenameItemModal, setShowRenameItemModal] = useState(false);
     const showRenameFolderModalRef = useRef(null);
     const { rename, isRenaming } = useRenameItem();
@@ -133,8 +155,7 @@ export default function FolderContentPage() {
                     f.id === currentFolder.id ? { ...f, name: newName } : f
                 )
             );
-
-            currentFolder(null);
+            setCurrentFolder(null);
         }
     };
 
@@ -142,7 +163,7 @@ export default function FolderContentPage() {
         day: 'numeric', month: 'short', year: 'numeric'
     });
 
-    // ─── RENDER ──────────────────────────────────────────────────────────────
+    // ─── 5. RENDER ──────────────────────────────────────────────────────────────
     if (loading) return (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--layer1)] backdrop-blur-xl p-6">
             <div className="w-16 h-16 mb-8 rounded-2xl bg-[var(--nice-blue)] animate-pulse shadow-[0_0_40px_rgba(var(--blue-rgb),0.3)] flex items-center justify-center">
@@ -163,8 +184,10 @@ export default function FolderContentPage() {
     return (
         <div className="min-h-screen bg-[var(--layer1)] p-4 md:p-8">
             <div className="max-w-7xl mx-auto">
+
+                {/* Header and Breadcrumbs */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
-                    <div className="flex items-center gap-2 text-sm font-medium text-[var(--text-muted)]">
+                    <div className="flex items-center gap-2 text-sm font-medium text-[var(--text-muted)] flex-wrap">
                         <button
                             onClick={() => router.push('/dashboard/Folders')}
                             className="hover:text-[var(--text)] cursor-pointer transition-colors text-lg"
@@ -172,21 +195,20 @@ export default function FolderContentPage() {
                             Folders
                         </button>
                         {nestedFolderBreadcrumbs.map(crumb => (
-                            <>
+                            <div key={crumb.id} className="flex items-center gap-2">
                                 <ChevronRight size={16} />
                                 <button
-                                    key={crumb.id}
                                     onClick={() => router.push(`/dashboard/Folders/${crumb.id}`)}
                                     className="hover:text-[var(--text)] cursor-pointer transition-colors text-lg"
                                 >
                                     {crumb.name}
                                 </button>
-                            </>
+                            </div>
                         ))}
                         <ChevronRight size={16} />
                         <span className="text-[var(--text)] font-bold text-lg">{folderName}</span>
 
-                        <div className="folder-dropdown-container relative">
+                        <div className="folder-dropdown-container relative ml-2">
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
@@ -207,12 +229,8 @@ export default function FolderContentPage() {
                                             transition={{ duration: 0.15 }}
                                             className="absolute left-25 top-65 mt-2 w-56 bg-[var(--layer1)] border border-[var(--layer3)] rounded-xl shadow-2xl py-1.5 z-60 overflow-hidden md:left-40"
                                         >
-                                            <a href={`${window.location}`}
-                                               target="_blank"
-                                               rel="noopener noreferrer">
-                                                <button onClick={(e) => {
-                                                    e.stopPropagation(); setShowFolderOptionsDropdown(null);
-                                                }}
+                                            <a href={`${window.location}`} target="_blank" rel="noopener noreferrer">
+                                                <button onClick={(e) => { e.stopPropagation(); setShowFolderOptionsDropdown(null); }}
                                                         className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer">
                                                     <ExternalLink size={16} /> Open in new tab
                                                 </button>
@@ -298,7 +316,7 @@ export default function FolderContentPage() {
                                                     <Clock size={12} />
                                                     {formatDate(folder.updated_at)}
                                                 </div>
-                                                <span className="text-[10px] bg-[var(--layer3)] px-2 py-0.5 rounded-full text-[var(--text-muted)]">
+                                                <span className="text-[10px] bg-[var(--layer3)] px-2 py-0.5 rounded-full text-[var(--text-muted)] font-semibold">
                                                     Folder
                                                 </span>
                                             </div>
@@ -313,31 +331,55 @@ export default function FolderContentPage() {
                 {/* Notes Section */}
                 <div className="mb-12">
                     <h2 className="text-xs font-black uppercase tracking-widest text-[var(--text-muted)] mb-5">Notes</h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {items.filter(i => i.type === 'note').map((note) => (
-                            <motion.div
-                                key={note.id}
-                                whileHover={{ y: -4 }}
-                                className="group relative aspect-[4/3] p-5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-xl cursor-pointer hover:shadow-lg hover:border-[var(--nice-blue)] transition-all overflow-hidden"
-                            >
-                                <div className="absolute top-0 right-0 w-8 h-8 bg-gradient-to-bl from-[var(--layer2)] to-[var(--layer3)] border-b border-l border-[var(--layer3)] rounded-bl-xl shadow-sm z-10" />
+                    {notes.length === 0 ? (
+                        <p className="text-sm text-[var(--text-muted)]">No notes yet.</p>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-2">
+                            {notes.map((note) => (
+                                <motion.div
+                                    key={note.id}
+                                    whileHover={{ y: -4 }}
+                                    onClick={() => router.push(`/dashboard/Notes/${note.id}`)}
+                                    className="group relative cursor-pointer flex flex-col"
+                                >
+                                    {/* Dog-ear corner */}
+                                    <div className="absolute top-0 right-0 w-8 h-8 bg-gradient-to-bl from-[var(--layer1)] to-[var(--layer2)] border-b border-l border-[var(--layer3)] rounded-bl-xl z-10 group-hover:border-[var(--nice-blue)] group-hover:from-[var(--nice-blue)]/10 transition-all duration-300" />
 
-                                <div className="flex flex-col h-full justify-between relative z-20">
-                                    <div className="flex justify-between items-start pr-6">
-                                        <div className="p-2 bg-[var(--layer2)] rounded-lg text-[var(--text-muted)] group-hover:text-[var(--nice-blue)] transition-colors">
-                                            <FileText size={20} />
+                                    {/* Flex Card */}
+                                    <div className="relative bg-[var(--layer2)] border border-[var(--layer3)] rounded-xl p-5 flex flex-col h-full min-h-[160px] shadow-sm group-hover:border-[var(--nice-blue)] group-hover:shadow-md transition-all duration-300">
+
+                                        <div className="flex items-start justify-between mb-4 pr-6">
+                                            <div className="p-2 bg-[var(--nice-blue)]/10 rounded-lg text-[var(--nice-blue)]">
+                                                <FileText size={20} />
+                                            </div>
+                                            <button className="p-1.5 rounded-lg text-[var(--text-muted)] opacity-0 group-hover:opacity-100 hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-all cursor-pointer">
+                                                <MoreVertical size={18} />
+                                            </button>
+                                        </div>
+
+                                        <div className="flex-1 flex flex-col">
+                                            <h3 className="font-bold text-[var(--text)] text-base line-clamp-2 mb-2 pr-4 leading-tight">
+                                                {note.title || 'Untitled Note'}
+                                            </h3>
+                                            <div className="text-xs text-[var(--text-muted)] line-clamp-3 mb-4 flex-1 leading-relaxed">
+                                                {note.content?.replace(/<[^>]*>/g, '') || 'Start writing...'}
+                                            </div>
+
+                                            <div className="flex items-center justify-between border-t border-[var(--layer3)] pt-3 mt-auto">
+                                                <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                                                    <Clock size={12} />
+                                                    {formatDate(note.updated_at)}
+                                                </div>
+                                                <span className="text-[10px] bg-[var(--layer3)] px-2 py-0.5 rounded-full text-[var(--text-muted)] font-semibold">
+                                                    Note
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
-
-                                    <div>
-                                        <h3 className="font-bold text-[var(--text)] leading-snug mb-1 pr-6">{note.name}</h3>
-                                        <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-tight">Edited {note.date}</p>
-                                    </div>
-                                </div>
-                                <div className="absolute top-0 left-0 w-1 h-full bg-[var(--nice-blue)] opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </motion.div>
-                        ))}
-                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 {/* Flashcards Section */}
@@ -383,6 +425,7 @@ export default function FolderContentPage() {
                         handleRename={handleFolderRename}
                         setItemName={setFolderName}
                         setShowRenameItemModal={setShowRenameItemModal}
+                        isRenaming={isRenaming}
                     />
                 )}
             </div>
