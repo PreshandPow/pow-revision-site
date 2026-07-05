@@ -273,6 +273,8 @@ export default function NotesPage() {
                                             setShowRenameNoteModal={setShowRenameNoteModal}
                                             setItemName={setNoteName}
                                             setShowMoveItemModal={setShowMoveItemModal}
+                                            handleDuplicateNote={handleDuplicateNote}
+                                            setNoteToDelete={setNoteToDelete}
                                         />
                                     )}
                                 </div>

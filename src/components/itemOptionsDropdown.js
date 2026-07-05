@@ -5,7 +5,8 @@ import {Copy, Edit2, ExternalLink, FolderOutput, Trash2} from "lucide-react";
 
 export default function UseItemOptionDropdown({ item, itemType, setActiveDropdown,
                                                 setShowRenameNoteModal, setItemName,
-                                                setShowMoveItemModal
+                                                setShowMoveItemModal, handleDuplicateNote,
+                                                setNoteToDelete
                                               }) {
     return (
     <AnimatePresence>
@@ -51,7 +52,7 @@ export default function UseItemOptionDropdown({ item, itemType, setActiveDropdow
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
-                        handleDuplicateNote(note);
+                        handleDuplicateNote(item);
                         setActiveDropdown(null);
                     }}
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer"
@@ -64,7 +65,7 @@ export default function UseItemOptionDropdown({ item, itemType, setActiveDropdow
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
-                        setNoteToDelete(note);
+                        setNoteToDelete(item);
                         setActiveDropdown(null);
                     }}
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
