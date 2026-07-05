@@ -6,11 +6,11 @@ import { Folder } from "lucide-react";
 
 export default function MoveItemModal({ moveModalRef, onClose, folders, currentItem, onMove, itemType }) {
     const [selectedDestination, setSelectedDestination] = useState(null);
-
-    const availableFolders = folders.filter(f => f.id !== currentItem?.id);
-
     const [parentRowName, setParentRowName] = useState(null);
     const [rowName, setRowName] = useState(null);
+
+    const currentParentFolder = folders.find(f => f.id === currentItem?.[parentRowName]);
+    const availableFolders = folders.filter(f => f.id !== currentItem?.id && f.id !== currentParentFolder?.id);
 
     useEffect(() => {
         if (itemType === 'note') {
@@ -35,29 +35,42 @@ export default function MoveItemModal({ moveModalRef, onClose, folders, currentI
                 transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                 className="relative flex flex-col w-full max-w-[420px] bg-[var(--layer1)] border border-[var(--layer3)] rounded-xl shadow-2xl overflow-hidden"
             >
-                {/* Header */}
                 <div className="px-6 pt-6 pb-4">
                     <h2 className="text-xl font-semibold text-[var(--text)] tracking-tight">Move item</h2>
                     <p className="text-sm text-[var(--text-muted)] mt-1.5 leading-relaxed">
                         Select a destination for <span className="font-bold text-[var(--text)]">{currentItem?.[rowName] || 'this item'}</span>.
                     </p>
                 </div>
+                <div className="px-6 pb-6 max-h-[300px] overflow-y-auto custom-scrollbar flex flex-col gap-2">
 
-                <div className="px-6 pb-6 max-h-[300px] overflow-y-auto custom-scrollbar">
+                    {currentParentFolder && (
+                        <>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Current location</p>
+                            <div className="flex items-center gap-3 w-full p-3 rounded-lg border border-[var(--nice-blue)] bg-[var(--nice-blue)]/5 text-left">
+                                <div className="p-1.5 rounded-md bg-[var(--nice-blue)] text-white">
+                                    <Folder size={18} fill="currentColor" />
+                                </div>
+                                <span className="text-sm font-medium truncate text-[var(--text)]">
+                    {currentParentFolder.name || 'Untitled Folder'}
+                </span>
+                            </div>
+                            <div className="h-px bg-[var(--layer3)] my-1" />
+                        </>
+                    )}
                     {parentRowName && (
                         <button
                             onClick={() => setSelectedDestination('root')}
                             className={`flex items-center gap-3 w-full p-3 rounded-lg border transition-all duration-200 text-left cursor-pointer
-                                ${selectedDestination === 'root'
+                ${selectedDestination === 'root'
                                 ? 'border-[var(--nice-blue)] bg-[var(--nice-blue)]/5'
                                 : 'border-[var(--layer3)] bg-[var(--layer2)] hover:border-[var(--text-muted)]'}`}
                         >
-                            <div className={`p-1.5 text-[var(--vanilla-cream)] rounded-md ${selectedDestination === 'root' ? 'bg-[var(--nice-blue)] text-white' : 'bg-[var(--layer3)] text-[var(--text-muted)]'}`}>
-                                <Folder size={18}/>
+                            <div className={`p-1.5 rounded-md ${selectedDestination === 'root' ? 'bg-[var(--nice-blue)] text-white' : 'bg-[var(--layer3)] text-[var(--text-muted)]'}`}>
+                                <Folder size={18} />
                             </div>
-                            <span className={`text-sm font-medium text-[var(--nice-blue)]`}>
-                                    Main Directory (Root)
-                                </span>
+                            <span className="text-sm font-medium text-[var(--nice-blue)]">
+                Main Directory (Root)
+            </span>
                         </button>
                     )}
                     {availableFolders.length === 0 ? (
@@ -71,16 +84,16 @@ export default function MoveItemModal({ moveModalRef, onClose, folders, currentI
                                     key={folder.id}
                                     onClick={() => setSelectedDestination(folder.id)}
                                     className={`flex items-center gap-3 w-full p-3 rounded-lg border transition-all duration-200 text-left cursor-pointer
-                                    ${selectedDestination === folder.id
+                    ${selectedDestination === folder.id
                                         ? 'border-[var(--nice-blue)] bg-[var(--nice-blue)]/5'
                                         : 'border-[var(--layer3)] bg-[var(--layer2)] hover:border-[var(--text-muted)]'}`}
                                 >
                                     <div className={`p-1.5 rounded-md ${selectedDestination === folder.id ? 'bg-[var(--nice-blue)] text-white' : 'bg-[var(--layer3)] text-[var(--text-muted)]'}`}>
                                         <Folder size={18} fill={selectedDestination === folder.id ? "currentColor" : "none"} />
                                     </div>
-                                    <span className={`text-sm font-medium truncate`}>
-                                        {folder.name || 'Untitled Folder'}
-                                    </span>
+                                    <span className="text-sm font-medium truncate">
+                        {folder.name || 'Untitled Folder'}
+                    </span>
                                 </button>
                             ))}
                         </div>

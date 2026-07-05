@@ -10,6 +10,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import RenameItemModal from "../../../components/RenameItemModal";
 import MoveItemModal from "../../../components/MoveItemModal";
 import { useRenameItem, useMoveItem, useDeleteItem, useDuplicateItem } from '../../hooks/useItemActions';
+import UseItemOptionDropdown from '../../../components/itemOptionsDropdown';
 
 export function createClient() {
     return createBrowserClient(
@@ -27,6 +28,8 @@ export default function NotesPage() {
     const [folders, setFolders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeDropdown, setActiveDropdown] = useState(null);
+
+    const [selectedItem, setSelectedItem] = useState(null);
 
     const toastStyle = {
         style: {
@@ -57,42 +60,40 @@ export default function NotesPage() {
 
     // ─── 3. RENAME NOTE FEATURE ───────────────────────────────────────────────────
     const [showRenameNoteModal, setShowRenameNoteModal] = useState(false);
-    const [noteToRename, setNoteToRename] = useState(null);
     const [noteName, setNoteName] = useState('Untitled Note');
     const showRenameNoteModalRef = useRef(null);
 
     const { rename, isRenaming } = useRenameItem();
 
     const handleNoteRename = async (newName) => {
-        const success = await rename('note', noteToRename.id, newName);
+        const success = await rename('note', selectedItem.id, newName);
 
         if (success) {
             setNotes(prevNotes =>
                 prevNotes.map(n =>
-                    n.id === noteToRename.id ? { ...n, title: newName } : n
+                    n.id === selectedItem.id ? { ...n, title: newName } : n
                 )
             );
-            setNoteToRename(null);
+            selectedItem(null);
         }
     };
 
     // ─── 4. MOVE NOTE FEATURE ─────────────────────────────────────────────────────
     const [showMoveItemModal, setShowMoveItemModal] = useState(false);
-    const [noteToMove, setNoteToMove] = useState(null);
     const itemToMoveRef = useRef(null);
 
     const { moveItem, isMoving } = useMoveItem();
 
     const handleMove = async (destinationId) => {
         const loadingToast = toast.loading('Moving note...', toastStyle);
-        const success = await moveItem('note', noteToMove.id, destinationId);
+        const success = await moveItem('note', selectedItem.id, destinationId);
         toast.dismiss(loadingToast);
 
         if (success) {
             setShowMoveItemModal(false);
-            setFolders(prev => prev.filter(n => n.id !== noteToMove.id));
+            setFolders(prev => prev.filter(n => n.id !== selectedItem.id));
             toast.success('Folder moved successfully', toastStyle);
-            setNoteToMove(false);
+            setSelectedItem(false);
         }
     }
 
@@ -255,6 +256,7 @@ export default function NotesPage() {
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
+                                            setSelectedItem(note);
                                             setActiveDropdown(activeDropdown === note.id ? null : note.id);
                                         }}
                                         className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
@@ -263,75 +265,16 @@ export default function NotesPage() {
                                     </button>
 
                                     {/* Dropdown Menu */}
-                                    <AnimatePresence>
-                                        {activeDropdown === note.id && (
-                                            <motion.div
-                                                initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                                exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                                                transition={{ duration: 0.15 }}
-                                                className="absolute top-10 mt-2 w-56 bg-[var(--layer1)] border border-[var(--layer3)] rounded-xl shadow-2xl py-1.5 z-60 overflow-hidden left-25 md:left-40"
-                                            >
-                                                <a href={`/dashboard/Notes/${note.id}`} target="_blank" rel="noopener noreferrer">
-                                                    <button
-                                                        onClick={(e) => { e.stopPropagation(); setActiveDropdown(null); }}
-                                                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer"
-                                                    >
-                                                        <ExternalLink size={16} /> Open in new tab
-                                                    </button>
-                                                </a>
-
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setShowRenameNoteModal(true);
-                                                        setNoteToRename(note);
-                                                        setNoteName(note.title);
-                                                        setActiveDropdown(null);
-                                                    }}
-                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer"
-                                                >
-                                                    <Edit2 size={16} /> Rename
-                                                </button>
-
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setNoteToMove(note);
-                                                        setShowMoveItemModal(true);
-                                                        setActiveDropdown(null);
-                                                    }}
-                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer"
-                                                >
-                                                    <FolderOutput size={16} /> Move to
-                                                </button>
-
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleDuplicateNote(note);
-                                                        setActiveDropdown(null);
-                                                    }}
-                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer"
-                                                >
-                                                    <Copy size={16} /> Duplicate
-                                                </button>
-
-                                                <div className="h-px bg-[var(--layer3)] my-1 w-full" />
-
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setNoteToDelete(note);
-                                                        setActiveDropdown(null);
-                                                    }}
-                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
-                                                >
-                                                    <Trash2 size={16} /> Delete note
-                                                </button>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
+                                    {activeDropdown === note.id && (
+                                        <UseItemOptionDropdown
+                                            item={note}
+                                            itemType='note'
+                                            setActiveDropdown={setActiveDropdown}
+                                            setShowRenameNoteModal={setShowRenameNoteModal}
+                                            setItemName={setNoteName}
+                                            setShowMoveItemModal={setShowMoveItemModal}
+                                        />
+                                    )}
                                 </div>
 
                                 <p className="text-sm text-[var(--text-muted)] line-clamp-2 flex-1">
@@ -402,15 +345,15 @@ export default function NotesPage() {
                     )}
 
                     {/* Move Modal */}
-                    {showMoveItemModal && noteToMove && (
+                    {showMoveItemModal && selectedItem && (
                         <MoveItemModal
                             moveModalRef={itemToMoveRef}
                             folders={folders}
-                            currentItem={noteToMove}
+                            currentItem={selectedItem}
                             onMove={handleMove}
                             onClose={() => {
                                 setShowMoveItemModal(false);
-                                setNoteToMove(null);
+                                setSelectedItem(null);
                             }}
                             itemType={'note'}
                         />

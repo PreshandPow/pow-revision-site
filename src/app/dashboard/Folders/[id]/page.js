@@ -35,7 +35,7 @@ export default function FolderContentPage() {
     const [currentFolder, setCurrentFolder] = useState(null);
     const [notes, setNotes] = useState([]);
 
-    const [showFolderOptionsDropdown, setShowFolderOptionsDropdown] = useState(false);
+    const [showItemOptionsDropdown, setShowItemOptionsDropdown] = useState(false);
     const [nestedFolderBreadcrumbs, setNestedFolderBreadcrumbs] = useState([]);
 
     // Temporary mock items for Flashcards
@@ -134,7 +134,7 @@ export default function FolderContentPage() {
     useEffect(() => {
         const handleClickOutside = (e) => {
             if (!e.target.closest('.folder-dropdown-container')) {
-                setShowFolderOptionsDropdown(null);
+                setShowItemOptionsDropdown(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -212,7 +212,7 @@ export default function FolderContentPage() {
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    setShowFolderOptionsDropdown(true);
+                                    setShowItemOptionsDropdown(true);
                                 }}
                                 className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                             >
@@ -220,7 +220,7 @@ export default function FolderContentPage() {
                             </button>
 
                             <AnimatePresence>
-                                {showFolderOptionsDropdown && (
+                                {showItemOptionsDropdown && (
                                     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-[1px] p-0 md:p-6">
                                         <motion.div
                                             initial={{ opacity: 0, scale: 0.95, y: -10 }}
@@ -230,7 +230,7 @@ export default function FolderContentPage() {
                                             className="absolute left-25 top-65 mt-2 w-56 bg-[var(--layer1)] border border-[var(--layer3)] rounded-xl shadow-2xl py-1.5 z-60 overflow-hidden md:left-40"
                                         >
                                             <a href={`${window.location}`} target="_blank" rel="noopener noreferrer">
-                                                <button onClick={(e) => { e.stopPropagation(); setShowFolderOptionsDropdown(null); }}
+                                                <button onClick={(e) => { e.stopPropagation(); setShowItemOptionsDropdown(null); }}
                                                         className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer">
                                                     <ExternalLink size={16} /> Open in new tab
                                                 </button>
