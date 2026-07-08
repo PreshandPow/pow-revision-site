@@ -16,10 +16,11 @@ import MoveItemModal from "../../../../components/MoveItemModal";
 import UseDeleteItemModal from "../../../../components/deleteItemModal";
 import UseItemOptionDropdown from "../../../../components/itemOptionsDropdown";
 import CreateModal from '../../../../components/CreateModal';
+import CreateFolderModal from "../../../../components/createFolderModal";
 
 // Hooks
 import { useRenameItem, useMoveItem, useDeleteItem, useDuplicateItem } from "../../../hooks/useItemActions";
-import { createNoteAction } from "../../../hooks/createItemActions";
+import { createNoteAction, createFolderAction } from "../../../hooks/createItemActions";
 
 // ─── 1. SUPABASE CLIENT ───────────────────────────────────────────────────────
 export function createClient() {
@@ -53,11 +54,14 @@ export default function FolderContentPage() {
     const [itemToDelete, setItemToDelete] = useState(null);
     const [showCreateItemModal, setShowCreateItemModal] = useState(false);
     const [activeTaskModal, setActiveTaskModal] = useState(null);
+    const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
+    const [newFolderName, setNewFolderName] = useState('');
 
     // Refs
     const renameModalRef = useRef(null);
     const moveModalRef = useRef(null);
     const deleteModalRef = useRef(null);
+    const createFolderModalRef = useRef(null);
 
     // Temporary mock items for Flashcards
     const [items] = useState([
@@ -146,6 +150,7 @@ export default function FolderContentPage() {
             if (!e.target.closest('.dropdown-container')) setActiveDropdown(null);
             if (renameModalRef.current && !renameModalRef.current.contains(e.target)) setShowRenameItemModal(false);
             if (moveModalRef.current && !moveModalRef.current.contains(e.target)) setShowMoveItemModal(false);
+            if (createFolderModalRef.current && !createFolderModalRef.current.contains(e.target)) setShowCreateFolderModal(false);
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -225,6 +230,23 @@ export default function FolderContentPage() {
             }
             toast.success(`${itemType} duplicated`, toastStyle);
         }
+    };
+
+    const handleCreateNoteInFolder = async () => {
+        const newNote = await createNoteAction(id, router);
+        if (newNote) {
+            setNotes(prev => [newNote, ...prev]);
+        }
+        setShowCreateItemModal(false);
+    };
+
+    const handleCreateFolderInFolder = async () => {
+        const newFolder = await createFolderAction(newFolderName, id, router);
+        if (newFolder) {
+            setFolders(prev => [newFolder, ...prev]);
+        }
+        setShowCreateFolderModal(false);
+        setNewFolderName('');
     };
 
     const formatDate = (date) => new Date(date).toLocaleDateString('en-GB', {
@@ -539,7 +561,18 @@ export default function FolderContentPage() {
                             setOpenCreateModal={setShowCreateItemModal}
                             activeTaskModal={activeTaskModal}
                             setActiveTaskModal={setActiveTaskModal}
-                            handleCreateNote={createNoteAction}
+                            handleCreateNote={handleCreateNoteInFolder}
+                            handleCreateFolder={handleCreateFolderInFolder}
+                            setShowCreateFolderModal={setShowCreateFolderModal}
+                        />
+                    )}
+                    {showCreateFolderModal && (
+                        <CreateFolderModal
+                            createFolderModalRef={createFolderModalRef}
+                            setShowCreateFolderModal={setShowCreateFolderModal}
+                            folderName={newFolderName}
+                            setFolderName={setNewFolderName}
+                            handleCreateFolder={handleCreateFolderInFolder}
                         />
                     )}
                 </AnimatePresence>

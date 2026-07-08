@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { createBrowserClient } from '@supabase/ssr';
 
@@ -9,17 +8,47 @@ function createClient() {
     );
 }
 
-export function createNoteAction({ folderId }) {
+export const createFolderAction = async (folderName, folderId = null, router) => {
     const supabase = createClient();
-    const createNote = async() => {
-        const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
 
-        const { data: note, error } = await supabase
-            .from('notes')
-            .insert({ user_id: user.id, title: 'Untitled', content: '', folder_id: folderId })
-            .select()
-            .single();
+    const { data: folder, error } = await supabase
+        .from('folders')
+        .insert({
+            user_id: user.id,
+            name: folderName || 'Untitled Folder',
+            parent_folder_id: folderId
+        })
+        .select()
+        .single();
 
-        if (error) { toast.error('Could not create note', toastStyle); return; }
+    if (error) {
+        toast.error('Could not create folder');
+        return null;
     }
-}
+
+    return folder;
+};
+
+export const createNoteAction = async (folderId = null, router) => {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    const { data: note, error } = await supabase
+        .from('notes')
+        .insert({
+            user_id: user.id,
+            title: 'Untitled Note',
+            content: '',
+            folder_id: folderId
+        })
+        .select()
+        .single();
+
+    if (error) {
+        toast.error('Could not create note');
+        return null;
+    }
+
+    return note;
+};

@@ -8,6 +8,7 @@ export default function CreateModal({
                                         activeTaskModal,
                                         setActiveTaskModal,
                                         handleCreateNote,
+                                        handleCreateFolder,
                                         setShowCreateFolderModal
                                     }) {
 
