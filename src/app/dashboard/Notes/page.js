@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
-import { Plus, FileText, Clock, Trash2, MoreVertical, ExternalLink, Edit2, FolderOutput, Copy } from 'lucide-react';
+import { Plus, FileText, Clock, MoreVertical } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -31,7 +31,6 @@ export default function NotesPage() {
     const [activeDropdown, setActiveDropdown] = useState(null);
 
     const [selectedItem, setSelectedItem] = useState(null);
-    const dropdownContainerRef = useRef(null);
 
     const toastStyle = {
         style: {
@@ -168,9 +167,7 @@ export default function NotesPage() {
             if (itemToMoveRef.current && !itemToMoveRef.current.contains(e.target)) {
                 setShowMoveItemModal(false);
             }
-            if (dropdownContainerRef.current && !dropdownContainerRef.current.contains(e.target)) {
-                setActiveDropdown(null);
-            }
+            if (!e.target.closest('.dropdown-container')) setActiveDropdown(null);
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -207,6 +204,18 @@ export default function NotesPage() {
     return (
         <main className="min-h-screen bg-[var(--layer2)] p-6 md:p-10">
             <div className="max-w-5xl mx-auto">
+                <AnimatePresence>
+                    {activeDropdown && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            onClick={() => setActiveDropdown(null)}
+                            className="fixed inset-0 bg-black/20 backdrop-blur-[3px] z-[90]"
+                        />
+                    )}
+                </AnimatePresence>
                 <div className="flex items-center justify-between mb-8">
                     <div>
                         <h1 className="text-3xl font-bold text-[var(--text)]">Notes</h1>
@@ -247,7 +256,7 @@ export default function NotesPage() {
                                         rounded-2xl p-5 flex flex-col gap-3 cursor-pointer transition-colors duration-200
                                         ${activeDropdown === note.id ? 'z-[100] border-[var(--nice-blue)]' : 'z-10 hover:border-[var(--nice-blue)]'}`}
                             >
-                                <div className="flex items-start justify-between gap-2 dropdown-container">
+                                <div className={`flex items-start justify-between gap-2 dropdown-container ${activeDropdown === 'header' ? 'z-[100]' : 'z-10'}`}>
                                     <p className="font-bold text-[var(--text)] truncate flex-1">{note.title || 'Untitled'}</p>
                                     <button
                                         onClick={(e) => {
@@ -270,7 +279,6 @@ export default function NotesPage() {
                                                 setShowMoveItemModal={setShowMoveItemModal}
                                                 handleDuplicateNote={handleDuplicateNote}
                                                 setNoteToDelete={setNoteToDelete}
-                                                dropdownContainerRef={dropdownContainerRef}
                                             />
                                         )}
                                     </AnimatePresence>

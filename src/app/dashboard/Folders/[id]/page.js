@@ -247,6 +247,18 @@ export default function FolderContentPage() {
 
     return (
         <div className="min-h-screen bg-[var(--layer1)] p-4 md:p-8">
+            <AnimatePresence>
+                {activeDropdown && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        onClick={() => setActiveDropdown(null)} // Closes dropdown if they click the background
+                        className="fixed inset-0 bg-black/20 backdrop-blur-[3px] z-[90]"
+                    />
+                )}
+            </AnimatePresence>
             <div className="max-w-7xl mx-auto">
 
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
@@ -265,7 +277,7 @@ export default function FolderContentPage() {
                         <ChevronRight size={16} />
                         <span className="text-[var(--text)] font-bold text-lg">{currentFolder?.name}</span>
 
-                        <div className="dropdown-container relative ml-2">
+                        <div className={`dropdown-container relative ml-2 ${activeDropdown === 'header' ? 'z-[100]' : 'z-10'}`}>
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
@@ -316,7 +328,7 @@ export default function FolderContentPage() {
                                     <div className="absolute -top-2 left-0 w-16 h-4 bg-[var(--layer3)] rounded-t-lg group-hover:bg-[var(--nice-blue)] transition-colors duration-300" />
                                     <div className="relative bg-[var(--layer2)] border border-[var(--layer3)] rounded-xl rounded-tl-none p-5 flex flex-col min-h-[140px] shadow-sm group-hover:border-[var(--nice-blue)] group-hover:shadow-md transition-all duration-300">
 
-                                        <div className="flex items-start justify-between mb-3 relative dropdown-container">
+                                        <div className={`flex items-start justify-between mb-3 relative dropdown-container ${activeDropdown === 'header' ? 'z-[100]' : 'z-10'}`}>
                                             <div className="p-2 bg-[var(--nice-blue)]/10 rounded-lg text-[var(--nice-blue)]">
                                                 <Folder size={20} fill="currentColor" fillOpacity={0.2} />
                                             </div>
@@ -386,7 +398,7 @@ export default function FolderContentPage() {
                                     <div className="absolute top-0 right-0 w-8 h-8 bg-gradient-to-bl from-[var(--layer1)] to-[var(--layer2)] border-b border-l border-[var(--layer3)] rounded-bl-xl z-10 group-hover:border-[var(--nice-blue)] group-hover:from-[var(--nice-blue)]/10 transition-all duration-300" />
 
                                     <div className="relative bg-[var(--layer2)] border border-[var(--layer3)] rounded-xl p-5 flex flex-col h-full min-h-[160px] shadow-sm group-hover:border-[var(--nice-blue)] group-hover:shadow-md transition-all duration-300">
-                                        <div className="flex items-start justify-between mb-4 pr-6 relative dropdown-container">
+                                        <div className={`flex items-start justify-between mb-4 pr-6 relative dropdown-container ${activeDropdown === 'header' ? 'z-[100]' : 'z-10'}`}>
                                             <div className="p-2 bg-[var(--nice-blue)]/10 rounded-lg text-[var(--nice-blue)]">
                                                 <FileText size={20} />
                                             </div>

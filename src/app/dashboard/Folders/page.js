@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
     Folder, MoreVertical, Plus,
-    Clock, Trash2, Edit2, FolderOutput, Copy, ExternalLink
+    Clock
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from 'next/navigation';
@@ -34,7 +34,6 @@ export default function FolderContentPage() {
     const [activeDropdown, setActiveDropdown] = useState(null);
 
     const [selectedItem, setSelectedItem] = useState(null);
-    const dropdownContainerRef = useRef(null);
 
     const toastStyle = {
         style: {
@@ -164,9 +163,7 @@ export default function FolderContentPage() {
             if (createFolderModalRef.current && !createFolderModalRef.current.contains(e.target)) {
                 setShowCreateFolderModal(false);
             }
-            if (dropdownContainerRef.current && !dropdownContainerRef.current.contains(e.target)) {
-                setActiveDropdown(null);
-            }
+            if (!e.target.closest('.dropdown-container')) setActiveDropdown(null);
             if (showRenameFolderModalRef.current && !showRenameFolderModalRef.current.contains(e.target)) {
                 setShowRenameItemModal(false);
             }
@@ -206,6 +203,18 @@ export default function FolderContentPage() {
     return (
         <div className="min-h-screen bg-[var(--layer1)] p-4 md:p-8">
             <div className="max-w-7xl mx-auto">
+                <AnimatePresence>
+                    {activeDropdown && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            onClick={() => setActiveDropdown(null)}
+                            className="fixed inset-0 bg-black/20 backdrop-blur-[3px] z-[90]"
+                        />
+                    )}
+                </AnimatePresence>
                 <div className="flex items-center justify-between mb-8">
                     <div>
                         <h1 className="text-3xl font-bold text-[var(--text)]">Folders</h1>
@@ -236,7 +245,7 @@ export default function FolderContentPage() {
                             rounded-tl-none p-5 flex flex-col min-h-[140px] shadow-sm group-hover:border-[var(--nice-blue)]
                              group-hover:shadow-md transition-all duration-300">
 
-                                <div className="flex items-start justify-between mb-3 relative dropdown-container">
+                                <div className={`flex items-start justify-between mb-3 relative dropdown-container ${activeDropdown === 'header' ? 'z-[100]' : 'z-10'}`}>
                                     <div className="p-2 bg-[var(--nice-blue)]/10 rounded-lg text-[var(--nice-blue)]">
                                         <Folder size={20} fill="currentColor" fillOpacity={0.2} />
                                     </div>
@@ -263,7 +272,6 @@ export default function FolderContentPage() {
                                                 setSelectedItem={setSelectedItem}
                                                 handleDuplicateNote={handleDuplicateFolder}
                                                 setNoteToDelete={setFolderToDelete}
-                                                dropdownContainerRef={dropdownContainerRef}
                                             />
                                         )}
                                     </AnimatePresence>
