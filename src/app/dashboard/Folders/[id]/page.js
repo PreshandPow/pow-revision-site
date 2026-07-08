@@ -3,15 +3,21 @@
 import { useEffect, useRef, useState } from 'react';
 import {
     Folder, FileText, MoreVertical, Plus, ChevronRight,
-    CreditCard, Clock, ExternalLink, Edit2, FolderOutput, Copy, Trash2,
-    Notebook
+    CreditCard, Clock
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter, useParams } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import toast from "react-hot-toast";
+
+// Components
 import RenameItemModal from "../../../../components/RenameItemModal";
-import { useRenameItem } from "../../../hooks/useItemActions";
+import MoveItemModal from "../../../../components/MoveItemModal";
+import UseDeleteItemModal from "../../../../components/deleteItemModal";
+import UseItemOptionDropdown from "../../../../components/itemOptionsDropdown";
+
+// Hooks
+import { useRenameItem, useMoveItem, useDeleteItem, useDuplicateItem } from "../../../hooks/useItemActions";
 
 // ─── 1. SUPABASE CLIENT ───────────────────────────────────────────────────────
 export function createClient() {
@@ -22,21 +28,32 @@ export function createClient() {
 }
 
 export default function FolderContentPage() {
-
     // ─── 2. GLOBAL SETUP & STATES ───────────────────────────────────────────────
     const router = useRouter();
     const { id } = useParams();
     const supabase = createClient();
 
-    const [folderName, setFolderName] = useState('');
+    // Data States
     const [loading, setLoading] = useState(true);
-    const [prevFolder, setPrevFolder] = useState('Folders');
-    const [folders, setFolders] = useState([]);
     const [currentFolder, setCurrentFolder] = useState(null);
+    const [folders, setFolders] = useState([]);
     const [notes, setNotes] = useState([]);
-
-    const [showItemOptionsDropdown, setShowItemOptionsDropdown] = useState(false);
     const [nestedFolderBreadcrumbs, setNestedFolderBreadcrumbs] = useState([]);
+
+    // UI & Action States
+    const [activeDropdown, setActiveDropdown] = useState(null);
+    const [selectedItem, setSelectedItem] = useState(null);
+    const [itemNameInput, setItemNameInput] = useState(''); // Used for the rename input box
+
+    // Modal States
+    const [showRenameItemModal, setShowRenameItemModal] = useState(false);
+    const [showMoveItemModal, setShowMoveItemModal] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState(null);
+
+    // Refs
+    const renameModalRef = useRef(null);
+    const moveModalRef = useRef(null);
+    const deleteModalRef = useRef(null);
 
     // Temporary mock items for Flashcards
     const [items] = useState([
@@ -50,13 +67,16 @@ export default function FolderContentPage() {
             color: 'var(--text)',
             background: 'var(--layer2)',
         },
-        iconTheme: {
-            primary: 'var(--nice-blue)',
-            secondary: '#FFFAEE',
-        },
+        iconTheme: { primary: 'var(--nice-blue)', secondary: '#FFFAEE' },
     };
 
-    // ─── 3. LIFECYCLE EFFECTS ───────────────────────────────────────────────────
+    // ─── 3. ACTION HOOKS ────────────────────────────────────────────────────────
+    const { rename, isRenaming } = useRenameItem();
+    const { moveItem, isMoving } = useMoveItem();
+    const { deleteItem, isDeleting } = useDeleteItem();
+    const { duplicateItem, isDuplicating } = useDuplicateItem();
+
+    // ─── 4. LIFECYCLE EFFECTS ───────────────────────────────────────────────────
     useEffect(() => {
         const fetchFolderAndChildren = async () => {
             const { data: currentFolder, error: folderError } = await supabase
@@ -72,8 +92,6 @@ export default function FolderContentPage() {
             }
 
             setCurrentFolder(currentFolder);
-            setFolderName(currentFolder?.name || '');
-            setPrevFolder(currentFolder?.parent_folder_id ? 'Back' : 'Folders');
 
             const { data: childFolders, error: childrenError } = await supabase
                 .from('folders')
@@ -81,15 +99,10 @@ export default function FolderContentPage() {
                 .eq('parent_folder_id', id)
                 .order('updated_at', { ascending: false });
 
-            if (childrenError) {
-                toast.error('Could not load contents', toastStyle);
-            } else {
-                setFolders(childFolders || []);
-            }
+            if (!childrenError) setFolders(childFolders || []);
 
             const crumbs = [];
             let folder = currentFolder;
-
             while (folder?.parent_folder_id) {
                 const { data: parent } = await supabase
                     .from('folders')
@@ -101,7 +114,6 @@ export default function FolderContentPage() {
                 crumbs.unshift({ id: parent.id, name: parent.name });
                 folder = parent;
             }
-
             setNestedFolderBreadcrumbs(crumbs);
         };
 
@@ -110,52 +122,104 @@ export default function FolderContentPage() {
                 .from('notes')
                 .select('*')
                 .eq('folder_id', id)
-                .order('updated_at', { ascending: false })
+                .order('updated_at', { ascending: false });
 
-            if (error) {
-                toast.error('Error fetching this folder\'s notes', toastStyle);
-            } else {
-                setNotes(notes || []);
-            }
+            if (!error) setNotes(notes || []);
         };
 
         const init = async () => {
             if (id) {
-                // Ensure BOTH fetches complete before dropping the loading screen
                 await Promise.all([fetchFolderAndChildren(), fetchNotes()]);
                 setLoading(false);
             }
         };
 
         init();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
 
     useEffect(() => {
         const handleClickOutside = (e) => {
-            if (!e.target.closest('.folder-dropdown-container')) {
-                setShowItemOptionsDropdown(false);
-            }
+            if (!e.target.closest('.dropdown-container')) setActiveDropdown(null);
+            if (renameModalRef.current && !renameModalRef.current.contains(e.target)) setShowRenameItemModal(false);
+            if (moveModalRef.current && !moveModalRef.current.contains(e.target)) setShowMoveItemModal(false);
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // ─── 4. ACTION HANDLERS ─────────────────────────────────────────────────────
-    const [showRenameItemModal, setShowRenameItemModal] = useState(false);
-    const showRenameFolderModalRef = useRef(null);
-    const { rename, isRenaming } = useRenameItem();
+    // ─── 5. SMART ACTION HANDLERS ───────────────────────────────────────────────
 
-    const handleFolderRename = async (newName) => {
-        const success = await rename('folder', currentFolder.id, newName);
+    const handleRenameConfirm = async (newName) => {
+        const isNote = selectedItem.title !== undefined;
+        const itemType = isNote ? 'note' : 'folder';
+
+        const success = await rename(itemType, selectedItem.id, newName);
 
         if (success) {
-            setFolders(prevFolders =>
-                prevFolders.map(f =>
-                    f.id === currentFolder.id ? { ...f, name: newName } : f
-                )
-            );
-            setCurrentFolder(null);
+            if (selectedItem.id === currentFolder?.id) {
+                setCurrentFolder({ ...currentFolder, name: newName });
+            } else if (isNote) {
+                setNotes(prev => prev.map(n => n.id === selectedItem.id ? { ...n, title: newName } : n));
+            } else {
+                setFolders(prev => prev.map(f => f.id === selectedItem.id ? { ...f, name: newName } : f));
+            }
+            setSelectedItem(null);
+        }
+    };
+
+    const handleMoveConfirm = async (destinationId) => {
+        const isNote = selectedItem.title !== undefined;
+        const itemType = isNote ? 'note' : 'folder';
+
+        const loadingToast = toast.loading(`Moving ${itemType}...`, toastStyle);
+        const success = await moveItem(itemType, selectedItem.id, destinationId);
+        toast.dismiss(loadingToast);
+
+        if (success) {
+            setShowMoveItemModal(false);
+            if (isNote) {
+                setNotes(prev => prev.filter(n => n.id !== selectedItem.id));
+            } else {
+                setFolders(prev => prev.filter(f => f.id !== selectedItem.id));
+            }
+            toast.success(`${itemType} moved successfully`, toastStyle);
+            setSelectedItem(null);
+        }
+    };
+
+    const handleDeleteConfirm = async () => {
+        const isNote = itemToDelete.title !== undefined;
+        const itemType = isNote ? 'note' : 'folder';
+
+        const loadingToast = toast.loading(`Deleting ${itemType}...`, toastStyle);
+        const success = await deleteItem(itemType, itemToDelete.id);
+        toast.dismiss(loadingToast);
+
+        if (success) {
+            if (isNote) {
+                setNotes(prev => prev.filter(n => n.id !== itemToDelete.id));
+            } else {
+                setFolders(prev => prev.filter(f => f.id !== itemToDelete.id));
+            }
+            setItemToDelete(null);
+        }
+    };
+
+    const handleDuplicateConfirm = async (itemToDuplicate) => {
+        const isNote = itemToDuplicate.title !== undefined;
+        const itemType = isNote ? 'note' : 'folder';
+
+        const loadingToast = toast.loading(`Duplicating ${itemType}...`, toastStyle);
+        const newItem = await duplicateItem(itemType, itemToDuplicate);
+        toast.dismiss(loadingToast);
+
+        if (newItem) {
+            if (isNote) {
+                setNotes(prev => [newItem, ...prev]);
+            } else {
+                setFolders(prev => [newItem, ...prev]);
+            }
+            toast.success(`${itemType} duplicated`, toastStyle);
         }
     };
 
@@ -163,7 +227,7 @@ export default function FolderContentPage() {
         day: 'numeric', month: 'short', year: 'numeric'
     });
 
-    // ─── 5. RENDER ──────────────────────────────────────────────────────────────
+    // ─── 6. RENDER ──────────────────────────────────────────────────────────────
     if (loading) return (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--layer1)] backdrop-blur-xl p-6">
             <div className="w-16 h-16 mb-8 rounded-2xl bg-[var(--nice-blue)] animate-pulse shadow-[0_0_40px_rgba(var(--blue-rgb),0.3)] flex items-center justify-center">
@@ -185,34 +249,27 @@ export default function FolderContentPage() {
         <div className="min-h-screen bg-[var(--layer1)] p-4 md:p-8">
             <div className="max-w-7xl mx-auto">
 
-                {/* Header and Breadcrumbs */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
                     <div className="flex items-center gap-2 text-sm font-medium text-[var(--text-muted)] flex-wrap">
-                        <button
-                            onClick={() => router.push('/dashboard/Folders')}
-                            className="hover:text-[var(--text)] cursor-pointer transition-colors text-lg"
-                        >
+                        <button onClick={() => router.push('/dashboard/Folders')} className="hover:text-[var(--text)] cursor-pointer transition-colors text-lg">
                             Folders
                         </button>
                         {nestedFolderBreadcrumbs.map(crumb => (
                             <div key={crumb.id} className="flex items-center gap-2">
                                 <ChevronRight size={16} />
-                                <button
-                                    onClick={() => router.push(`/dashboard/Folders/${crumb.id}`)}
-                                    className="hover:text-[var(--text)] cursor-pointer transition-colors text-lg"
-                                >
+                                <button onClick={() => router.push(`/dashboard/Folders/${crumb.id}`)} className="hover:text-[var(--text)] cursor-pointer transition-colors text-lg">
                                     {crumb.name}
                                 </button>
                             </div>
                         ))}
                         <ChevronRight size={16} />
-                        <span className="text-[var(--text)] font-bold text-lg">{folderName}</span>
+                        <span className="text-[var(--text)] font-bold text-lg">{currentFolder?.name}</span>
 
-                        <div className="folder-dropdown-container relative ml-2">
+                        <div className="dropdown-container relative ml-2">
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    setShowItemOptionsDropdown(true);
+                                    setActiveDropdown(activeDropdown === 'header' ? null : 'header');
                                 }}
                                 className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                             >
@@ -220,68 +277,29 @@ export default function FolderContentPage() {
                             </button>
 
                             <AnimatePresence>
-                                {showItemOptionsDropdown && (
-                                    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-[1px] p-0 md:p-6">
-                                        <motion.div
-                                            initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                                            exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                                            transition={{ duration: 0.15 }}
-                                            className="absolute left-25 top-65 mt-2 w-56 bg-[var(--layer1)] border border-[var(--layer3)] rounded-xl shadow-2xl py-1.5 z-60 overflow-hidden md:left-40"
-                                        >
-                                            <a href={`${window.location}`} target="_blank" rel="noopener noreferrer">
-                                                <button onClick={(e) => { e.stopPropagation(); setShowItemOptionsDropdown(null); }}
-                                                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer">
-                                                    <ExternalLink size={16} /> Open in new tab
-                                                </button>
-                                            </a>
-
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setShowRenameItemModal(!showRenameItemModal);
-                                                }}
-                                                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer"
-                                            >
-                                                <Edit2 size={16} /> Rename
-                                            </button>
-
-                                            <button
-                                                onClick={(e) => e.stopPropagation()}
-                                                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer"
-                                            >
-                                                <FolderOutput size={16} /> Move to
-                                            </button>
-
-                                            <button
-                                                onClick={(e) => e.stopPropagation()}
-                                                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer"
-                                            >
-                                                <Copy size={16} /> Duplicate
-                                            </button>
-
-                                            <div className="h-px bg-[var(--layer3)] my-1 w-full" />
-
-                                            <button
-                                                onClick={(e) => e.stopPropagation()}
-                                                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
-                                            >
-                                                <Trash2 size={16} /> Delete folder
-                                            </button>
-                                        </motion.div>
-                                    </div>
+                                {activeDropdown === 'header' && (
+                                    <UseItemOptionDropdown
+                                        item={currentFolder}
+                                        itemType='folder'
+                                        setActiveDropdown={setActiveDropdown}
+                                        setShowRenameNoteModal={setShowRenameItemModal}
+                                        setItemName={setItemNameInput}
+                                        setSelectedItem={setSelectedItem}
+                                        setShowMoveItemModal={setShowMoveItemModal}
+                                        handleDuplicateNote={handleDuplicateConfirm}
+                                        setNoteToDelete={setItemToDelete}
+                                    />
                                 )}
                             </AnimatePresence>
                         </div>
                     </div>
 
-                    <button className="flex items-center justify-center gap-2 bg-[var(--nice-blue)] text-white px-4 py-2 rounded-lg font-semibold text-sm hover:opacity-90 transition-all shadow-sm w-fit">
+                    <button className="flex items-center justify-center gap-2 bg-[var(--nice-blue)] text-white px-4 py-2 rounded-lg font-semibold text-sm hover:opacity-90 transition-all shadow-sm w-fit cursor-pointer">
                         <Plus size={18} />
                         New Item
                     </button>
                 </div>
 
-                {/* Folders Section */}
                 <div className="mb-12">
                     <h2 className="text-xs font-black uppercase tracking-widest text-[var(--text-muted)] mb-5">Folders</h2>
                     {folders.length === 0 ? (
@@ -291,19 +309,42 @@ export default function FolderContentPage() {
                             {folders.map((folder) => (
                                 <motion.div
                                     key={folder.id}
-                                    whileHover={{ y: -4 }}
+                                    whileHover={activeDropdown !== folder.id ? { y: -4 } : {}}
                                     onClick={() => router.push(`/dashboard/Folders/${folder.id}`)}
-                                    className="group relative cursor-pointer"
+                                    className={`group relative cursor-pointer ${activeDropdown === folder.id ? 'z-[100]' : 'z-10 hover:z-20'}`}
                                 >
                                     <div className="absolute -top-2 left-0 w-16 h-4 bg-[var(--layer3)] rounded-t-lg group-hover:bg-[var(--nice-blue)] transition-colors duration-300" />
                                     <div className="relative bg-[var(--layer2)] border border-[var(--layer3)] rounded-xl rounded-tl-none p-5 flex flex-col min-h-[140px] shadow-sm group-hover:border-[var(--nice-blue)] group-hover:shadow-md transition-all duration-300">
-                                        <div className="flex items-start justify-between mb-3">
+
+                                        <div className="flex items-start justify-between mb-3 relative dropdown-container">
                                             <div className="p-2 bg-[var(--nice-blue)]/10 rounded-lg text-[var(--nice-blue)]">
                                                 <Folder size={20} fill="currentColor" fillOpacity={0.2} />
                                             </div>
-                                            <button className="p-1.5 rounded-lg text-[var(--text-muted)] opacity-0 group-hover:opacity-100 hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-all cursor-pointer">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setActiveDropdown(activeDropdown === folder.id ? null : folder.id);
+                                                }}
+                                                className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
+                                            >
                                                 <MoreVertical size={18} />
                                             </button>
+
+                                            <AnimatePresence>
+                                                {activeDropdown === folder.id && (
+                                                    <UseItemOptionDropdown
+                                                        item={folder}
+                                                        itemType='folder'
+                                                        setActiveDropdown={setActiveDropdown}
+                                                        setShowRenameNoteModal={setShowRenameItemModal}
+                                                        setItemName={setItemNameInput}
+                                                        setSelectedItem={setSelectedItem}
+                                                        setShowMoveItemModal={setShowMoveItemModal}
+                                                        handleDuplicateNote={handleDuplicateConfirm}
+                                                        setNoteToDelete={setItemToDelete}
+                                                    />
+                                                )}
+                                            </AnimatePresence>
                                         </div>
 
                                         <div className="mt-auto">
@@ -328,7 +369,7 @@ export default function FolderContentPage() {
                     )}
                 </div>
 
-                {/* Notes Section */}
+                {/* Notes */}
                 <div className="mb-12">
                     <h2 className="text-xs font-black uppercase tracking-widest text-[var(--text-muted)] mb-5">Notes</h2>
                     {notes.length === 0 ? (
@@ -338,23 +379,42 @@ export default function FolderContentPage() {
                             {notes.map((note) => (
                                 <motion.div
                                     key={note.id}
-                                    whileHover={{ y: -4 }}
+                                    whileHover={activeDropdown !== note.id ? { y: -4 } : {}}
                                     onClick={() => router.push(`/dashboard/Notes/${note.id}`)}
-                                    className="group relative cursor-pointer flex flex-col"
+                                    className={`group relative cursor-pointer flex flex-col ${activeDropdown === note.id ? 'z-[100]' : 'z-10 hover:z-20'}`}
                                 >
-                                    {/* Dog-ear corner */}
                                     <div className="absolute top-0 right-0 w-8 h-8 bg-gradient-to-bl from-[var(--layer1)] to-[var(--layer2)] border-b border-l border-[var(--layer3)] rounded-bl-xl z-10 group-hover:border-[var(--nice-blue)] group-hover:from-[var(--nice-blue)]/10 transition-all duration-300" />
 
-                                    {/* Flex Card */}
                                     <div className="relative bg-[var(--layer2)] border border-[var(--layer3)] rounded-xl p-5 flex flex-col h-full min-h-[160px] shadow-sm group-hover:border-[var(--nice-blue)] group-hover:shadow-md transition-all duration-300">
-
-                                        <div className="flex items-start justify-between mb-4 pr-6">
+                                        <div className="flex items-start justify-between mb-4 pr-6 relative dropdown-container">
                                             <div className="p-2 bg-[var(--nice-blue)]/10 rounded-lg text-[var(--nice-blue)]">
                                                 <FileText size={20} />
                                             </div>
-                                            <button className="p-1.5 rounded-lg text-[var(--text-muted)] opacity-0 group-hover:opacity-100 hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-all cursor-pointer">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setActiveDropdown(activeDropdown === note.id ? null : note.id);
+                                                }}
+                                                className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
+                                            >
                                                 <MoreVertical size={18} />
                                             </button>
+
+                                            <AnimatePresence>
+                                                {activeDropdown === note.id && (
+                                                    <UseItemOptionDropdown
+                                                        item={note}
+                                                        itemType='note'
+                                                        setActiveDropdown={setActiveDropdown}
+                                                        setShowRenameNoteModal={setShowRenameItemModal}
+                                                        setItemName={setItemNameInput}
+                                                        setSelectedItem={setSelectedItem}
+                                                        setShowMoveItemModal={setShowMoveItemModal}
+                                                        handleDuplicateNote={handleDuplicateConfirm}
+                                                        setNoteToDelete={setItemToDelete}
+                                                    />
+                                                )}
+                                            </AnimatePresence>
                                         </div>
 
                                         <div className="flex-1 flex flex-col">
@@ -382,7 +442,7 @@ export default function FolderContentPage() {
                     )}
                 </div>
 
-                {/* Flashcards Section */}
+                {/* Flashcards */}
                 <div className="mb-12">
                     <h2 className="text-xs font-black uppercase tracking-widest text-[var(--text-muted)] mb-5">Flashcards</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -417,17 +477,42 @@ export default function FolderContentPage() {
                     </div>
                 </div>
 
-                {/* Rename Modal */}
-                {showRenameItemModal && (
-                    <RenameItemModal
-                        renameModalRef={showRenameFolderModalRef}
-                        currentName={folderName}
-                        handleRename={handleFolderRename}
-                        setItemName={setFolderName}
-                        setShowRenameItemModal={setShowRenameItemModal}
-                        isRenaming={isRenaming}
-                    />
-                )}
+                {/* ─── MODALS ──────────────────────────────────────────────────────────── */}
+                <AnimatePresence>
+                    {itemToDelete && (
+                        <UseDeleteItemModal
+                            item={itemToDelete}
+                            itemType={itemToDelete.title !== undefined ? 'note' : 'folder'}
+                            deleteItemModalRef={deleteModalRef}
+                            handleDeleteConfirm={handleDeleteConfirm}
+                            setNoteToDelete={setItemToDelete}
+                        />
+                    )}
+
+                    {showRenameItemModal && selectedItem && (
+                        <RenameItemModal
+                            renameModalRef={renameModalRef}
+                            currentName={itemNameInput}
+                            handleRename={handleRenameConfirm}
+                            setItemName={setItemNameInput}
+                            setShowRenameItemModal={setShowRenameItemModal}
+                        />
+                    )}
+
+                    {showMoveItemModal && selectedItem && (
+                        <MoveItemModal
+                            moveModalRef={moveModalRef}
+                            folders={folders}
+                            currentItem={selectedItem}
+                            onMove={handleMoveConfirm}
+                            onClose={() => {
+                                setShowMoveItemModal(false);
+                                setSelectedItem(null);
+                            }}
+                            itemType={selectedItem.title !== undefined ? 'note' : 'folder'}
+                        />
+                    )}
+                </AnimatePresence>
             </div>
         </div>
     );

@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
-    Folder, FileText, MoreVertical, Plus, ChevronRight,
-    Trash2, Clock, ExternalLink, Edit2, FolderOutput, Copy
+    Folder, MoreVertical, Plus,
+    Clock, Trash2, Edit2, FolderOutput, Copy, ExternalLink
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from 'next/navigation';
@@ -12,9 +12,10 @@ import toast from 'react-hot-toast';
 import CreateFolderModal from '../../../components/createFolderModal';
 import RenameItemModal from "../../../components/RenameItemModal";
 import MoveItemModal from "../../../components/MoveItemModal";
-
 import { useRenameItem, useMoveItem, useDeleteItem, useDuplicateItem } from '../../hooks/useItemActions';
 import { createBrowserClient } from '@supabase/ssr';
+import UseItemOptionDropdown from '../../../components/itemOptionsDropdown';
+import UseDeleteItemModal from "../../../components/deleteItemModal";
 
 function createClient() {
     return createBrowserClient(
@@ -31,6 +32,9 @@ export default function FolderContentPage() {
     const [folders, setFolders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeDropdown, setActiveDropdown] = useState(null);
+
+    const [selectedItem, setSelectedItem] = useState(null);
+    const dropdownContainerRef = useRef(null);
 
     const toastStyle = {
         style: {
@@ -49,6 +53,7 @@ export default function FolderContentPage() {
     const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
     const [folderName, setFolderName] = useState('Untitled Folder');
     const createFolderModalRef = useRef(null);
+    const [showItemOptionsDropdown, setShowItemOptionsDropdown] = useState(false);
 
     const handleCreateFolder = async () => {
         const { data: { user } } = await supabase.auth.getUser();
@@ -66,43 +71,40 @@ export default function FolderContentPage() {
 
     // ─── 3. RENAME FOLDER FEATURE ─────────────────────────────────────────────────
     const [showRenameItemModal, setShowRenameItemModal] = useState(false);
-    const [folderToRename, setFolderToRename] = useState(null);
     const showRenameFolderModalRef = useRef(null);
 
     const { rename, isRenaming } = useRenameItem();
 
     const handleFolderRename = async (newName) => {
-        const success = await rename('folder', folderToRename.id, newName);
+        const success = await rename('folder', selectedItem.id, newName);
 
         if (success) {
             setFolders(prevFolders =>
                 prevFolders.map(f =>
-                    f.id === folderToRename.id ? { ...f, name: newName } : f
+                    f.id === selectedItem.id ? { ...f, name: newName } : f
                 )
             );
 
-            setFolderToRename(null);
+            setSelectedItem(null);
         }
     };
 
     // ─── 4. MOVE FOLDER FEATURE ───────────────────────────────────────────────────
     const [showMoveItemModal, setShowMoveItemModal] = useState(false);
-    const [folderToMove, setFolderToMove] = useState(null);
-    const [targetFolder, setTargetFolder] = useState(null);
     const folderToMoveRef = useRef(null);
 
     const { moveItem, isMoving } = useMoveItem();
 
     const handleMove = async (destinationId) => {
         const loadingToast = toast.loading('Moving folder...', toastStyle);
-        const success = await moveItem('folder', folderToMove.id, destinationId);
+        const success = await moveItem('folder', selectedItem.id, destinationId);
         toast.dismiss(loadingToast);
 
         if (success) {
             setShowMoveItemModal(false);
-            setFolders(prev => prev.filter(f => f.id !== folderToMove.id));
+            setFolders(prev => prev.filter(f => f.id !== selectedItem.id));
             toast.success('Folder moved successfully', toastStyle);
-            setFolderToMove(false);
+            setSelectedItem(null);
         }
     };
 
@@ -162,13 +164,13 @@ export default function FolderContentPage() {
             if (createFolderModalRef.current && !createFolderModalRef.current.contains(e.target)) {
                 setShowCreateFolderModal(false);
             }
-            if (!e.target.closest('.folder-dropdown-container')) {
+            if (dropdownContainerRef.current && !dropdownContainerRef.current.contains(e.target)) {
                 setActiveDropdown(null);
             }
             if (showRenameFolderModalRef.current && !showRenameFolderModalRef.current.contains(e.target)) {
                 setShowRenameItemModal(false);
             }
-            if (folderToMove.current && !folderToMoveRef.current.contains(e.target)) {
+            if (folderToMoveRef.current && !folderToMoveRef.current.contains(e.target)) {
                 setShowMoveItemModal(false);
             }
         };
@@ -204,8 +206,6 @@ export default function FolderContentPage() {
     return (
         <div className="min-h-screen bg-[var(--layer1)] p-4 md:p-8">
             <div className="max-w-7xl mx-auto">
-
-                {/* Header and Breadcrumbs */}
                 <div className="flex items-center justify-between mb-8">
                     <div>
                         <h1 className="text-3xl font-bold text-[var(--text)]">Folders</h1>
@@ -213,14 +213,14 @@ export default function FolderContentPage() {
                     </div>
                     <button
                         onClick={handleCreateFolder}
-                        className="flex items-center gap-2 bg-[var(--nice-blue)] text-white font-bold px-5 py-2.5 rounded-xl shadow-lg shadow-blue-500/20 hover:scale-95 transition-transform cursor-pointer"
+                        className="flex items-center gap-2 bg-[var(--nice-blue)] text-white font-bold px-5 py-2.5
+                        rounded-xl shadow-lg shadow-blue-500/20 hover:scale-95 transition-transform cursor-pointer"
                     >
                         <Plus size={18} />
                         New folder
                     </button>
                 </div>
 
-                {/* Folders Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {folders.filter(i => i?.parent_folder_id === null).map(folder => (
                         <motion.div
@@ -229,11 +229,14 @@ export default function FolderContentPage() {
                             onClick={() => router.push(`/dashboard/Folders/${folder.id}`)}
                             className={`group relative cursor-pointer ${activeDropdown === folder.id ? 'z-[100]' : 'z-10 hover:z-20'}`}
                         >
-                            <div className="absolute -top-2 left-0 w-16 h-4 bg-[var(--layer3)] rounded-t-lg group-hover:bg-[var(--nice-blue)] transition-colors duration-300" />
+                            <div className="absolute -top-2 left-0 w-16 h-4 bg-[var(--layer3)] rounded-t-lg
+                            group-hover:bg-[var(--nice-blue)] transition-colors duration-300" />
 
-                            <div className="relative bg-[var(--layer2)] border border-[var(--layer3)] rounded-xl rounded-tl-none p-5 flex flex-col min-h-[140px] shadow-sm group-hover:border-[var(--nice-blue)] group-hover:shadow-md transition-all duration-300">
+                            <div className="relative bg-[var(--layer2)] border border-[var(--layer3)] rounded-xl
+                            rounded-tl-none p-5 flex flex-col min-h-[140px] shadow-sm group-hover:border-[var(--nice-blue)]
+                             group-hover:shadow-md transition-all duration-300">
 
-                                <div className="flex items-start justify-between mb-3 relative folder-dropdown-container">
+                                <div className="flex items-start justify-between mb-3 relative dropdown-container">
                                     <div className="p-2 bg-[var(--nice-blue)]/10 rounded-lg text-[var(--nice-blue)]">
                                         <Folder size={20} fill="currentColor" fillOpacity={0.2} />
                                     </div>
@@ -243,75 +246,25 @@ export default function FolderContentPage() {
                                             e.stopPropagation();
                                             setActiveDropdown(activeDropdown === folder.id ? null : folder.id);
                                         }}
-                                        className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
+                                        className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text)]
+                                        hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                                     >
                                         <MoreVertical size={18} />
                                     </button>
-
                                     <AnimatePresence>
                                         {activeDropdown === folder.id && (
-                                            <motion.div
-                                                initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                                exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                                                transition={{ duration: 0.15 }}
-                                                className="absolute top-10 mt-2 w-56 bg-[var(--layer1)] border border-[var(--layer3)] rounded-xl shadow-2xl py-1.5 z-60 overflow-hidden left-25 md:left-40"
-                                            >
-                                                <a href={`/dashboard/Folders/${folder.id}`} target="_blank" rel="noopener noreferrer">
-                                                    <button onClick={(e) => { e.stopPropagation(); setActiveDropdown(null); }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer">
-                                                        <ExternalLink size={16} /> Open in new tab
-                                                    </button>
-                                                </a>
-
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setShowRenameItemModal(!showRenameItemModal);
-                                                        setFolderToRename(folder);
-                                                        setFolderName(folder.name);
-                                                        setActiveDropdown(null);
-                                                    }}
-                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer"
-                                                >
-                                                    <Edit2 size={16} /> Rename
-                                                </button>
-
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setFolderToMove(folder);
-                                                        setShowMoveItemModal(true);
-                                                        setActiveDropdown(null);
-                                                    }}
-                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer"
-                                                >
-                                                    <FolderOutput size={16} /> Move to
-                                                </button>
-
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleDuplicateFolder(folder);
-                                                        setActiveDropdown(null);
-                                                    }}
-                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer"
-                                                >
-                                                    <Copy size={16} /> Duplicate
-                                                </button>
-
-                                                <div className="h-px bg-[var(--layer3)] my-1 w-full" />
-
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setFolderToDelete(folder);
-                                                        setActiveDropdown(null);
-                                                    }}
-                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
-                                                >
-                                                    <Trash2 size={16} /> Delete folder
-                                                </button>
-                                            </motion.div>
+                                            <UseItemOptionDropdown
+                                                item={folder}
+                                                itemType='folder'
+                                                setActiveDropdown={setActiveDropdown}
+                                                setShowRenameNoteModal={setShowRenameItemModal}
+                                                setItemName={setFolderName}
+                                                setShowMoveItemModal={setShowMoveItemModal}
+                                                setSelectedItem={setSelectedItem}
+                                                handleDuplicateNote={handleDuplicateFolder}
+                                                setNoteToDelete={setFolderToDelete}
+                                                dropdownContainerRef={dropdownContainerRef}
+                                            />
                                         )}
                                     </AnimatePresence>
                                 </div>
@@ -322,7 +275,8 @@ export default function FolderContentPage() {
                                     </h3>
 
                                     <div className="flex items-center justify-between border-t border-[var(--layer3)] pt-3 mt-3">
-                                        <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                                        <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase
+                                        tracking-wider text-[var(--text-muted)]">
                                             <Clock size={12} />
                                             {formatDate(folder.updated_at)}
                                         </div>
@@ -338,47 +292,16 @@ export default function FolderContentPage() {
 
                 {/* ─── MODALS ──────────────────────────────────────────────────────────── */}
                 <AnimatePresence>
-                    {showCreateFolderModal && (
-                        <CreateFolderModal
-                            createFolderModalRef={createFolderModalRef}
-                            setShowCreateFolderModal={setShowCreateFolderModal}
-                            setFolderName={setFolderName}
-                            handleCreateFolder={handleCreateFolder}
+                    {folderToDelete && (
+                        <UseDeleteItemModal
+                            item={folderToDelete}
+                            itemType='folder'
+                            deleteItemModalRef={deleteFolderModalRef}
+                            handleDeleteConfirm={handleDeleteConfirm}
+                            setNoteToDelete={setFolderToDelete}
                         />
                     )}
-
-                    {folderToDelete && (
-                        <div ref={deleteFolderModalRef} className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 md:p-6">
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                                className="relative flex flex-col w-full max-w-[400px] bg-[var(--layer1)] border border-[var(--layer3)] rounded-xl shadow-2xl overflow-hidden"
-                            >
-                                <div className="p-6">
-                                    <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mb-4 text-red-500">
-                                        <Trash2 size={24} />
-                                    </div>
-                                    <h2 className="text-xl font-bold text-[var(--text)] tracking-tight mb-2">Delete folder?</h2>
-                                    <p className="text-sm text-[var(--text-muted)] leading-relaxed">
-                                        Are you sure you want to delete this folder? All contents inside will be safe. This action cannot be undone.
-                                    </p>
-                                </div>
-
-                                <div className="px-6 py-4 bg-[var(--layer2)]/50 border-t border-[var(--layer3)] flex items-center justify-end gap-3">
-                                    <button onClick={() => setFolderToDelete(null)} className="px-4 py-2 text-sm font-semibold rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer">
-                                        Cancel
-                                    </button>
-                                    <button onClick={handleDeleteConfirm} className="px-4 py-2 text-sm font-semibold rounded-lg bg-red-500 text-white shadow-sm hover:bg-red-600 active:scale-95 transition-all cursor-pointer">
-                                        Yes, delete folder
-                                    </button>
-                                </div>
-                            </motion.div>
-                        </div>
-                    )}
-
-                    {showRenameItemModal && (
+                    {showRenameItemModal && selectedItem && (
                         <RenameItemModal
                             renameModalRef={showRenameFolderModalRef}
                             currentName={folderName}
@@ -387,18 +310,15 @@ export default function FolderContentPage() {
                             setShowRenameItemModal={setShowRenameItemModal}
                         />
                     )}
-
-                    {showMoveItemModal && folderToMove && (
+                    {showMoveItemModal && selectedItem && (
                         <MoveItemModal
                             moveModalRef={folderToMoveRef}
                             folders={folders}
-                            currentItem={folderToMove}
+                            currentItem={selectedItem}
                             onMove={handleMove}
-                            targetFolder={targetFolder}
-                            setTargetFolder={setTargetFolder}
                             onClose={() => {
                                 setShowMoveItemModal(false);
-                                setFolderToMove(null);
+                                setSelectedItem(null);
                             }}
                             itemType={'folder'}
                         />

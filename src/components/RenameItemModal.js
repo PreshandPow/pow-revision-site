@@ -7,6 +7,8 @@ export default function RenameItemModal({ renameModalRef, currentName, handleRen
 
     const [newName, setNewName] = useState('');
 
+    console.log('DEBUG CURRENTNAME:', currentName)
+
     return (
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
             <motion.div

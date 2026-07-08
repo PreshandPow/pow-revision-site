@@ -31,6 +31,7 @@ export default function NotesPage() {
     const [activeDropdown, setActiveDropdown] = useState(null);
 
     const [selectedItem, setSelectedItem] = useState(null);
+    const dropdownContainerRef = useRef(null);
 
     const toastStyle = {
         style: {
@@ -161,14 +162,14 @@ export default function NotesPage() {
 
     useEffect(() => {
         const handleClickOutside = (e) => {
-            if (!e.target.closest('.folder-dropdown-container')) {
-                setActiveDropdown(null);
-            }
             if (showRenameNoteModalRef.current && !showRenameNoteModalRef.current.contains(e.target)) {
                 setShowRenameNoteModal(false);
             }
             if (itemToMoveRef.current && !itemToMoveRef.current.contains(e.target)) {
                 setShowMoveItemModal(false);
+            }
+            if (dropdownContainerRef.current && !dropdownContainerRef.current.contains(e.target)) {
+                setActiveDropdown(null);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -206,8 +207,6 @@ export default function NotesPage() {
     return (
         <main className="min-h-screen bg-[var(--layer2)] p-6 md:p-10">
             <div className="max-w-5xl mx-auto">
-
-                {/* Header */}
                 <div className="flex items-center justify-between mb-8">
                     <div>
                         <h1 className="text-3xl font-bold text-[var(--text)]">Notes</h1>
@@ -221,8 +220,6 @@ export default function NotesPage() {
                         New note
                     </button>
                 </div>
-
-                {/* Empty State */}
                 {notes.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-24 gap-4">
                         <div className="w-16 h-16 rounded-2xl bg-[var(--layer1)] border border-[var(--layer3)] flex items-center justify-center">
@@ -250,10 +247,8 @@ export default function NotesPage() {
                                         rounded-2xl p-5 flex flex-col gap-3 cursor-pointer transition-colors duration-200
                                         ${activeDropdown === note.id ? 'z-[100] border-[var(--nice-blue)]' : 'z-10 hover:border-[var(--nice-blue)]'}`}
                             >
-                                <div className="flex items-start justify-between gap-2 folder-dropdown-container">
+                                <div className="flex items-start justify-between gap-2 dropdown-container">
                                     <p className="font-bold text-[var(--text)] truncate flex-1">{note.title || 'Untitled'}</p>
-
-                                    {/* Dropdown Trigger */}
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
@@ -264,20 +259,21 @@ export default function NotesPage() {
                                     >
                                         <MoreVertical size={18} />
                                     </button>
-
-                                    {/* Dropdown Menu */}
-                                    {activeDropdown === note.id && (
-                                        <UseItemOptionDropdown
-                                            item={note}
-                                            itemType='note'
-                                            setActiveDropdown={setActiveDropdown}
-                                            setShowRenameNoteModal={setShowRenameNoteModal}
-                                            setItemName={setNoteName}
-                                            setShowMoveItemModal={setShowMoveItemModal}
-                                            handleDuplicateNote={handleDuplicateNote}
-                                            setNoteToDelete={setNoteToDelete}
-                                        />
-                                    )}
+                                    <AnimatePresence>
+                                        {activeDropdown === note.id && (
+                                            <UseItemOptionDropdown
+                                                item={note}
+                                                itemType='note'
+                                                setActiveDropdown={setActiveDropdown}
+                                                setShowRenameNoteModal={setShowRenameNoteModal}
+                                                setItemName={setNoteName}
+                                                setShowMoveItemModal={setShowMoveItemModal}
+                                                handleDuplicateNote={handleDuplicateNote}
+                                                setNoteToDelete={setNoteToDelete}
+                                                dropdownContainerRef={dropdownContainerRef}
+                                            />
+                                        )}
+                                    </AnimatePresence>
                                 </div>
 
                                 <p className="text-sm text-[var(--text-muted)] line-clamp-2 flex-1">
@@ -305,7 +301,6 @@ export default function NotesPage() {
 
                 {/* ─── MODALS ──────────────────────────────────────────────────────────── */}
                 <AnimatePresence>
-                    {/* Delete Modal */}
                     {noteToDelete && (
                         <UseDeleteItemModal
                             item={selectedItem}
@@ -315,8 +310,6 @@ export default function NotesPage() {
                             setNoteToDelete={setNoteToDelete}
                         />
                     )}
-
-                    {/* Rename Modal */}
                     {showRenameNoteModal && (
                         <RenameItemModal
                             renameModalRef={showRenameNoteModalRef}
@@ -326,8 +319,6 @@ export default function NotesPage() {
                             setShowRenameItemModal={setShowRenameNoteModal}
                         />
                     )}
-
-                    {/* Move Modal */}
                     {showMoveItemModal && selectedItem && (
                         <MoveItemModal
                             moveModalRef={itemToMoveRef}
