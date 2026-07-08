@@ -15,9 +15,11 @@ import RenameItemModal from "../../../../components/RenameItemModal";
 import MoveItemModal from "../../../../components/MoveItemModal";
 import UseDeleteItemModal from "../../../../components/deleteItemModal";
 import UseItemOptionDropdown from "../../../../components/itemOptionsDropdown";
+import CreateModal from '../../../../components/CreateModal';
 
 // Hooks
 import { useRenameItem, useMoveItem, useDeleteItem, useDuplicateItem } from "../../../hooks/useItemActions";
+import { createNoteAction } from "../../../hooks/createItemActions";
 
 // ─── 1. SUPABASE CLIENT ───────────────────────────────────────────────────────
 export function createClient() {
@@ -43,12 +45,14 @@ export default function FolderContentPage() {
     // UI & Action States
     const [activeDropdown, setActiveDropdown] = useState(null);
     const [selectedItem, setSelectedItem] = useState(null);
-    const [itemNameInput, setItemNameInput] = useState(''); // Used for the rename input box
+    const [itemNameInput, setItemNameInput] = useState('');
 
     // Modal States
     const [showRenameItemModal, setShowRenameItemModal] = useState(false);
     const [showMoveItemModal, setShowMoveItemModal] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
+    const [showCreateItemModal, setShowCreateItemModal] = useState(false);
+    const [activeTaskModal, setActiveTaskModal] = useState(null);
 
     // Refs
     const renameModalRef = useRef(null);
@@ -254,7 +258,7 @@ export default function FolderContentPage() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        onClick={() => setActiveDropdown(null)} // Closes dropdown if they click the background
+                        onClick={() => setActiveDropdown(null)}
                         className="fixed inset-0 bg-black/20 backdrop-blur-[3px] z-[90]"
                     />
                 )}
@@ -306,7 +310,13 @@ export default function FolderContentPage() {
                         </div>
                     </div>
 
-                    <button className="flex items-center justify-center gap-2 bg-[var(--nice-blue)] text-white px-4 py-2 rounded-lg font-semibold text-sm hover:opacity-90 transition-all shadow-sm w-fit cursor-pointer">
+                    <button
+                        onClick={() => {
+                            setActiveTaskModal('folders');
+                            setShowCreateItemModal(true);
+                        }}
+                        className="flex items-center justify-center gap-2 bg-[var(--nice-blue)]
+                        text-white px-4 py-2 rounded-lg font-semibold text-sm hover:opacity-90 transition-all shadow-sm w-fit cursor-pointer">
                         <Plus size={18} />
                         New Item
                     </button>
@@ -522,6 +532,14 @@ export default function FolderContentPage() {
                                 setSelectedItem(null);
                             }}
                             itemType={selectedItem.title !== undefined ? 'note' : 'folder'}
+                        />
+                    )}
+                    {showCreateItemModal && (
+                        <CreateModal
+                            setOpenCreateModal={setShowCreateItemModal}
+                            activeTaskModal={activeTaskModal}
+                            setActiveTaskModal={setActiveTaskModal}
+                            handleCreateNote={createNoteAction}
                         />
                     )}
                 </AnimatePresence>
