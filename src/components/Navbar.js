@@ -234,18 +234,28 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
                                         }}
                                     >
                                         {userProfile?.avatar_url ? (
-                                            <Image
-                                                src={userProfile.avatar_url}
-                                                alt="avatar"
-                                                width={48}
-                                                height={48}
-                                                className="rounded-full object-cover shadow-sm"
-                                            />
+                                            userProfile.avatar_url.includes('dicebear') ? (
+                                                <img
+                                                    src={userProfile.avatar_url}
+                                                    alt="avatar"
+                                                    width={48}
+                                                    height={48}
+                                                    className="rounded-full object-cover shadow-sm"
+                                                />
+                                            ) : (
+                                                <Image
+                                                    src={userProfile.avatar_url}
+                                                    alt="avatar"
+                                                    width={48}
+                                                    height={48}
+                                                    className="rounded-full object-cover shadow-sm"
+                                                />
+                                            )
                                         ) : (
                                             <div className="w-[48px] h-[48px] bg-white rounded-full shadow-md border border-[var(--layer3)] flex items-center justify-center">
-                                                <span className="text-[var(--nice-blue)] text-xs font-black">
-                                                    {userProfile?.username?.charAt(0).toUpperCase() || "P"}
-                                                </span>
+                                    <span className="text-[var(--nice-blue)] text-xs font-black">
+                                        {userProfile?.username?.charAt(0).toUpperCase() || "N/A"}
+                                    </span>
                                             </div>
                                         )}
                                         <div>
