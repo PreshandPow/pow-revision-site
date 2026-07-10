@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import createClient from "../../../lib/supabase-server";
 
 export async function GET(request) {
     // ─── 1. URL & ORIGIN PARSING ────────────────────────────────────────────────

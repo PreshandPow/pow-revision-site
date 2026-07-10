@@ -338,29 +338,38 @@ export default function FolderContentPage() {
                             setShowCreateItemModal(true);
                         }}
                         className="flex items-center justify-center gap-2 bg-[var(--nice-blue)]
-                        text-white px-4 py-2 rounded-lg font-semibold text-sm hover:opacity-90 transition-all shadow-sm w-fit cursor-pointer">
+                        text-white px-4 py-2 rounded-lg font-semibold text-sm hover:opacity-90 transition-all shadow-sm
+                        w-fit cursor-pointer">
                         <Plus size={18} />
                         New Item
                     </button>
                 </div>
 
+                {/* Folders */}
                 <div className="mb-12">
                     <h2 className="text-xs font-black uppercase tracking-widest text-[var(--text-muted)] mb-5">Folders</h2>
                     {folders.length === 0 ? (
                         <p className="text-sm text-[var(--text-muted)]">No folders yet.</p>
                     ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-2">
+                        <div className="flex overflow-x-auto sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6
+                        pt-2 pb-64 -mb-60 sm:pb-0 sm:mb-0 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden
+                        [-ms-overflow-style:none] [scrollbar-width:none]">
                             {folders.map((folder) => (
                                 <motion.div
                                     key={folder.id}
                                     whileHover={activeDropdown !== folder.id ? { y: -4 } : {}}
                                     onClick={() => router.push(`/dashboard/Folders/${folder.id}`)}
-                                    className={`group relative cursor-pointer ${activeDropdown === folder.id ? 'z-[100]' : 'z-10 hover:z-20'}`}
+                                    className={`min-w-[85vw] sm:min-w-0 shrink-0 snap-center group relative cursor-pointer
+                                     ${activeDropdown === folder.id ? 'z-[100]' : 'z-10 hover:z-20'}`}
                                 >
-                                    <div className="absolute -top-2 left-0 w-16 h-4 bg-[var(--layer3)] rounded-t-lg group-hover:bg-[var(--nice-blue)] transition-colors duration-300" />
-                                    <div className="relative bg-[var(--layer2)] border border-[var(--layer3)] rounded-xl rounded-tl-none p-5 flex flex-col min-h-[140px] shadow-sm group-hover:border-[var(--nice-blue)] group-hover:shadow-md transition-all duration-300">
+                                    <div className="absolute -top-2 left-0 w-16 h-4 bg-[var(--layer3)] rounded-t-lg
+                                    group-hover:bg-[var(--nice-blue)] transition-colors duration-300" />
+                                    <div className="relative bg-[var(--layer2)] border border-[var(--layer3)]
+                                    rounded-xl rounded-tl-none p-5 flex flex-col min-h-[140px] shadow-sm
+                                    group-hover:border-[var(--nice-blue)] group-hover:shadow-md transition-all duration-300">
 
-                                        <div className={`flex items-start justify-between mb-3 relative dropdown-container ${activeDropdown === 'header' ? 'z-[100]' : 'z-10'}`}>
+                                        <div className={`flex items-start justify-between mb-3 relative 
+                                        dropdown-container ${activeDropdown === 'header' ? 'z-[100]' : 'z-10'}`}>
                                             <div className="p-2 bg-[var(--nice-blue)]/10 rounded-lg text-[var(--nice-blue)]">
                                                 <Folder size={20} fill="currentColor" fillOpacity={0.2} />
                                             </div>
@@ -369,7 +378,8 @@ export default function FolderContentPage() {
                                                     e.stopPropagation();
                                                     setActiveDropdown(activeDropdown === folder.id ? null : folder.id);
                                                 }}
-                                                className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
+                                                className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text)]
+                                                hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                                             >
                                                 <MoreVertical size={18} />
                                             </button>
@@ -419,18 +429,26 @@ export default function FolderContentPage() {
                     {notes.length === 0 ? (
                         <p className="text-sm text-[var(--text-muted)]">No notes yet.</p>
                     ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-2">
+                        <div className="flex overflow-x-auto sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4
+                        gap-6 pt-2 pb-64 -mb-60 sm:pb-0 sm:mb-0 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden
+                        [-ms-overflow-style:none] [scrollbar-width:none]">
                             {notes.map((note) => (
                                 <motion.div
                                     key={note.id}
                                     whileHover={activeDropdown !== note.id ? { y: -4 } : {}}
                                     onClick={() => router.push(`/dashboard/Notes/${note.id}`)}
-                                    className={`group relative cursor-pointer flex flex-col ${activeDropdown === note.id ? 'z-[100]' : 'z-10 hover:z-20'}`}
+                                    className={`min-w-[85vw] sm:min-w-0 shrink-0 snap-center group relative cursor-pointer 
+                                    flex flex-col ${activeDropdown === note.id ? 'z-[100]' : 'z-10 hover:z-20'}`}
                                 >
-                                    <div className="absolute top-0 right-0 w-8 h-8 bg-gradient-to-bl from-[var(--layer1)] to-[var(--layer2)] border-b border-l border-[var(--layer3)] rounded-bl-xl z-10 group-hover:border-[var(--nice-blue)] group-hover:from-[var(--nice-blue)]/10 transition-all duration-300" />
+                                    <div className="absolute top-0 right-0 w-8 h-8 bg-gradient-to-bl from-[var(--layer1)]
+                                    to-[var(--layer2)] border-b border-l border-[var(--layer3)] rounded-bl-xl z-10
+                                    group-hover:border-[var(--nice-blue)] group-hover:from-[var(--nice-blue)]/10 transition-all duration-300" />
 
-                                    <div className="relative bg-[var(--layer2)] border border-[var(--layer3)] rounded-xl p-5 flex flex-col h-full min-h-[160px] shadow-sm group-hover:border-[var(--nice-blue)] group-hover:shadow-md transition-all duration-300">
-                                        <div className={`flex items-start justify-between mb-4 pr-6 relative dropdown-container ${activeDropdown === 'header' ? 'z-[100]' : 'z-10'}`}>
+                                    <div className="relative bg-[var(--layer2)] border border-[var(--layer3)] rounded-xl
+                                     p-5 flex flex-col h-full min-h-[160px] shadow-sm group-hover:border-[var(--nice-blue)]
+                                      group-hover:shadow-md transition-all duration-300">
+                                        <div className={`flex items-start justify-between mb-4 pr-6 relative dropdown-container
+                                         ${activeDropdown === 'header' ? 'z-[100]' : 'z-10'}`}>
                                             <div className="p-2 bg-[var(--nice-blue)]/10 rounded-lg text-[var(--nice-blue)]">
                                                 <FileText size={20} />
                                             </div>
@@ -439,7 +457,8 @@ export default function FolderContentPage() {
                                                     e.stopPropagation();
                                                     setActiveDropdown(activeDropdown === note.id ? null : note.id);
                                                 }}
-                                                className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
+                                                className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text)]
+                                                hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                                             >
                                                 <MoreVertical size={18} />
                                             </button>
@@ -465,8 +484,13 @@ export default function FolderContentPage() {
                                             <h3 className="font-bold text-[var(--text)] text-base line-clamp-2 mb-2 pr-4 leading-tight">
                                                 {note.title || 'Untitled Note'}
                                             </h3>
-                                            <div className="text-xs text-[var(--text-muted)] line-clamp-3 mb-4 flex-1 leading-relaxed">
-                                                {note.content?.replace(/<[^>]*>/g, '') || 'Start writing...'}
+                                            <div className="text-xs text-[var(--text-muted)] line-clamp-3 mb-4 flex-1 leading-relaxed overflow-hidden break-words"> {/* 👈 Added overflow-hidden and break-words */}
+                                                {note.content
+                                                    ? (
+                                                        note.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 40)
+                                                        + (note.content.length > 40 ? '...' : '')
+                                                    )
+                                                    : 'Start writing...'}
                                             </div>
 
                                             <div className="flex items-center justify-between border-t border-[var(--layer3)] pt-3 mt-auto">
