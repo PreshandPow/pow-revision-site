@@ -1,36 +1,43 @@
 'use client';
 
 import {
-    Type, Clipboard, Copy, Trash2, Image,
+    Image,
     Heading1, Heading2, Heading3,
     List, ListOrdered, ListTodo, Pilcrow
 } from 'lucide-react';
 
 // ─── 1. CONSTANTS ─────────────────────────────────────────────────────────────
 const TEXT_TYPES = [
-    { group: 'HIERARCHY', label: 'Paragraph', icon: Pilcrow, command: 'formatBlock', value: 'p' },
-    { group: 'HIERARCHY', label: 'Heading 1',  icon: Heading1, command: 'formatBlock', value: 'h1' },
-    { group: 'HIERARCHY', label: 'Heading 2',  icon: Heading2, command: 'formatBlock', value: 'h2' },
-    { group: 'HIERARCHY', label: 'Heading 3',  icon: Heading3, command: 'formatBlock', value: 'h3' },
-    { group: 'LISTS',     label: 'Bullet list',   icon: List,  command: 'insertUnorderedList', value: null },
-    { group: 'LISTS',     label: 'Numbered list', icon: ListOrdered, command: 'insertOrderedList',   value: null },
-    { group: 'LISTS',     label: 'Todo list',     icon: ListTodo,  command: null,                  value: 'todo' },
+    { group: 'HIERARCHY', label: 'Paragraph', icon: Pilcrow,     value: 'p' },
+    { group: 'HIERARCHY', label: 'Heading 1',  icon: Heading1,   value: 'h1' },
+    { group: 'HIERARCHY', label: 'Heading 2',  icon: Heading2,   value: 'h2' },
+    { group: 'HIERARCHY', label: 'Heading 3',  icon: Heading3,   value: 'h3' },
+    { group: 'LISTS',     label: 'Bullet list',   icon: List,        value: 'bulletList' },
+    { group: 'LISTS',     label: 'Numbered list', icon: ListOrdered, value: 'orderedList' },
+    { group: 'LISTS',     label: 'Todo list',     icon: ListTodo,    value: 'taskList' },
 ];
 
-export default function CanvasInsertModal({ handleInsertImagePlaceholder, onInsertTodo, onInsertHeading, onContentChange }) {
+export default function CanvasInsertModal({ editor, hoveredPos, handleInsertImagePlaceholder }) {
 
     // ─── 2. ACTION HANDLERS ───────────────────────────────────────────────────────
     const handleTextTypeSelect = (type) => {
-        if (type.value === 'todo') {
-            onInsertTodo?.();
-        } else if (['h1', 'h2', 'h3'].includes(type.value)) {
-            onInsertHeading?.(type.value);
-        } else if (type.value) {
-            document.execCommand(type.command, false, type.value);
-            onContentChange?.();
-        } else {
-            document.execCommand(type.command, false, null);
-            onContentChange?.();
+        if (!editor) return;
+
+        // If the sidebar was opened from a hovered block, put the cursor there
+        // first so the format applies to that block rather than wherever the
+        // user's selection happened to be last
+        const chain = hoveredPos !== null
+            ? editor.chain().focus().setTextSelection(hoveredPos + 1)
+            : editor.chain().focus();
+
+        switch (type.value) {
+            case 'p': chain.setParagraph().run(); break;
+            case 'h1': chain.toggleHeading({ level: 1 }).run(); break;
+            case 'h2': chain.toggleHeading({ level: 2 }).run(); break;
+            case 'h3': chain.toggleHeading({ level: 3 }).run(); break;
+            case 'bulletList': chain.toggleBulletList().run(); break;
+            case 'orderedList': chain.toggleOrderedList().run(); break;
+            case 'taskList': chain.toggleTaskList().run(); break;
         }
     };
 
@@ -65,11 +72,7 @@ export default function CanvasInsertModal({ handleInsertImagePlaceholder, onInse
                                         hover:text-[var(--nice-blue)] rounded-md transition-colors cursor-pointer text-sm"
                                     >
                                         <span className="text-xs opacity-50 w-5 font-mono flex items-center justify-center">
-                                            {typeof IconComponent === 'string' ? (
-                                                IconComponent
-                                            ) : (
-                                                <IconComponent size={14} />
-                                            )}
+                                            <IconComponent size={14} />
                                         </span>
                                         <span>
                                             {type.label}
@@ -93,7 +96,6 @@ export default function CanvasInsertModal({ handleInsertImagePlaceholder, onInse
                         onPointerDown={(e) => {
                             e.preventDefault();
                             handleInsertImagePlaceholder();
-                            onContentChange?.();
                         }}
                     >
                         <Image size={16} className="text-[var(--text-muted)]" />

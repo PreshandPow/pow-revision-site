@@ -2,43 +2,19 @@
 
 import { Clipboard, Copy, Trash2, Type } from 'lucide-react';
 
-export default function CanvasLayoutModal({ editorRef, hoveredBlock, onContentChange, toast, toastStyle }) {
+export default function CanvasLayoutModal({ editor, hoveredPos, toast, toastStyle }) {
 
-    // ─── 1. DOM SELECTION HELPERS ────────────────────────────────────────────────
-    const getLineRange = () => {
-        if (!hoveredBlock || !editorRef.current?.contains(hoveredBlock)) return null;
-
-        const blockRect = hoveredBlock.getBoundingClientRect();
-        const midY = blockRect.top + blockRect.height / 2;
-
-        let startRange, endRange;
-        if (document.caretRangeFromPoint) {
-            startRange = document.caretRangeFromPoint(blockRect.left, midY);
-        }   else if (document.caretPositionFromPoint) {
-            startRange = document.caretPositionFromPoint(blockRect.left, midY);
-        }
-
-        if (!startRange || !endRange) return null;
-
-        const lineRange = document.createRange();
-        lineRange.setStart(startRange.startContainer, startRange.startOffset);
-        lineRange.setEnd(endRange.startContainer, endRange.startOffset);
-
-        return lineRange;
-    };
-
-    const applyToLine = (callback) => {
-        const range = getLineRange();
-        if (!range) return;
-
-        const selection = window.getSelection();
-        selection.removeAllRanges();
-        selection.addRange(range);
-
-        callback(range);
-
-        selection.removeAllRanges();
-        onContentChange?.();
+    // ─── 1. NODE LOOKUP HELPER ──────────────────────────────────────────────────
+    // hoveredPos is the document position immediately before the hovered
+    // top-level block (set in the parent's mousemove handler via
+    // editor.view.posAtCoords + $pos.before(1)). nodeAt() gives us the actual
+    // block node living at that position, and node.nodeSize tells us where it
+    // ends — no more caretRangeFromPoint pixel-guessing.
+    const getHoveredNode = () => {
+        if (!editor || hoveredPos === null) return null;
+        const node = editor.state.doc.nodeAt(hoveredPos);
+        if (!node) return null;
+        return { node, from: hoveredPos, to: hoveredPos + node.nodeSize };
     };
 
     // ─── 2. RENDER ───────────────────────────────────────────────────────────────
@@ -51,9 +27,15 @@ export default function CanvasLayoutModal({ editorRef, hoveredBlock, onContentCh
                     className="flex items-center gap-3 w-full p-2 hover:bg-[var(--layer3)] hover:text-[var(--nice-blue)] rounded-md transition-colors cursor-pointer text-sm"
                     onPointerDown={(e) => {
                         e.preventDefault();
-                        applyToLine(() => {
-                            document.execCommand('removeFormat', false, null);
-                        });
+                        const hovered = getHoveredNode();
+                        if (!hovered) return;
+
+                        editor.chain()
+                            .focus()
+                            .setTextSelection({ from: hovered.from, to: hovered.to })
+                            .unsetAllMarks()
+                            .unsetHighlight()
+                            .run();
                     }}
                 >
                     <Type size={16} className="text-[var(--text-muted)]" />
@@ -65,11 +47,10 @@ export default function CanvasLayoutModal({ editorRef, hoveredBlock, onContentCh
                     className="flex items-center gap-3 w-full p-2 hover:bg-[var(--layer3)] hover:text-[var(--nice-blue)] rounded-md transition-colors text-sm cursor-pointer"
                     onPointerDown={(e) => {
                         e.preventDefault();
-                        const range = getLineRange();
-                        if (!range) return;
+                        const hovered = getHoveredNode();
+                        if (!hovered) return;
 
-                        const text = range.toString();
-                        navigator.clipboard.writeText(text)
+                        navigator.clipboard.writeText(hovered.node.textContent)
                             .then(() => toast.success('Copied to clipboard!', toastStyle))
                             .catch(err => console.error('Failed to copy:', err));
                     }}
@@ -83,11 +64,13 @@ export default function CanvasLayoutModal({ editorRef, hoveredBlock, onContentCh
                     className="flex items-center gap-3 w-full p-2 hover:bg-[var(--layer3)] hover:text-[var(--nice-blue)] rounded-md transition-colors text-sm cursor-pointer"
                     onPointerDown={(e) => {
                         e.preventDefault();
-                        if (!hoveredBlock || !editorRef.current?.contains(hoveredBlock)) return;
+                        const hovered = getHoveredNode();
+                        if (!hovered) return;
 
-                        const cloned = hoveredBlock.cloneNode(true);
-                        hoveredBlock.parentNode.insertBefore(cloned, hoveredBlock.nextSibling);
-                        onContentChange?.();
+                        editor.chain()
+                            .focus()
+                            .insertContentAt(hovered.to, hovered.node.toJSON())
+                            .run();
                     }}
                 >
                     <Copy size={16} className="text-[var(--text-muted)]" />
@@ -102,10 +85,13 @@ export default function CanvasLayoutModal({ editorRef, hoveredBlock, onContentCh
                     className="flex items-center gap-3 w-full p-2 hover:bg-red-500/10 text-red-400 hover:text-red-300 rounded-md transition-colors text-sm cursor-pointer"
                     onPointerDown={(e) => {
                         e.preventDefault();
-                        if (!hoveredBlock || !editorRef.current?.contains(hoveredBlock)) return;
+                        const hovered = getHoveredNode();
+                        if (!hovered) return;
 
-                        hoveredBlock.remove();
-                        onContentChange?.();
+                        editor.chain()
+                            .focus()
+                            .deleteRange({ from: hovered.from, to: hovered.to })
+                            .run();
                     }}
                 >
                     <Trash2 size={16} />

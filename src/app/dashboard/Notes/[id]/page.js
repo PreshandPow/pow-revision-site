@@ -7,6 +7,15 @@ import toast from 'react-hot-toast';
 import Link from 'next/link';
 import { ArrowLeft, Tag, X, Plus, GripVertical } from 'lucide-react';
 
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import { TextStyleKit } from '@tiptap/extension-text-style';
+import { Highlight } from '@tiptap/extension-highlight';
+import { TextAlign } from '@tiptap/extension-text-align';
+import { TaskList, TaskItem } from '@tiptap/extension-list';
+import { Image as ImageExt } from '@tiptap/extension-image';
+import { Placeholder } from '@tiptap/extension-placeholder';
+
 import NotesToolbar from '../../../../components/notesToolbar';
 import CanvasLayoutModal from '../../../../components/canvasLayoutModal';
 import CanvasInsertModal from '../../../../components/canvasInsertModal';
@@ -40,111 +49,29 @@ export default function NotePage() {
 
     // ─── 2. NOTE DATA & SAVING STATES ─────────────────────────────────────────────
     const [title, setTitle] = useState('');
-    const [content, setContent] = useState('');
     const [tags, setTags] = useState([]);
     const [tagInput, setTagInput] = useState('');
     const [saveStatus, setSaveStatus] = useState('saved');
     const [hasChanged, setHasChanged] = useState(false);
     const [isAutosave, setIsAutosave] = useState(true);
-
+    const [wordCount, setWordCount] = useState(0);
 
     const saveTimer = useRef(null);
     const lastSavedContent = useRef('');
+    const isAutosaveRef = useRef(true); // avoids stale closures inside onUpdate
 
-    // ─── 3. EDITOR FORMATTING STATES ──────────────────────────────────────────────
-    const editorRef = useRef(null);
-    const [isUserFocused, setIsUserFocused] = useState(false);
-    const [isTextBold, setIsTextBold] = useState(false);
-    const [isTextItalic, setIsTextItalic] = useState(false);
-    const [isTextUnderlined, setIsTextUnderlined] = useState(false);
-    const [isTextStrikethrough, setIsTextStrikethrough] = useState(false);
-    const [selectedTextType, setSelectedTextType] = useState('Paragraph');
-    const [selectedHighlighter, setSelectedHighlighter] = useState(null);
-
-    // ─── 4. SIDEBAR & MODAL STATES ────────────────────────────────────────────────
-    const [hoveredBlock, setHoveredBlock] = useState(null);
+    // ─── 3. SIDEBAR (floating block-insert menu) STATE ────────────────────────────
+    const [hoveredPos, setHoveredPos] = useState(null);
     const [sidebarTop, setSidebarTop] = useState(-9999);
     const sidebarRef = useRef(null);
+    const editorWrapperRef = useRef(null);
 
     const [isCanvasLayoutModalOpen, setIsCanvasLayoutModalOpen] = useState(false);
     const [isCanvasInsertModalOpen, setIsCanvasInsertModalOpen] = useState(false);
     const layoutModalRef = useRef(null);
     const insertModalRef = useRef(null);
 
-    // ─── 5. DATA FETCHING & EFFECTS ───────────────────────────────────────────────
-
-    // Fetch autosave state from localstorage
-    useEffect(() => {
-        const savedAutosaveState = localStorage.getItem('pow_autosave');
-        setIsAutosave(savedAutosaveState === 'true');
-    }, [])
-
-    // Fetch Note Data
-    useEffect(() => {
-        const fetchNote = async () => {
-            const { data: note, error } = await supabase
-                .from('notes')
-                .select('*')
-                .eq('id', id)
-                .single();
-
-            if (error) {
-                toast.error('Could not load note', toastStyle);
-                router.replace('/dashboard/Notes');
-                return;
-            }
-
-            setTitle(note.title || '');
-            setTags(note.tags || []);
-            setContent(note.content || '');
-            lastSavedContent.current = note.content || '';
-            setLoading(false);
-        };
-        fetchNote();
-    }, [id]);
-
-    // Populate Editor on Load
-    useEffect(() => {
-        if (!loading && editorRef.current && editorRef.current.innerHTML === '') {
-            editorRef.current.innerHTML = lastSavedContent.current;
-        }
-    }, [loading]);
-
-    // Body Overflow Lock while Loading
-    useEffect(() => {
-        if (loading) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = '';
-        }
-        return () => {
-            document.body.style.overflow = '';
-        }
-    }, [loading]);
-
-    // Click Outside Listeners for Sidebar Modals
-    useEffect(() => {
-        const handleClickOutsideLayout = (e) => {
-            if (isCanvasLayoutModalOpen && layoutModalRef.current && !layoutModalRef.current.contains(e.target)) {
-                setIsCanvasLayoutModalOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutsideLayout);
-        return () => document.removeEventListener('mousedown', handleClickOutsideLayout);
-    }, [isCanvasLayoutModalOpen]);
-
-    useEffect(() => {
-        const handleClickOutsideInsert = (e) => {
-            if (isCanvasInsertModalOpen && insertModalRef.current && !insertModalRef.current.contains(e.target)) {
-                setIsCanvasInsertModalOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutsideInsert);
-        return () => document.removeEventListener('mousedown', handleClickOutsideInsert);
-    }, [isCanvasInsertModalOpen]);
-
-
-    // ─── 6. SAVING & CONTENT HANDLERS ─────────────────────────────────────────────
+    // ─── 4. SAVE LOGIC ─────────────────────────────────────────────────────────────
     const save = useCallback(async (newTitle, newContent, newTags) => {
         setSaveStatus('saving');
         const { error } = await supabase
@@ -168,21 +95,127 @@ export default function NotePage() {
         if (!changed) { setSaveStatus('saved'); return; }
         setSaveStatus('unsaved');
 
-        if (!isAutosave) return;
+        if (!isAutosaveRef.current) return;
         if (saveTimer.current) clearTimeout(saveTimer.current);
         saveTimer.current = setTimeout(() => save(newTitle, newContent, newTags), 1500);
-    }, [save, isAutosave]);
+    }, [save]);
 
+    // ─── 5. TIPTAP EDITOR ──────────────────────────────────────────────────────────
+    const editor = useEditor({
+        // Prevents the SSR/client markup mismatch previously hit with the
+        // Grammarly extension on a raw contentEditable div
+        immediatelyRender: false,
+        extensions: [
+            StarterKit.configure({
+                heading: { levels: [1, 2, 3] },
+            }),
+            Underline,
+            TextStyle,
+            Color,
+            FontSize,
+            FontFamily,
+            Highlight.configure({ multicolor: true }),
+            TextAlign.configure({ types: ['heading', 'paragraph'] }),
+            TaskList,
+            TaskItem.configure({ nested: true }),
+            ImageExt.configure({ HTMLAttributes: { class: 'max-w-full rounded-lg border border-[var(--layer3)]' } }),
+            Placeholder.configure({
+                placeholder: ({ node }) => {
+                    if (node.type.name === 'heading') return `Heading ${node.attrs.level}`;
+                    return "Start writing...";
+                },
+            }),
+        ],
+        content: '',
+        editorProps: {
+            attributes: {
+                class: 'pow-editor w-full min-h-[70vh] bg-transparent text-[var(--text)] outline-none border-none leading-relaxed font-medium',
+            },
+        },
+        onUpdate: ({ editor }) => {
+            const html = editor.getHTML();
+            setWordCount(editor.storage.characterCount?.words?.() ?? editor.getText().trim().split(/\s+/).filter(Boolean).length);
+            debouncedSave(title, html, tags);
+        },
+    });
+
+    // ─── 6. DATA FETCHING & EFFECTS ───────────────────────────────────────────────
+
+    // Fetch autosave state from localstorage
+    useEffect(() => {
+        const savedAutosaveState = localStorage.getItem('pow_autosave');
+        const val = savedAutosaveState === 'true';
+        setIsAutosave(val);
+        isAutosaveRef.current = val;
+    }, []);
+
+    // Fetch Note Data, then load it into the editor once ready
+    useEffect(() => {
+        const fetchNote = async () => {
+            const { data: note, error } = await supabase
+                .from('notes')
+                .select('*')
+                .eq('id', id)
+                .single();
+
+            if (error) {
+                toast.error('Could not load note', toastStyle);
+                router.replace('/dashboard/Notes');
+                return;
+            }
+
+            setTitle(note.title || '');
+            setTags(note.tags || []);
+            lastSavedContent.current = note.content || '';
+            setLoading(false);
+        };
+        fetchNote();
+    }, [id]);
+
+    // Populate editor once both the note data and the editor instance are ready
+    useEffect(() => {
+        if (!loading && editor && !editor.isDestroyed) {
+            editor.commands.setContent(lastSavedContent.current || '');
+        }
+    }, [loading, editor]);
+
+    // Body Overflow Lock while Loading
+    useEffect(() => {
+        document.body.style.overflow = loading ? 'hidden' : '';
+        return () => { document.body.style.overflow = ''; };
+    }, [loading]);
+
+    // Click Outside Listeners for Sidebar Modals
+    useEffect(() => {
+        const handleClickOutsideLayout = (e) => {
+            if (isCanvasLayoutModalOpen && layoutModalRef.current && !layoutModalRef.current.contains(e.target)) {
+                setIsCanvasLayoutModalOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutsideLayout);
+        return () => document.removeEventListener('mousedown', handleClickOutsideLayout);
+    }, [isCanvasLayoutModalOpen]);
+
+    useEffect(() => {
+        const handleClickOutsideInsert = (e) => {
+            if (isCanvasInsertModalOpen && insertModalRef.current && !insertModalRef.current.contains(e.target)) {
+                setIsCanvasInsertModalOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutsideInsert);
+        return () => document.removeEventListener('mousedown', handleClickOutsideInsert);
+    }, [isCanvasInsertModalOpen]);
+
+    // Cleanup editor on unmount
+    useEffect(() => {
+        return () => { editor?.destroy(); };
+    }, [editor]);
+
+    // ─── 7. TITLE / TAG HANDLERS ───────────────────────────────────────────────────
     const handleTitleChange = (e) => {
-        setTitle(e.target.value);
-        debouncedSave(e.target.value, content, tags);
-    };
-
-    const handleContentChange = () => {
-        if (!editorRef.current) return;
-        const newContent = editorRef.current.innerHTML;
-        setContent(newContent);
-        debouncedSave(title, newContent, tags);
+        const newTitle = e.target.value;
+        setTitle(newTitle);
+        debouncedSave(newTitle, editor?.getHTML() ?? lastSavedContent.current, tags);
     };
 
     const handleAddTag = (e) => {
@@ -192,7 +225,7 @@ export default function NotePage() {
             if (!tags.includes(newTag)) {
                 const newTags = [...tags, newTag];
                 setTags(newTags);
-                debouncedSave(title, content, newTags);
+                debouncedSave(title, editor?.getHTML(), newTags);
             }
             setTagInput('');
         }
@@ -201,176 +234,58 @@ export default function NotePage() {
     const handleRemoveTag = (tag) => {
         const newTags = tags.filter(t => t !== tag);
         setTags(newTags);
-        debouncedSave(title, content, newTags);
+        debouncedSave(title, editor?.getHTML(), newTags);
     };
 
     const handleAutosaveToggle = () => {
         const newValue = !isAutosave;
         setIsAutosave(newValue);
+        isAutosaveRef.current = newValue;
         localStorage.setItem('pow_autosave', JSON.stringify(newValue));
     };
 
-
-    // ─── 7. EDITOR INSERTION & FORMATTING ─────────────────────────────────────────
-    const handleSelectionChange = () => {
-        setIsTextBold(document.queryCommandState('bold'));
-        setIsTextItalic(document.queryCommandState('italic'));
-        setIsTextUnderlined(document.queryCommandState('underline'));
-        setIsTextStrikethrough(document.queryCommandState('strikeThrough'));
-
-        const selection = window.getSelection();
-        if (selection && selection.rangeCount > 0) {
-            const node = selection.anchorNode;
-            const block = node?.nodeType === 3 ? node.parentElement : node;
-            const tag = block?.closest('h1,h2,h3,p,li')?.tagName?.toLowerCase();
-            const labelMap = { h1: 'Heading 1', h2: 'Heading 2', h3: 'Heading 3', p: 'Paragraph', li: 'Bullet list' };
-            if (tag && labelMap[tag]) setSelectedTextType(labelMap[tag]);
-        }
-
-        setIsUserFocused(document.activeElement != null);
-    };
-
-    const insertBlock = (newElement) => {
-        if (!editorRef.current) return;
-        editorRef.current.focus();
-
-        const selection = window.getSelection();
-        if (selection.rangeCount > 0) {
-            const range = selection.getRangeAt(0);
-            let currentNode = range.endContainer;
-
-            while (
-                currentNode &&
-                currentNode !== editorRef.current &&
-                (currentNode.nodeType === 3 || window.getComputedStyle(currentNode).display.includes('inline'))
-                ) {
-                currentNode = currentNode.parentNode;
-            }
-
-            if (currentNode && currentNode !== editorRef.current) {
-                currentNode.parentNode.insertBefore(newElement, currentNode.nextSibling);
-            } else {
-                editorRef.current.appendChild(newElement);
-            }
-        } else {
-            editorRef.current.appendChild(newElement);
-        }
-
-        const newRange = document.createRange();
-        newRange.selectNodeContents(newElement);
-        newRange.collapse(true);
-        selection.removeAllRanges();
-        selection.addRange(newRange);
-    };
+    // ─── 8. INSERT HELPERS ──────────────────────────────────────────────────────────
 
     const handleInsertHeading = (tag) => {
-        const el = document.createElement(tag);
-        const level = tag.replace('h', '');
-        el.textContent = `Heading ${level}`;
-        el.className = `pow-heading-placeholder outline-none`;
-
-        insertBlock(el);
-        handleContentChange();
+        if (!editor) return;
+        const level = Number(tag.replace('h', ''));
+        editor.chain().focus().toggleHeading({ level }).run();
     };
 
     const handleInsertTodo = () => {
-        const container = document.createElement('div');
-        container.className = 'pow-todo-item flex items-start gap-3 my-2';
-
-        const checkboxWrapper = document.createElement('span');
-        checkboxWrapper.contentEditable = "false";
-        checkboxWrapper.className = 'mt-1 flex items-center justify-center';
-
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.className = 'w-4 h-4 cursor-pointer accent-[var(--nice-blue)]';
-
-        checkboxWrapper.appendChild(checkbox);
-
-        const textSpan = document.createElement('div');
-        textSpan.className = 'pow-todo-text flex-1 outline-none min-w-[50px]';
-        textSpan.textContent = '\u200B';
-
-        container.appendChild(checkboxWrapper);
-        container.appendChild(textSpan);
-
-        insertBlock(container);
-
-        setTimeout(() => {
-            const selection = window.getSelection();
-            const newRange = document.createRange();
-            newRange.selectNodeContents(textSpan);
-            newRange.collapse(false);
-            selection.removeAllRanges();
-            selection.addRange(newRange);
-        }, 0);
-
-        handleContentChange();
+        if (!editor) return;
+        editor.chain().focus().toggleTaskList().run();
     };
 
     const handleInsertImagePlaceholder = () => {
-        if (!editorRef.current) return;
+        if (!editor) return;
 
-        const container = document.createElement('div');
-        container.contentEditable = "false";
-        container.className = 'pow-image-placeholder my-4 p-8 border-2 border-dashed border-[var(--layer3)] bg-[var(--layer1)] rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-[var(--layer3)] transition-all select-none group';
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
 
-        container.innerHTML = `
-            <div class="pointer-events-none flex flex-col items-center">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mb-2 text-[var(--text-muted)] group-hover:text-[var(--nice-blue)] transition-colors"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                <span class="text-sm font-bold text-[var(--text-muted)] group-hover:text-[var(--text)] transition-colors">Add an image</span>
-                <span class="text-xs text-[var(--text-muted)] opacity-70 mt-1">Click to browse files</span>
-            </div>
-        `;
+        fileInput.onchange = (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
 
-        if (hoveredBlock && hoveredBlock.parentNode === editorRef.current) {
-            hoveredBlock.parentNode.insertBefore(container, hoveredBlock.nextSibling);
-        } else {
-            editorRef.current.appendChild(container);
-        }
+            const reader = new FileReader();
+            reader.onload = (readerEvent) => {
+                editor.chain().focus().setImage({ src: readerEvent.target.result }).run();
+            };
+            reader.readAsDataURL(file);
+        };
 
-        const p = document.createElement('p');
-        p.innerHTML = '<br>';
-        container.parentNode.insertBefore(p, container.nextSibling);
-
-        const selection = window.getSelection();
-        const range = document.createRange();
-        range.selectNodeContents(p);
-        range.collapse(true);
-        selection.removeAllRanges();
-        selection.addRange(range);
+        fileInput.click();
     };
 
-    const clearPlaceholderAndFocus = (node) => {
-        if (!node || !node.classList || !node.classList.contains('pow-heading-placeholder')) return;
-
-        node.textContent = '\u200B';
-        node.classList.remove('pow-heading-placeholder');
-
-        const selection = window.getSelection();
-        const range = document.createRange();
-        range.selectNodeContents(node);
-        range.collapse(false);
-        selection.removeAllRanges();
-        selection.addRange(range);
-
-        handleContentChange();
-    };
-
-
-    // ─── 8. EDITOR EVENT LISTENERS ────────────────────────────────────────────────
-    const handleKeyDown = (e) => {
+    // ─── 9. KEYBOARD SHORTCUTS ──────────────────────────────────────────────────────
+    const handleWrapperKeyDown = (e) => {
         const isMod = e.ctrlKey || e.metaKey;
 
         if (isMod && e.key.toLowerCase() === 's' && !e.shiftKey) {
             e.preventDefault();
-            save(title, content, tags);
+            save(title, editor?.getHTML(), tags);
             toast.success('Note saved!', toastStyle);
-        }
-        if (isMod && e.shiftKey && e.key.toLowerCase() === 's') {
-            e.preventDefault();
-            document.execCommand('strikeThrough');
-            handleContentChange();
         }
         if (isMod && e.shiftKey && e.key.toLowerCase() === 'a') {
             e.preventDefault();
@@ -383,121 +298,37 @@ export default function NotePage() {
         }
     };
 
-    const handleEditorKeyDown = (e) => {
-        handleKeyDown(e);
-
-        const selection = window.getSelection();
-        if (selection.rangeCount > 0) {
-            let node = selection.anchorNode;
-            if (node && node.nodeType === 3) node = node.parentElement;
-
-            if (node && node.classList && node.classList.contains('pow-heading-placeholder')) {
-                if (['Shift', 'Control', 'Alt', 'Meta', 'CapsLock'].includes(e.key)) return;
-                clearPlaceholderAndFocus(node);
-            }
-        }
-    };
-
-    const handleEditorClick = (e) => {
-        // Todo interaction
-        if (e.target.tagName === 'INPUT' && e.target.type === 'checkbox') {
-            const container = e.target.closest('.pow-todo-item');
-            const textNode = container?.querySelector('.pow-todo-text');
-            if (e.target.checked) {
-                e.target.setAttribute('checked', 'checked');
-                if (textNode) textNode.classList.add('line-through', 'opacity-50');
-            } else {
-                e.target.removeAttribute('checked');
-                if (textNode) textNode.classList.remove('line-through', 'opacity-50');
-            }
-            handleContentChange();
-        }
-
-        // Image upload trigger
-        const imageBox = e.target.closest('.pow-image-placeholder');
-        if (imageBox) {
-            const fileInput = document.createElement('input');
-            fileInput.type = 'file';
-            fileInput.accept = 'image/*';
-
-            fileInput.onchange = (event) => {
-                const file = event.target.files[0];
-                if (!file) return;
-
-                const reader = new FileReader();
-                reader.onload = (readerEvent) => {
-                    const imgWrapper = document.createElement('div');
-                    imgWrapper.contentEditable = "false";
-                    imgWrapper.className = "my-4 relative";
-
-                    const img = document.createElement('img');
-                    img.src = readerEvent.target.result;
-                    img.className = "max-w-full rounded-lg border border-[var(--layer3)]";
-
-                    imgWrapper.appendChild(img);
-
-                    if (imageBox.parentNode) {
-                        imageBox.parentNode.replaceChild(imgWrapper, imageBox);
-                        handleContentChange();
-                    }
-                };
-                reader.readAsDataURL(file);
-            };
-
-            fileInput.click();
-            return;
-        }
-
-        // Handle placeholder focus
-        let node = e.target;
-        if (node && node.nodeType === 3) node = node.parentElement;
-        clearPlaceholderAndFocus(node);
-    };
-
+    // ─── 10. FLOATING SIDEBAR HOVER TRACKING ────────────────────────────────────────
     const handleEditorMouseMove = (e) => {
-        if (isCanvasLayoutModalOpen || isCanvasInsertModalOpen) return;
-        if (!editorRef.current) return;
+        if (!editor || isCanvasLayoutModalOpen || isCanvasInsertModalOpen) return;
         if (sidebarRef.current && sidebarRef.current.contains(e.target)) return;
 
-        const range = document.caretRangeFromPoint?.(e.clientX, e.clientY);
-        if (!range) return;
+        const coords = editor.view.posAtCoords({ left: e.clientX, top: e.clientY });
+        if (!coords) return;
 
-        let node = range.startContainer;
-        if (node.nodeType === 3) node = node.parentElement;
+        const $pos = editor.state.doc.resolve(coords.pos);
+        const blockStart = $pos.before(1);
 
-        while (node && node.parentElement !== editorRef.current) {
-            node = node.parentElement;
-        }
+        const blockCoords = editor.view.coordsAtPos(blockStart);
+        const wrapperRect = editorWrapperRef.current?.getBoundingClientRect();
+        if (!wrapperRect) return;
 
-        if (node && node !== editorRef.current) {
-            const lineRange = document.caretRangeFromPoint(e.clientX, e.clientY);
-            const rect = lineRange?.getBoundingClientRect();
-            const editorRect = editorRef.current.getBoundingClientRect();
-
-            if (rect) {
-                setHoveredBlock(node);
-                setSidebarTop(rect.top - editorRect.top);
-            }
-        } else {
-            setHoveredBlock(null);
-            setSidebarTop(-9999);
-        }
+        setHoveredPos(blockStart);
+        setSidebarTop(blockCoords.top - wrapperRect.top);
     };
 
     const handleEditorMouseLeave = (e) => {
         const x = e.clientX;
-        const editorRect = editorRef.current?.getBoundingClientRect();
+        const wrapperRect = editorWrapperRef.current?.getBoundingClientRect();
+        if (!wrapperRect) return;
+        if (x >= wrapperRect.left - 90 && x <= wrapperRect.left) return;
 
-        if (!editorRect) return;
-        if (x >= editorRect.left - 90 && x <= editorRect.left) return;
-
-        setHoveredBlock(null);
+        setHoveredPos(null);
         setSidebarTop(-9999);
     };
 
-
-    // ─── 9. RENDER ────────────────────────────────────────────────────────────────
-    if (loading) return (
+    // ─── 11. RENDER ────────────────────────────────────────────────────────────────
+    if (loading || !editor) return (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--layer1)] backdrop-blur-xl p-6">
             <div className="w-16 h-16 mb-8 rounded-2xl bg-[var(--nice-blue)] animate-pulse shadow-[0_0_40px_rgba(var(--blue-rgb),0.3)] flex items-center justify-center">
                 <svg className="animate-spin" width="40" height="40" viewBox="0 0 32 32" fill="none">
@@ -513,7 +344,7 @@ export default function NotePage() {
     );
 
     return (
-        <main className="min-h-screen bg-[var(--layer2)] flex flex-col">
+        <main className="min-h-screen bg-[var(--layer2)] flex flex-col" onKeyDown={handleWrapperKeyDown}>
 
             {/* Top Navbar */}
             <ul className="sticky top-0 z-10 bg-[var(--layer1)] border-b border-[var(--layer3)] px-4 md:px-10 py-1.5 flex items-center justify-between gap-4">
@@ -545,7 +376,7 @@ export default function NotePage() {
                             <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>
                             <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">S</span>
                         </div>
-                        <button onClick={() => save(title, content, tags)}
+                        <button onClick={() => save(title, editor.getHTML(), tags)}
                                 className="text-sm font-bold bg-[var(--nice-blue)] text-white px-3 py-1.5 rounded-lg cursor-pointer hover:scale-95 transition-transform">
                             Save
                         </button>
@@ -569,19 +400,7 @@ export default function NotePage() {
 
                 {/* Toolbar */}
                 <div className="sticky top-[60px] z-[60] pb-2">
-                    <NotesToolbar
-                        editorRef={editorRef}
-                        onContentChange={handleContentChange}
-                        isTextBold={isTextBold}               setIsTextBold={setIsTextBold}
-                        isTextItalic={isTextItalic}           setIsTextItalic={setIsTextItalic}
-                        isTextUnderlined={isTextUnderlined}   setIsTextUnderlined={setIsTextUnderlined}
-                        isTextStrikethrough={isTextStrikethrough} setIsTextStrikethrough={setIsTextStrikethrough}
-                        selectedTextType={selectedTextType}   setSelectedTextType={setSelectedTextType}
-                        onInsertHeading={handleInsertHeading} selectedHighlighter={selectedHighlighter}
-                        onInsertTodo={handleInsertTodo}       setSelectedHighlighter={setSelectedHighlighter}
-                        onSelectionChange={handleSelectionChange} isUserFocused={isUserFocused}
-                        hoveredBlock={hoveredBlock}           handleInsertImagePlaceholder={handleInsertImagePlaceholder}
-                    />
+                    <NotesToolbar editor={editor} onInsertImage={handleInsertImagePlaceholder} />
                 </div>
 
                 {/* Tags */}
@@ -603,6 +422,7 @@ export default function NotePage() {
 
                 {/* Relative Editor Wrapper */}
                 <div
+                    ref={editorWrapperRef}
                     className="relative w-full group/editor"
                     onMouseMove={handleEditorMouseMove}
                     onMouseLeave={handleEditorMouseLeave}
@@ -613,7 +433,7 @@ export default function NotePage() {
                         className={`absolute z-50 md:flex items-center gap-1.5 hidden
                         md:opacity-0 md:pointer-events-none
                         md:transition-all md:duration-150
-                        ${hoveredBlock ? 'md:!opacity-100 md:!pointer-events-auto' : ''}`}
+                        ${hoveredPos !== null ? 'md:!opacity-100 md:!pointer-events-auto' : ''}`}
                         style={{
                             top: sidebarTop !== -9999 ? `${sidebarTop}px` : '0px',
                             left: '-72px',
@@ -635,12 +455,11 @@ export default function NotePage() {
                             {isCanvasInsertModalOpen && (
                                 <div ref={insertModalRef} onMouseLeave={() => setIsCanvasInsertModalOpen(false)} className="absolute top-0 left-8 z-50">
                                     <CanvasInsertModal
-                                        editorRef={editorRef}
-                                        hoveredBlock={hoveredBlock}
+                                        editor={editor}
+                                        hoveredPos={hoveredPos}
                                         handleInsertImagePlaceholder={handleInsertImagePlaceholder}
                                         onInsertTodo={handleInsertTodo}
                                         onInsertHeading={handleInsertHeading}
-                                        onContentChange={handleContentChange}
                                     />
                                 </div>
                             )}
@@ -661,9 +480,8 @@ export default function NotePage() {
                             {isCanvasLayoutModalOpen && (
                                 <div ref={layoutModalRef} onMouseLeave={() => setIsCanvasLayoutModalOpen(false)} className="absolute top-0 left-8 z-50">
                                     <CanvasLayoutModal
-                                        editorRef={editorRef}
-                                        hoveredBlock={hoveredBlock}
-                                        onContentChange={handleContentChange}
+                                        editor={editor}
+                                        hoveredPos={hoveredPos}
                                         toast={toast}
                                         toastStyle={toastStyle}
                                     />
@@ -673,26 +491,14 @@ export default function NotePage() {
                     </ul>
 
                     {/* Editor Canvas */}
-                    <div
-                        ref={editorRef}
-                        contentEditable
-                        suppressContentEditableWarning
-                        data-placeholder="Start writing..."
-                        onKeyDown={handleEditorKeyDown}
-                        onClick={handleEditorClick}
-                        onInput={handleContentChange}
-                        onKeyUp={handleSelectionChange}
-                        onMouseUp={handleSelectionChange}
-                        onSelect={handleSelectionChange}
-                        className="pow-editor w-full min-h-[70vh] bg-transparent text-[var(--text)] outline-none border-none leading-relaxed font-medium"
-                    />
+                    <EditorContent editor={editor} />
                 </div>
 
                 {/* Footer Word Count Stats */}
                 <div className="flex items-center gap-4 text-xs text-[var(--text-muted)] opacity-50 mt-4 pb-10">
-                    <span>{content.replace(/<[^>]*>/g, '').trim().split(/\s+/).filter(Boolean).length} words</span>
+                    <span>{wordCount} words</span>
                     <span>·</span>
-                    <span>{Math.max(1, Math.ceil(content.replace(/<[^>]*>/g, '').trim().split(/\s+/).filter(Boolean).length / 200))} min read</span>
+                    <span>{Math.max(1, Math.ceil(wordCount / 200))} min read</span>
                     <span>·</span>
                     <span>{new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                 </div>
