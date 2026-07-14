@@ -121,7 +121,7 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
                             className="flex items-center gap-3 p-2 [1000px]:p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group"
                             onClick={() => {
                                 if (session) {
-                                    router.push(`/dashboard/Notes`);
+                                    router.push(`/dashboard/Materials`);
                                     setIsNavOpen(false)
                                 }}}>
                             <span className="text-xl">🗃️</span>

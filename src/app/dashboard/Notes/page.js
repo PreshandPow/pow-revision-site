@@ -219,7 +219,7 @@ export default function NotesPage() {
                 <div className="flex items-center justify-between mb-8">
                     <div>
                         <h1 className="text-3xl font-bold text-[var(--text)]">Notes</h1>
-                        <p className="text-[var(--text-muted)] mt-1 text-sm">{notes.length} note{notes.length !== 1 ? 's' : ''}</p>
+                        <p className="text-[var(--vanilla-cream)] mt-1 text-sm">{notes.length} note{notes.length !== 1 ? 's' : ''}</p>
                     </div>
                     <button
                         onClick={handleCreateNote}

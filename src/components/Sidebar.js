@@ -92,7 +92,8 @@ export default function Sidebar({
                 <nav className="flex flex-col h-full">
                     <ul className="space-y-2">
                         <li>
-                            <button
+                            <Link
+                                href={'/dashboard/Materials'}
                                 className="flex items-center gap-4 w-full p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group"
                                 onClick={() => {
                                     if (session) {
@@ -102,7 +103,7 @@ export default function Sidebar({
                             >
                                 <span className="text-xl">🗃️</span>
                                 <span className="font-bold text-[var(--text)]">Materials</span>
-                            </button>
+                            </Link>
                         </li>
                         <li>
                             <Link
