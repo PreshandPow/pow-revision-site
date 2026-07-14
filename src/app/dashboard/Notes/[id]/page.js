@@ -19,6 +19,7 @@ import { Placeholder } from '@tiptap/extension-placeholder';
 import NotesToolbar from '../../../../components/notesToolbar';
 import CanvasLayoutModal from '../../../../components/canvasLayoutModal';
 import CanvasInsertModal from '../../../../components/canvasInsertModal';
+import { ImagePlaceholder } from '../../../../lib/tiptap/imagePlaceholder';
 
 export function createClient() {
     return createBrowserClient(
@@ -61,6 +62,8 @@ export default function NotePage() {
     const isAutosaveRef = useRef(true); // avoids stale closures inside onUpdate
 
     // ─── 3. SIDEBAR (floating block-insert menu) STATE ────────────────────────────
+    // NOTE: previously tracked a raw DOM node (`hoveredBlock`). Tiptap works on
+    // document positions instead, so we track an integer position in the doc.
     const [hoveredPos, setHoveredPos] = useState(null);
     const [sidebarTop, setSidebarTop] = useState(-9999);
     const sidebarRef = useRef(null);
@@ -102,23 +105,22 @@ export default function NotePage() {
 
     // ─── 5. TIPTAP EDITOR ──────────────────────────────────────────────────────────
     const editor = useEditor({
-        // Prevents the SSR/client markup mismatch previously hit with the
-        // Grammarly extension on a raw contentEditable div
+        // Prevents the SSR/client markup mismatch
         immediatelyRender: false,
+        // Recommended by Tiptap v3 docs so components reading editor state
+        // (like our toolbar's useEditorState) stay in sync with every transaction.
+        shouldRerenderOnTransaction: true,
         extensions: [
             StarterKit.configure({
                 heading: { levels: [1, 2, 3] },
             }),
-            Underline,
-            TextStyle,
-            Color,
-            FontSize,
-            FontFamily,
+            TextStyleKit,
             Highlight.configure({ multicolor: true }),
             TextAlign.configure({ types: ['heading', 'paragraph'] }),
             TaskList,
             TaskItem.configure({ nested: true }),
             ImageExt.configure({ HTMLAttributes: { class: 'max-w-full rounded-lg border border-[var(--layer3)]' } }),
+            ImagePlaceholder,
             Placeholder.configure({
                 placeholder: ({ node }) => {
                     if (node.type.name === 'heading') return `Heading ${node.attrs.level}`;
@@ -245,7 +247,7 @@ export default function NotePage() {
     };
 
     // ─── 8. INSERT HELPERS ──────────────────────────────────────────────────────────
-
+    // Internals now use Tiptap's chain API instead of raw DOM manipulation
     const handleInsertHeading = (tag) => {
         if (!editor) return;
         const level = Number(tag.replace('h', ''));
@@ -259,26 +261,11 @@ export default function NotePage() {
 
     const handleInsertImagePlaceholder = () => {
         if (!editor) return;
-
-        const fileInput = document.createElement('input');
-        fileInput.type = 'file';
-        fileInput.accept = 'image/*';
-
-        fileInput.onchange = (event) => {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = (readerEvent) => {
-                editor.chain().focus().setImage({ src: readerEvent.target.result }).run();
-            };
-            reader.readAsDataURL(file);
-        };
-
-        fileInput.click();
+        editor.chain().focus().insertImagePlaceholder().run();
     };
 
     // ─── 9. KEYBOARD SHORTCUTS ──────────────────────────────────────────────────────
+    // this only needs to cover the shortcuts that aren't built into tiptap.
     const handleWrapperKeyDown = (e) => {
         const isMod = e.ctrlKey || e.metaKey;
 
