@@ -94,7 +94,8 @@ export default function Sidebar({
                         <li>
                             <Link
                                 href={'/dashboard/Materials'}
-                                className="flex items-center gap-4 w-full p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group"
+                                className="flex items-center gap-4 w-full p-3 hover:bg-[var(--layer2)] rounded-xl
+                                cursor-pointer transition-all group"
                                 onClick={() => {
                                     if (session) {
                                         setIsNavOpen(false);
@@ -108,7 +109,8 @@ export default function Sidebar({
                         <li>
                             <Link
                                 href={'/dashboard/Folders'}
-                                className="flex items-center gap-4 w-full p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group"
+                                className="flex items-center gap-4 w-full p-3 hover:bg-[var(--layer2)] rounded-xl
+                                cursor-pointer transition-all group"
                                 onClick={() => {
                                     if (session) {
                                         setIsNavOpen(false);
@@ -122,7 +124,8 @@ export default function Sidebar({
                         <li>
                             <Link
                                 href={'/dashboard/Notes'}
-                                className="flex items-center gap-4 w-full p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group"
+                                className="flex items-center gap-4 w-full p-3 hover:bg-[var(--layer2)] rounded-xl
+                                cursor-pointer transition-all group"
                                 onClick={() => {
                                     if (session) {
                                         setIsNavOpen(false);
@@ -134,13 +137,22 @@ export default function Sidebar({
                             </Link>
                         </li>
                         <li>
-                            <button className="flex items-center gap-4 w-full p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group">
+                            <Link
+                                href={'/dashboard/Flashcards'}
+                                onClick={() => {
+                                    if (session) {
+                                        setIsNavOpen(false);
+                                    }
+                                }}
+                                className="flex items-center gap-4 w-full p-3 hover:bg-[var(--layer2)] rounded-xl
+                                cursor-pointer transition-all group">
                                 <span className="text-xl">📝</span>
                                 <span className="font-bold text-[var(--text)]">Flashcards</span>
-                            </button>
+                            </Link>
                         </li>
                         <li>
-                            <button className="flex items-center gap-4 w-full p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group">
+                            <button className="flex items-center gap-4 w-full p-3 hover:bg-[var(--layer2)] rounded-xl
+                            cursor-pointer transition-all group">
                                 <span className="text-xl">🗑️</span>
                                 <span className="font-bold text-[var(--text)]">Trash</span>
                             </button>
@@ -149,7 +161,8 @@ export default function Sidebar({
                             <button
                                 onClick={() => setIsOptionsOpen(!isOptionsOpen)}
                                 aria-expanded={isOptionsOpen}
-                                className="flex items-center justify-between w-full p-3 hover:bg-[var(--layer2)] rounded-xl cursor-pointer transition-all group"
+                                className="flex items-center justify-between w-full p-3 hover:bg-[var(--layer2)] rounded-xl
+                                cursor-pointer transition-all group"
                             >
                                 <div className="flex items-center gap-4">
                                     <span className="text-xl w-6">⚙️</span>
@@ -157,7 +170,8 @@ export default function Sidebar({
                                 </div>
                                 <ChevronDown
                                     size={20}
-                                    className={`text-[var(--text-muted)] transition-transform duration-300 ${isOptionsOpen ? "rotate-180" : ""}`}
+                                    className={`text-[var(--text-muted)] transition-transform duration-300 
+                                    ${isOptionsOpen ? "rotate-180" : ""}`}
                                 />
                             </button>
 
@@ -170,21 +184,26 @@ export default function Sidebar({
                                         <li>
                                             <button
                                                 onClick={handleThemeChange}
-                                                className="cursor-pointer flex items-center justify-between w-full p-3 hover:bg-[var(--layer2)] rounded-lg transition-colors group text-left"
+                                                className="cursor-pointer flex items-center justify-between w-full p-3
+                                                hover:bg-[var(--layer2)] rounded-lg transition-colors group text-left"
                                             >
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-lgl">{mounted ? (theme === 'light' ? '☀️' : '🌙') : '☀️'}</span>
-                                                    <span className="font-semibold text-sm text-[var(--text-muted)] group-hover:text-[var(--text)] transition-colors">Appearance</span>
+                                                    <span className="font-semibold text-sm text-[var(--text-muted)]
+                                                    group-hover:text-[var(--text)] transition-colors">Appearance</span>
                                                 </div>
-                                                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] bg-[var(--layer3)] px-2 py-0.5 ml-1 rounded shadow-sm">
+                                                <span className="text-[10px] font-black uppercase tracking-widest
+                                                text-[var(--text-muted)] bg-[var(--layer3)] px-2 py-0.5 ml-1 rounded shadow-sm">
                                                     {theme}
                                                 </span>
                                             </button>
                                         </li>
                                         <li>
-                                            <button className="cursor-pointer flex items-center gap-2 w-full p-3 hover:bg-[var(--layer2)] rounded-lg transition-colors group text-left">
+                                            <button className="cursor-pointer flex items-center gap-2 w-full p-3
+                                            hover:bg-[var(--layer2)] rounded-lg transition-colors group text-left">
                                                 <span className="text-lg transition-all">❓</span>
-                                                <span className="font-semibold text-[var(--text-muted)] text-sm group-hover:text-[var(--text)] transition-colors">Support Center</span>
+                                                <span className="font-semibold text-[var(--text-muted)] text-sm
+                                                group-hover:text-[var(--text)] transition-colors">Support Center</span>
                                             </button>
                                         </li>
                                     </ul>

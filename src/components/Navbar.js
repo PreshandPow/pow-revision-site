@@ -150,7 +150,7 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
                     </li>
                     <li>
                         <Link
-                            href={'/dashboard/Folders'}
+                            href={'/dashboard/Flashcards'}
                             className="flex items-center gap-3 p-2 [1200px]:p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group">
                             <span className="text-xl">📝</span>
                             <span className="text-[var(--text)]">Flashcards</span>
