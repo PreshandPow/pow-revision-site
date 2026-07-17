@@ -52,3 +52,24 @@ export const createNoteAction = async (folderId = null, router) => {
 
     return note;
 };
+
+export const createFlashcardAction = async (folderId = null, router) => {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    const { data: flashcard, error } = await supabase
+        .from('flashcards')
+        .insert({
+            user_id: user.id,
+            name: 'Untitled Deck',
+            description: 'No description yet...',
+            folder_id: folderId,
+        })
+        .select()
+        .single();
+
+    if (error) {
+        toast.error('Could not create flashcard');
+        return null
+    }
+};

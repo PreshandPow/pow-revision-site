@@ -17,6 +17,7 @@ import CreateModal from '../../../components/CreateModal';
 // Hooks
 import { useRenameItem, useMoveItem, useDeleteItem, useDuplicateItem } from "../../hooks/useItemActions";
 
+
 export function createClient() {
     return createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -302,7 +303,7 @@ export default function FlashcardsMainPage() {
                     {showMoveItemModal && selectedItem && (
                         <MoveItemModal
                             moveModalRef={moveModalRef}
-                            folders={[]} // Replace with your folders array if you want to allow moving decks into folders
+                            folders={[]}
                             currentItem={selectedItem}
                             onMove={handleMoveConfirm}
                             onClose={() => {

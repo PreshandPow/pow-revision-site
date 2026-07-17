@@ -4,9 +4,14 @@ import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
+
+// component imports
 import DetailsModal from '../../components/DetailsModal';
 import CreateModal from "../../components/CreateModal";
 import CreateFolderModal from "../../components/createFolderModal";
+
+// hook imports
+import { createNoteAction, createFolderAction, createFlashcardAction } from "../hooks/createItemActions";
 
 export function createClient() {
     return createBrowserClient(
