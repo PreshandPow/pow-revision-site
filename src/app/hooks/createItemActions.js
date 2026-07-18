@@ -72,4 +72,6 @@ export const createFlashcardAction = async (folderId = null, router) => {
         toast.error('Could not create flashcard');
         return null
     }
+
+    return flashcard;
 };

@@ -8,10 +8,8 @@ export default function CreateModal({
                                         activeTaskModal,
                                         setActiveTaskModal,
                                         handleCreateNote,
-                                        handleCreateFolder,
-                                        handleCreateFlashcard,
                                         setShowCreateFolderModal,
-
+                                        setShowCreateFlashcardModal
                                     }) {
 
     // ─── 1. CONFIGURATION & DATA ──────────────────────────────────────────────────
@@ -64,7 +62,10 @@ export default function CreateModal({
                     icon: '🗃️',
                     title: 'Create from scratch',
                     desc: 'Build a flashcard set manually.',
-                    action: handleCreateFlashcard
+                    action: () => {
+                        setShowCreateFlashcardModal(true);
+                        setOpenCreateModal(false);
+                    }
                 },
                 {
                     icon: '📄',

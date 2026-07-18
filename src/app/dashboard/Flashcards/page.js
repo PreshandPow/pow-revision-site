@@ -12,7 +12,7 @@ import RenameItemModal from "../../../components/RenameItemModal";
 import MoveItemModal from "../../../components/MoveItemModal";
 import UseDeleteItemModal from "../../../components/deleteItemModal";
 import UseItemOptionDropdown from "../../../components/itemOptionsDropdown";
-import CreateModal from '../../../components/CreateModal';
+import CreateFlashcardModal from '../../../components/createFlashcardModal';
 
 // Hooks
 import { useRenameItem, useMoveItem, useDeleteItem, useDuplicateItem } from "../../hooks/useItemActions";
@@ -42,8 +42,7 @@ export default function FlashcardsMainPage() {
     const [showRenameItemModal, setShowRenameItemModal] = useState(false);
     const [showMoveItemModal, setShowMoveItemModal] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
-    const [showCreateItemModal, setShowCreateItemModal] = useState(false);
-    const [activeTaskModal, setActiveTaskModal] = useState(null);
+    const [showCreateFlashcardModal, setShowCreateFlashcardModal] = useState(false);
 
     // Refs
     const renameModalRef = useRef(null);
@@ -195,8 +194,7 @@ export default function FlashcardsMainPage() {
 
                     <button
                         onClick={() => {
-                            setActiveTaskModal('flashcards');
-                            setShowCreateItemModal(true);
+                            setShowCreateFlashcardModal(true);
                         }}
                         className="flex items-center justify-center gap-2 bg-[var(--nice-blue)] text-white px-4 py-2 rounded-lg font-semibold text-sm hover:opacity-90 transition-all shadow-sm w-fit cursor-pointer">
                         <Plus size={18} />
@@ -314,12 +312,9 @@ export default function FlashcardsMainPage() {
                         />
                     )}
 
-                    {showCreateItemModal && (
-                        <CreateModal
-                            setOpenCreateModal={setShowCreateItemModal}
-                            activeTaskModal={activeTaskModal}
-                            setActiveTaskModal={setActiveTaskModal}
-                            handleCreateFlashcard={handleCreateFlashcardDeck}
+                    {showCreateFlashcardModal && (
+                        <CreateFlashcardModal
+
                         />
                     )}
                 </AnimatePresence>
