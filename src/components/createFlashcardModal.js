@@ -18,7 +18,6 @@ import {
     ArrowLeftRight,
     GripVertical,
     Trash2,
-    Image as ImageIcon,
     Mic,
     RotateCcw,
     Layers,
@@ -36,8 +35,6 @@ import FontFamily from '@tiptap/extension-font-family';
 
 import NotesToolbar from './notesToolbar';
 
-// Tiptap has no built-in font-size extension — this rides on TextStyle,
-// same pattern as the notes editor's version.
 const FontSize = Extension.create({
     name: 'fontSize',
     addOptions() {
@@ -88,10 +85,16 @@ function FlashcardRow({
     const termFileInputRef = useRef(null);
     const defFileInputRef = useRef(null);
 
-    const editorClasses = 'prose prose-invert max-w-none min-h-[140px] w-full break-words whitespace-pre-wrap ' +
+    const editorClasses = 'max-w-none min-h-[140px] w-full break-words whitespace-pre-wrap ' +
         'outline-none border-none ring-0 focus:outline-none focus:ring-0 [&_.ProseMirror]:outline-none ' +
-        '[&_.ProseMirror:focus]:outline-none [&_.ProseMirror]:border-none [&_.ProseMirror]:ring-0 prose-code:!bg-transparent ' +
-        'prose-code:!border-none prose-code:!p-0 prose-code:!font-normal prose-code:before:!content-none prose-code:after:!content-none';
+        '[&_.ProseMirror:focus]:outline-none [&_.ProseMirror]:border-none [&_.ProseMirror]:ring-0 ' +
+        '[&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-2 [&_h1]:mb-1 ' +
+        '[&_h2]:text-xl [&_h2]:font-bold [&_h2]:mt-2 [&_h2]:mb-1 ' +
+        '[&_h3]:text-lg [&_h3]:font-bold [&_h3]:mt-1 [&_h3]:mb-1 ' +
+        '[&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-1 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-1 [&_li]:my-0.5 ' +
+        '[&_blockquote]:border-l-2 [&_blockquote]:border-[var(--layer3)] [&_blockquote]:pl-3 [&_blockquote]:italic ' +
+        '[&_strong]:font-bold [&_em]:italic [&_s]:line-through ' +
+        '[&_code]:bg-[var(--layer1)] [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm [&_code]:font-mono';
 
     const extensions = [
         StarterKit,
@@ -105,11 +108,11 @@ function FlashcardRow({
         Placeholder.configure({ placeholder: '"space" for AI, "/" for format' }),
     ];
 
-    // editorProps.attributes sets raw DOM attributes, so the key must be the
-    // literal HTML attribute name `class`, not the React name `className`.
     const termEditor = useEditor({
         extensions,
         content: card.term,
+        immediatelyRender: false,
+        shouldRerenderOnTransaction: true,
         onUpdate: ({ editor }) => updateCard(card.id, 'term', editor.getHTML()),
         onFocus: () => setActiveEditorType('term'),
         editorProps: {
@@ -122,6 +125,8 @@ function FlashcardRow({
     const defEditor = useEditor({
         extensions,
         content: card.definition,
+        immediatelyRender: false,
+        shouldRerenderOnTransaction: true,
         onUpdate: ({ editor }) => updateCard(card.id, 'definition', editor.getHTML()),
         onFocus: () => setActiveEditorType('definition'),
         editorProps: {
@@ -147,6 +152,14 @@ function FlashcardRow({
         if (file && editor) {
             const imageUrl = URL.createObjectURL(file);
             editor.chain().focus().setImage({ src: imageUrl }).run();
+        }
+    };
+
+    const handleToolbarImageInsert = () => {
+        if (activeEditorType === 'term') {
+            termFileInputRef.current?.click();
+        } else {
+            defFileInputRef.current?.click();
         }
     };
 
@@ -217,7 +230,10 @@ function FlashcardRow({
 
             <div className="border-b border-[var(--layer3)] bg-[var(--layer1)]/30 p-2 flex justify-center relative z-[60]">
                 {activeEditor && (
-                    <NotesToolbar editor={activeEditor} />
+                    <NotesToolbar
+                        editor={activeEditor}
+                        onInsertImage={handleToolbarImageInsert}
+                    />
                 )}
             </div>
 
@@ -231,14 +247,6 @@ function FlashcardRow({
                             accept="image/*"
                             onChange={(e) => handleImageUpload(e, termEditor)}
                         />
-                        <button
-                            onClick={() => termFileInputRef.current?.click()}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--layer3)]
-                            text-xs font-bold text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)]
-                            transition-colors cursor-pointer"
-                        >
-                            <ImageIcon size={14} /> Image
-                        </button>
                         <button
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--layer3)]
                             text-xs font-bold text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)]
@@ -284,14 +292,6 @@ function FlashcardRow({
                             accept="image/*"
                             onChange={(e) => handleImageUpload(e, defEditor)}
                         />
-                        <button
-                            onClick={() => defFileInputRef.current?.click()}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--layer3)]
-                            text-xs font-bold text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)]
-                            transition-colors cursor-pointer"
-                        >
-                            <ImageIcon size={14} /> Image
-                        </button>
                         <button
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--layer3)]
                             text-xs font-bold text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)]
@@ -362,7 +362,7 @@ function SortableFlashcardItem({
     );
 }
 
-export default function CreateFlashcardModal({ onClose, handleSaveDeck }) {
+export default function CreateFlashcardModal({ setShowCreateFlashcardModal, handleSaveDeck }) {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [showResetMenu, setShowResetMenu] = useState(false);
@@ -442,7 +442,7 @@ export default function CreateFlashcardModal({ onClose, handleSaveDeck }) {
                             />
                         </div>
                         <div className="min-w-0">
-                            <h1 className="text-lg sm:text-xl font-bold text-[var(--text)] truncate">
+                            <h1 className="text-[16px] sm:text-xl font-bold text-[var(--text)] truncate">
                                 Create flashcards
                             </h1>
                             <p className="text-xs text-[var(--text-muted)] font-medium">
@@ -455,13 +455,13 @@ export default function CreateFlashcardModal({ onClose, handleSaveDeck }) {
                         <div className="relative">
                             <button
                                 onClick={() => setShowResetMenu(!showResetMenu)}
-                                className="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-lg border
-                                border-[var(--layer3)] text-sm font-semibold text-[var(--text-muted)] hover:text-[var(--text)]
-                                hover:bg-[var(--layer3)] transition-colors cursor-pointer"
+                                className="flex items-center gap-2 px-3 sm:px-3.5 py-2 rounded-lg border
+                                    border-[var(--layer3)] text-sm font-semibold text-[var(--text-muted)] hover:text-[var(--text)]
+                                    hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                             >
-                                <RotateCcw size={15} /> Reset
+                                <RotateCcw size={15} />
+                                <span className="hidden sm:inline">Reset</span>
                             </button>
-
                             <AnimatePresence>
                                 {showResetMenu && (
                                     <motion.div
@@ -532,7 +532,10 @@ export default function CreateFlashcardModal({ onClose, handleSaveDeck }) {
                         <div className="w-px h-6 bg-[var(--layer3)] mx-0.5" />
 
                         <button
-                            onClick={onClose}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                setShowCreateFlashcardModal(false);
+                            }}
                             className="p-2 hover:bg-[var(--layer3)] rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] transition-colors cursor-pointer"
                         >
                             <X size={19} />

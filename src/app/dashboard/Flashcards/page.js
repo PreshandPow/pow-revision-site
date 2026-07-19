@@ -144,7 +144,7 @@ export default function FlashcardsMainPage() {
     // Temporary placeholder until createItemActions is updated
     const handleCreateFlashcardDeck = async () => {
         toast.success("Deck creation triggered! (Needs hook update)");
-        setShowCreateItemModal(false);
+        setShowCreateFlashcardModal(false);
     };
 
     const formatDate = (date) => new Date(date).toLocaleDateString('en-GB', {
@@ -314,7 +314,8 @@ export default function FlashcardsMainPage() {
 
                     {showCreateFlashcardModal && (
                         <CreateFlashcardModal
-
+                            setShowCreateFlashcardModal={setShowCreateFlashcardModal}
+                            handleSaveDeck={handleCreateFlashcardDeck}
                         />
                     )}
                 </AnimatePresence>
