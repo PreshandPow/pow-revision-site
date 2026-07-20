@@ -141,9 +141,9 @@ export default function FlashcardsMainPage() {
         }
     };
 
-    // Temporary placeholder until createItemActions is updated
     const handleCreateFlashcardDeck = async () => {
         toast.success("Deck creation triggered! (Needs hook update)");
+
         setShowCreateFlashcardModal(false);
     };
 

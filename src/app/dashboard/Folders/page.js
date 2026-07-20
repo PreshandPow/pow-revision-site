@@ -17,6 +17,8 @@ import { createBrowserClient } from '@supabase/ssr';
 import UseItemOptionDropdown from '../../../components/itemOptionsDropdown';
 import UseDeleteItemModal from "../../../components/deleteItemModal";
 
+import { createFolderAction } from '../../hooks/createItemActions';
+
 function createClient() {
     return createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -50,22 +52,17 @@ export default function FolderContentPage() {
 
     // ─── 2. CREATE FOLDER FEATURE ─────────────────────────────────────────────────
     const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
-    const [folderName, setFolderName] = useState('Untitled Folder');
+    const [newFolderName, setNewFolderName] = useState('');
     const createFolderModalRef = useRef(null);
     const [showItemOptionsDropdown, setShowItemOptionsDropdown] = useState(false);
 
     const handleCreateFolder = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-
-        const { data: folder, error } = await supabase
-            .from('folders')
-            .insert({ name: folderName, user_id: user.id, parent_folder_id: null })
-            .select()
-            .single();
-
-        if (error) { toast.error('Could not create folder', toastStyle); return; }
-        router.push(`/dashboard/Folders/${folder.id}`);
+        const newFolder = await createFolderAction(newFolderName, null, router);
+        if (newFolder) {
+            setFolders(prev => [newFolder, ...prev]);
+        }
         setShowCreateFolderModal(false);
+        setNewFolderName('');
     };
 
     // ─── 3. RENAME FOLDER FEATURE ─────────────────────────────────────────────────
@@ -221,7 +218,7 @@ export default function FolderContentPage() {
                         <p className="text-[var(--vanilla-cream)] mt-1 text-sm">{foldersWithoutParent.length} folder{foldersWithoutParent.length !== 1 ? 's' : ''}</p>
                     </div>
                     <button
-                        onClick={handleCreateFolder}
+                        onClick={() => setShowCreateFolderModal(true)}
                         className="flex items-center gap-2 bg-[var(--nice-blue)] text-white font-bold px-5 py-2.5
                         rounded-xl shadow-lg shadow-blue-500/20 hover:scale-95 transition-transform cursor-pointer"
                     >
@@ -267,7 +264,7 @@ export default function FolderContentPage() {
                                                 itemType='folder'
                                                 setActiveDropdown={setActiveDropdown}
                                                 setShowRenameNoteModal={setShowRenameItemModal}
-                                                setItemName={setFolderName}
+                                                setItemName={setNewFolderName}
                                                 setShowMoveItemModal={setShowMoveItemModal}
                                                 setSelectedItem={setSelectedItem}
                                                 handleDuplicateNote={handleDuplicateFolder}
@@ -312,9 +309,9 @@ export default function FolderContentPage() {
                     {showRenameItemModal && selectedItem && (
                         <RenameItemModal
                             renameModalRef={showRenameFolderModalRef}
-                            currentName={folderName}
+                            currentName={newFolderName}
                             handleRename={handleFolderRename}
-                            setItemName={setFolderName}
+                            setItemName={setNewFolderName}
                             setShowRenameItemModal={setShowRenameItemModal}
                         />
                     )}
@@ -329,6 +326,15 @@ export default function FolderContentPage() {
                                 setSelectedItem(null);
                             }}
                             itemType={'folder'}
+                        />
+                    )}
+                    {showCreateFolderModal && (
+                        <CreateFolderModal
+                            createFolderModalRef={createFolderModalRef}
+                            setShowCreateFolderModal={setShowCreateFolderModal}
+                            folderName={newFolderName}
+                            setFolderName={setNewFolderName}
+                            handleCreateFolder={handleCreateFolder}
                         />
                     )}
                 </AnimatePresence>
