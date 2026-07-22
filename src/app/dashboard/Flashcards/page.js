@@ -16,7 +16,7 @@ import CreateFlashcardModal from '../../../components/createFlashcardModal';
 
 // Hooks
 import { useRenameItem, useMoveItem, useDeleteItem, useDuplicateItem } from "../../hooks/useItemActions";
-import {createFlashcardAction} from '../../hooks/createItemActions';
+import { createFlashcardAction } from '../../hooks/createItemActions';
 
 
 export function createClient() {
@@ -142,10 +142,17 @@ export default function FlashcardsMainPage() {
         }
     };
 
-    const handleCreateFlashcardDeck = async () => {
-        toast.success("Deck creation triggered! (Needs hook update)");
+    const handleCreateFlashcardDeck = async (deckData) => {
+        const loadingToast = toast.loading('Creating deck...');
 
-        setShowCreateFlashcardModal(false);
+        const newDeck = await createFlashcardAction(deckData, null, router);
+
+        toast.dismiss(loadingToast);
+
+        if (newDeck) {
+            setShowCreateFlashcardModal(false);
+            setFlashcards(prev => [newDeck, ...prev]);
+        }
     };
 
     const formatDate = (date) => new Date(date).toLocaleDateString('en-GB', {

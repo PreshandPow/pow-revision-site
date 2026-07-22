@@ -7,7 +7,6 @@ import toast from 'react-hot-toast';
 import Link from 'next/link';
 import { ArrowLeft, ArrowRight, ChevronLeft, Rows3, RectangleHorizontal, Pencil } from 'lucide-react';
 
-import FlashcardStudyCard from '../../../../components/flashcardStudyCard';
 import CreateFlashcardModal from '../../../../components/createFlashcardModal';
 
 export function createClient() {
@@ -17,8 +16,6 @@ export function createClient() {
     );
 }
 
-// Assumes a `flashcard_sets` table: id, title, cards (jsonb). Adjust to match
-// your actual schema/table name if it's different.
 const TABLE_NAME = 'flashcard_sets';
 
 export default function FlashcardSetPage() {

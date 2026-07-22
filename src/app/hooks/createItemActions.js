@@ -53,25 +53,55 @@ export const createNoteAction = async (folderId = null, router) => {
     return note;
 };
 
-export const createFlashcardAction = async (folderId = null, router) => {
+export const createFlashcardAction = async (deckData, folderId = null, router) => {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    const { data: flashcard, error } = await supabase
-        .from('flashcards')
+    if (!user) return null;
+
+    const { data: deck, error: deckError } = await supabase
+        .from('flashcard_decks')
         .insert({
             user_id: user.id,
-            name: 'Untitled Deck',
-            description: 'No description yet...',
+            name: deckData.title || 'Untitled Deck',
+            description: deckData.description || null,
             folder_id: folderId,
         })
         .select()
         .single();
 
-    if (error) {
-        toast.error('Could not create flashcard');
-        return null
+    if (deckError) {
+        toast.error('Could not create flashcard deck');
+        return null;
     }
 
-    return flashcard;
+    const validCards = deckData.cards.filter(
+        card => card.term.trim() !== '' || card.definition.trim() !== ''
+    );
+
+    if (validCards.length > 0) {
+        const cardsToInsert = validCards.map((card, index) => ({
+            deck_id: deck.id,
+            term: card.term,
+            definition: card.definition,
+            order_index: index,
+        }));
+
+        const { error: cardsError } = await supabase
+            .from('flashcards')
+            .insert(cardsToInsert);
+
+        if (cardsError) {
+            toast.error('Deck created, but failed to save some cards.');
+            console.error(cardsError);
+        }
+    }
+
+    toast.success('Flashcard deck created!');
+
+    if (router) {
+        router.push(`/dashboard/Flashcards/${deck.id}`);
+    }
+
+    return deck;
 };
