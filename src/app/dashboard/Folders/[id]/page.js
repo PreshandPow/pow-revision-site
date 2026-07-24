@@ -41,6 +41,7 @@ export default function FolderContentPage() {
     const [currentFolder, setCurrentFolder] = useState(null);
     const [folders, setFolders] = useState([]);
     const [notes, setNotes] = useState([]);
+    const [flashcards, setFlashcards] = useState([]);
     const [nestedFolderBreadcrumbs, setNestedFolderBreadcrumbs] = useState([]);
 
     // UI & Action States
@@ -135,9 +136,26 @@ export default function FolderContentPage() {
             if (!error) setNotes(notes || []);
         };
 
+        const fetchFlashcards = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) { router.replace('/'); return; }
+
+            const { data, error } = await supabase
+                .from('flashcard_decks')
+                .select('*')
+                .eq('user_id', user.id)
+                .is('folder_id', null) // Only fetch root-level decks here
+                .order('updated_at', { ascending: false });
+
+            if (error) toast.error('Error fetching flashcards', toastStyle);
+            else setFlashcards(data || []);
+
+            setLoading(false);
+        };
+
         const init = async () => {
             if (id) {
-                await Promise.all([fetchFolderAndChildren(), fetchNotes()]);
+                await Promise.all([fetchFolderAndChildren(), fetchNotes(), fetchFlashcards()]);
                 setLoading(false);
             }
         };
