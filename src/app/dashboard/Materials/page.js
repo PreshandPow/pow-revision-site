@@ -39,6 +39,7 @@ export default function MaterialsPage() {
     const [loading, setLoading] = useState(true);
     const [folders, setFolders] = useState([]);
     const [notes, setNotes] = useState([]);
+    const [flashcards, setFlashcards] = useState([]);
 
     // UI & Action States
     const [activeDropdown, setActiveDropdown] = useState(null);

@@ -528,38 +528,64 @@ export default function FolderContentPage() {
                     )}
                 </div>
 
-                {/* Flashcards */}
+                {/* Flashcards Section */}
                 <div className="mb-12">
-                    <h2 className="text-xs font-black uppercase tracking-widest text-[var(--text-muted)] mb-5">Flashcards</h2>
+                    <div className="flex items-center justify-between mb-5">
+                        <h2 className="text-xs font-black uppercase tracking-widest text-[var(--text-muted)]">Flashcards</h2>
+                        <span className="text-xs font-bold text-[var(--text-muted)]">{flashcards.length} Decks</span>
+                    </div>
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {items.filter(i => i.type === 'flashcard').map((flashcard) => (
-                            <motion.div
-                                key={flashcard.id}
-                                whileHover={{ y: -6 }}
-                                className="group relative aspect-[4/3] cursor-pointer"
-                            >
-                                <div className="absolute -bottom-2 inset-x-4 h-full bg-[var(--layer3)] border border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-1" />
-                                <div className="absolute -bottom-1 inset-x-2 h-full bg-[var(--layer2)] border border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-0.5" />
+                        {flashcards.length === 0 ? (
+                            <div className="col-span-full py-10 flex flex-col items-center justify-center border-2 border-dashed border-[var(--layer3)] rounded-2xl bg-[var(--layer1)]/30 text-center">
+                                <p className="text-sm font-medium text-[var(--text-muted)]">No flashcard decks in this folder yet.</p>
+                            </div>
+                        ) : (
+                            flashcards.map((flashcard) => (
+                                <motion.div
+                                    key={flashcard.id}
+                                    whileHover={{ y: -4 }}
+                                    onClick={() => router.push(`/dashboard/Flashcards/${flashcard.id}`)}
+                                    className="group relative aspect-[16/10] cursor-pointer"
+                                >
+                                    <div className="absolute -bottom-2 inset-x-4 h-full bg-[var(--layer3)] border border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-1" />
+                                    <div className="absolute -bottom-1 inset-x-2 h-full bg-[var(--layer2)] border border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-0.5" />
 
-                                <div className="relative h-full p-5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-xl group-hover:border-[var(--nice-blue)] transition-colors shadow-sm z-10 flex flex-col justify-between">
-                                    <div className="flex justify-between items-start">
-                                        <div className="p-2 bg-purple-500/10 rounded-lg text-purple-500">
-                                            <CreditCard size={20} />
+                                    <div className="relative h-full p-4 sm:p-5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-xl group-hover:border-[var(--nice-blue)] transition-colors shadow-sm z-10 flex flex-col justify-between">
+                                        <div className="flex justify-between items-start">
+                                            <div className="p-2 bg-purple-500/10 rounded-lg text-purple-400">
+                                                <CreditCard size={18} />
+                                            </div>
+
+                                            <div className="flex items-center gap-1.5">
+                                <span className="text-[10px] bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full font-bold">
+                                    {flashcard.card_count ?? flashcard.cards?.length ?? 0} cards
+                                </span>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setSelectedItem(flashcard);
+                                                        setShowOptionsModal(true);
+                                                    }}
+                                                    className="p-1 hover:bg-[var(--layer3)] text-[var(--text-muted)] hover:text-[var(--text)] rounded-md transition-colors cursor-pointer"
+                                                >
+                                                    <MoreVertical size={15} />
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-2">
+                                            <h3 className="font-bold text-[var(--text)] text-sm sm:text-base leading-tight mb-1 truncate">
+                                                {flashcard.name || flashcard.title}
+                                            </h3>
+                                            <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-tight">
+                                                Edited {flashcard.date || 'Recently'}
+                                            </p>
                                         </div>
                                     </div>
-
-                                    <div>
-                                        <h3 className="font-bold text-[var(--text)] leading-snug mb-1">{flashcard.name}</h3>
-                                        <div className="flex items-center justify-between">
-                                            <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-tight">Edited {flashcard.date}</p>
-                                            <span className="text-[10px] bg-purple-500/10 text-purple-500 px-2 py-0.5 rounded-full font-bold">
-                                                Deck
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        ))}
+                                </motion.div>
+                            ))
+                        )}
                     </div>
                 </div>
 
