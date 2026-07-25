@@ -143,7 +143,7 @@ export default function FolderContentPage() {
             const { data, error } = await supabase
                 .from('flashcard_decks')
                 .select('*')
-                .eq('user_id', user.id)
+                .eq('folder_id', id)
                 .is('folder_id', null) // Only fetch root-level decks here
                 .order('updated_at', { ascending: false });
 
@@ -541,11 +541,11 @@ export default function FolderContentPage() {
                                 <p className="text-sm font-medium text-[var(--text-muted)]">No flashcard decks in this folder yet.</p>
                             </div>
                         ) : (
-                            flashcards.map((flashcard) => (
+                            flashcards.map((deck) => (
                                 <motion.div
-                                    key={flashcard.id}
+                                    key={deck.id}
                                     whileHover={{ y: -4 }}
-                                    onClick={() => router.push(`/dashboard/Flashcards/${flashcard.id}`)}
+                                    onClick={() => router.push(`/dashboard/Flashcards/${deck.id}`)}
                                     className="group relative aspect-[16/10] cursor-pointer"
                                 >
                                     <div className="absolute -bottom-2 inset-x-4 h-full bg-[var(--layer3)] border border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-1" />
@@ -558,9 +558,9 @@ export default function FolderContentPage() {
                                             </div>
 
                                             <div className="flex items-center gap-1.5">
-                                <span className="text-[10px] bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full font-bold">
-                                    {flashcard.card_count ?? flashcard.cards?.length ?? 0} cards
-                                </span>
+                                            <span className="text-[10px] bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full font-bold">
+                                                {deck?.card_count ?? '?'} cards
+                                            </span>
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
@@ -576,10 +576,10 @@ export default function FolderContentPage() {
 
                                         <div className="mt-2">
                                             <h3 className="font-bold text-[var(--text)] text-sm sm:text-base leading-tight mb-1 truncate">
-                                                {flashcard.name || flashcard.title}
+                                                {deck.name || deck.title}
                                             </h3>
                                             <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-tight">
-                                                Edited {flashcard.date || 'Recently'}
+                                                Edited {deck.date || 'Recently'}
                                             </p>
                                         </div>
                                     </div>

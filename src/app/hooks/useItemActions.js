@@ -26,6 +26,10 @@ export function useRenameItem() {
                 tableName = 'notes';
                 tableRow = 'title';
             }
+            else if (itemType === 'flashcard') {
+                tableName = 'flashcard_decks';
+                tableRow = 'name';
+            }
             const { error } = await supabase
                 .from(tableName)
                 .update({ [tableRow]: newName })
@@ -103,6 +107,7 @@ export function useDeleteItem () {
             let tableName = '';
             if (itemType === 'note') tableName= 'notes';
             if (itemType === 'folder') tableName= 'folders';
+            if (itemType === 'flashcard') tableName= 'flashcard_decks';
             const { error } = await supabase
                 .from(tableName)
                 .delete()

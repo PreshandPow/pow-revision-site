@@ -218,30 +218,37 @@ export default function FlashcardsMainPage() {
                         {flashcards.map((deck) => (
                             <motion.div
                                 key={deck.id}
-                                whileHover={activeDropdown !== deck.id ? { y: -6 } : {}}
+                                whileHover={activeDropdown !== deck.id ? { y: -4 } : {}}
                                 onClick={() => router.push(`/dashboard/Flashcards/${deck.id}`)}
-                                className={`group relative aspect-[4/3] cursor-pointer ${activeDropdown === deck.id ? 'z-[100]' : 'z-10 hover:z-20'}`}
+                                className={`group relative aspect-[16/10] cursor-pointer ${activeDropdown === deck.id ? 'z-[100]' : 'z-10 hover:z-20'}`}
                             >
-                                {/* Layer 1 (Back) */}
+                                {/* Layered Card Backs */}
                                 <div className="absolute -bottom-2 inset-x-4 h-full bg-[var(--layer3)] border border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-1" />
-                                {/* Layer 2 (Middle) */}
                                 <div className="absolute -bottom-1 inset-x-2 h-full bg-[var(--layer2)] border border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-0.5" />
 
-                                {/* Layer 3 (Front) */}
-                                <div className="relative h-full p-5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-xl group-hover:border-[var(--nice-blue)] transition-colors shadow-sm z-10 flex flex-col justify-between">
-                                    <div className="flex justify-between items-start mb-4 relative dropdown-container">
-                                        <div className="p-2 bg-purple-500/10 rounded-lg text-purple-500">
-                                            <CreditCard size={20} />
+                                {/* Main Face */}
+                                <div className="relative h-full p-4 sm:p-5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-xl group-hover:border-[var(--nice-blue)] transition-colors shadow-sm z-10 flex flex-col justify-between">
+
+                                    {/* Header: Icon & Options Grouped */}
+                                    <div className="flex justify-between items-start mb-2 relative dropdown-container">
+                                        <div className="p-2 bg-purple-500/10 rounded-lg text-purple-400">
+                                            <CreditCard size={18} />
                                         </div>
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setActiveDropdown(activeDropdown === deck.id ? null : deck.id);
-                                            }}
-                                            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer"
-                                        >
-                                            <MoreVertical size={18} />
-                                        </button>
+
+                                        <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full font-bold">
+                                {deck?.card_count ?? deck.cards?.length ?? 0} cards
+                            </span>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setActiveDropdown(activeDropdown === deck.id ? null : deck.id);
+                                                }}
+                                                className="p-1 hover:bg-[var(--layer3)] text-[var(--text-muted)] hover:text-[var(--text)] rounded-md transition-colors cursor-pointer"
+                                            >
+                                                <MoreVertical size={15} />
+                                            </button>
+                                        </div>
 
                                         <AnimatePresence>
                                             {activeDropdown === deck.id && (
@@ -260,23 +267,25 @@ export default function FlashcardsMainPage() {
                                         </AnimatePresence>
                                     </div>
 
-                                    <div className="flex-1 flex flex-col min-h-0">
-                                        <h3 className="font-bold text-[var(--text)] text-lg leading-snug mb-1">
+                                    {/* Title & Description */}
+                                    <div className="flex-1 flex flex-col min-h-0 mt-1">
+                                        <h3 className="font-bold text-[var(--text)] text-sm sm:text-base leading-tight mb-1 truncate">
                                             {deck.name}
                                         </h3>
-                                        <p className="text-xs text-[var(--text-muted)] line-clamp-2">
+                                        <p className="text-[10px] sm:text-xs text-[var(--text-muted)] line-clamp-2 leading-relaxed">
                                             {deck.description || 'No description added yet.'}
                                         </p>
                                     </div>
 
-                                    <div className="flex items-center justify-between mt-auto pt-3 border-t border-[var(--layer3)]">
-                                        <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                                    {/* Footer */}
+                                    <div className="flex items-center justify-between mt-auto pt-2">
+                                        <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-tight text-[var(--text-muted)]">
                                             <Clock size={12} />
-                                            {formatDate(deck.updated_at)}
+                                            Edited {formatDate(deck.updated_at)}
                                         </div>
-                                        <span className="text-[10px] bg-purple-500/10 text-purple-500 px-2 py-0.5 rounded-full font-bold">
-                                            Deck
-                                        </span>
+                                        <span className="text-[10px] bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full font-bold hidden sm:block">
+                            Deck
+                        </span>
                                     </div>
                                 </div>
                             </motion.div>
