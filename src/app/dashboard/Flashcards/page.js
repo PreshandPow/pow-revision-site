@@ -219,7 +219,7 @@ export default function FlashcardsMainPage() {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
                     <div>
                         <h1 className="text-3xl font-bold text-[var(--text)]">Flashcards</h1>
-                        <p className="text-[var(--vanilla-cream)] mt-1 text-sm">{flashcards.length} deck{flashcards.length !== 1 ? 's' : ''}</p>
+                        <p className="text-[var(--text-muted)] mt-1 text-sm">{flashcards.length} deck{flashcards.length !== 1 ? 's' : ''}</p>
                     </div>
 
                     <button
@@ -290,7 +290,6 @@ export default function FlashcardsMainPage() {
                                         </AnimatePresence>
                                     </div>
 
-                                    {/* Title & Description */}
                                     <div className="flex-1 flex flex-col min-h-0 mt-1">
                                         <h3 className="font-bold text-[var(--text)] text-sm sm:text-base leading-tight mb-1 truncate">
                                             {deck.name}
@@ -299,8 +298,6 @@ export default function FlashcardsMainPage() {
                                             {deck.description || 'No description added yet.'}
                                         </p>
                                     </div>
-
-                                    {/* Footer */}
                                     <div className="flex items-center justify-between mt-auto pt-2">
                                         <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-tight text-[var(--text-muted)]">
                                             <Clock size={12} />

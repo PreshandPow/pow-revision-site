@@ -329,9 +329,6 @@ function FlashcardRow({
     );
 }
 
-// useDragControls must be called inside its own component per card — calling
-// it directly inside a .map() callback in the parent would violate the
-// rules of hooks.
 function SortableFlashcardItem({
                                    card,
                                    index,
@@ -415,7 +412,18 @@ export default function CreateFlashcardModal({ setShowCreateFlashcardModal, hand
         localStorage.removeItem('pow_flashcard_draft');
     };
 
-    const filledCardCount = cards.filter(c => c.term?.trim() || c.definition?.trim()).length;
+    // ─── IMPROVED CARD VALIDATION ───────────────────────────────────────────────
+    // Helper function to accurately check if a side is filled,
+    // stripping Tiptap's empty <p></p> tags while still allowing images
+    const hasContent = (htmlStr = '') => {
+        return htmlStr.replace(/<[^>]*>/g, '').trim().length > 0 || htmlStr.includes('<img');
+    };
+
+    // a card "filled" if either the term OR definition has content
+    const filledCardCount = cards.filter(c => hasContent(c.term) || hasContent(c.definition)).length;
+
+    // The button is disabled if there's no title OR if there are fewer than 3 filled cards
+    const isSaveDisabled = !title.trim() || filledCardCount < 3;
 
     return (
         <div className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-sm flex items-center justify-center sm:p-6">
@@ -441,13 +449,20 @@ export default function CreateFlashcardModal({ setShowCreateFlashcardModal, hand
                                 strokeWidth={2.5}
                             />
                         </div>
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex flex-col">
                             <h1 className="text-[16px] sm:text-xl font-bold text-[var(--text)] truncate">
                                 Create flashcards
                             </h1>
-                            <p className="text-xs text-[var(--text-muted)] font-medium">
-                                {filledCardCount} of {cards.length} card{cards.length === 1 ? '' : 's'} filled
-                            </p>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                                <p className="text-xs font-medium text-[var(--text-muted)]">
+                                    {filledCardCount} card{filledCardCount === 1 ? '' : 's'} filled
+                                </p>
+                                {filledCardCount < 3 && (
+                                    <span className="text-[10px] font-bold text-red-400 bg-red-400/10 px-1.5 py-0.5 rounded-full">
+                                        Min 3 required
+                                    </span>
+                                )}
+                            </div>
                         </div>
                     </div>
 
@@ -513,10 +528,11 @@ export default function CreateFlashcardModal({ setShowCreateFlashcardModal, hand
 
                         <button
                             onClick={onSave}
-                            disabled={!title.trim()}
+                            disabled={isSaveDisabled}
+                            title={isSaveDisabled ? "Enter a title and fill at least 3 cards to save" : "Save deck"}
                             className={`flex items-center gap-2 px-4 sm:px-5 py-2 rounded-lg font-bold text-sm transition-all whitespace-nowrap
                                 ${
-                                !title.trim()
+                                isSaveDisabled
                                     ? 'bg-[var(--nice-blue)]/30 text-white/40 cursor-not-allowed'
                                     : 'bg-[var(--nice-blue)] text-white hover:scale-95 cursor-pointer'
                             }`}

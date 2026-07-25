@@ -544,7 +544,6 @@ export default function FolderContentPage() {
                                     onClick={() => router.push(`/dashboard/Flashcards/${deck.id}`)}
                                     className={`min-w-[85vw] sm:min-w-0 shrink-0 snap-center group relative cursor-pointer aspect-[16/10] ${activeDropdown === deck.id ? 'z-[100]' : 'z-10 hover:z-20'}`}
                                 >
-                                    {/* Layered Card Backs */}
                                     <div className="absolute -bottom-2 inset-x-4 h-full bg-[var(--layer3)] border border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-1" />
                                     <div className="absolute -bottom-1 inset-x-2 h-full bg-[var(--layer2)] border border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-0.5" />
 
