@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { CreditCard, MoreVertical, Plus, Clock } from "lucide-react";
+import { CreditCard, MoreVertical, Plus, Clock, Folder } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
@@ -170,9 +170,16 @@ export default function FlashcardsMainPage() {
         }
     };
 
+    // ─── HELPER FUNCTIONS──────────────────────────────────────────────────────────────
     const formatDate = (date) => new Date(date).toLocaleDateString('en-GB', {
         day: 'numeric', month: 'short', year: 'numeric'
     });
+
+    const getParentFolderName = (parentId) => {
+        if (!parentId) return null;
+        const parent = folders.find(f => f.id === parentId);
+        return parent ? parent.name : 'Unknown Folder';
+    };
 
     // ─── 5. RENDER ──────────────────────────────────────────────────────────────
     if (loading) return (
@@ -237,14 +244,15 @@ export default function FlashcardsMainPage() {
                                 onClick={() => router.push(`/dashboard/Flashcards/${deck.id}`)}
                                 className={`group relative aspect-[16/10] cursor-pointer ${activeDropdown === deck.id ? 'z-[100]' : 'z-10 hover:z-20'}`}
                             >
-                                {/* Layered Card Backs */}
+                                {deck.folder_id && (
+                                    <div className="absolute -top-3.5 left-4 px-3 h-5 bg-[var(--layer3)] rounded-t-lg group-hover:bg-[var(--nice-blue)] transition-colors duration-300 flex items-center justify-center gap-1.5 text-[9px] font-bold uppercase tracking-wider text-[var(--text-muted)] group-hover:text-white z-0">
+                                        <Folder size={10} fill="currentColor" fillOpacity={0.2} />
+                                        <span className="max-w-[120px] truncate">{getParentFolderName(deck.folder_id)}</span>
+                                    </div>
+                                )}
                                 <div className="absolute -bottom-2 inset-x-4 h-full bg-[var(--layer3)] border border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-1" />
                                 <div className="absolute -bottom-1 inset-x-2 h-full bg-[var(--layer2)] border border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-0.5" />
-
-                                {/* Main Face */}
                                 <div className="relative h-full p-4 sm:p-5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-xl group-hover:border-[var(--nice-blue)] transition-colors shadow-sm z-10 flex flex-col justify-between">
-
-                                    {/* Header: Icon & Options Grouped */}
                                     <div className="flex justify-between items-start mb-2 relative dropdown-container">
                                         <div className="p-2 bg-purple-500/10 rounded-lg text-purple-400">
                                             <CreditCard size={18} />

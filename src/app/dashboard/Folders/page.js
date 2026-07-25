@@ -177,6 +177,12 @@ export default function FolderContentPage() {
         day: 'numeric', month: 'short', year: 'numeric'
     });
 
+    const getParentFolderName = (parentId) => {
+        if (!parentId) return null;
+        const parent = folders.find(f => f.id === parentId);
+        return parent ? parent.name : 'Unknown Folder';
+    };
+
     const foldersWithoutParent = folders.filter(f => f.parent_folder_id === null);
 
     // ─── 9. RENDER ────────────────────────────────────────────────────────────────
@@ -215,7 +221,7 @@ export default function FolderContentPage() {
                 <div className="flex items-center justify-between mb-8">
                     <div>
                         <h1 className="text-3xl font-bold text-[var(--text)]">Folders</h1>
-                        <p className="text-[var(--vanilla-cream)] mt-1 text-sm">{foldersWithoutParent.length} folder{foldersWithoutParent.length !== 1 ? 's' : ''}</p>
+                        <p className="text-[var(--text-muted)] mt-1 text-sm">{foldersWithoutParent.length} folder{foldersWithoutParent.length !== 1 ? 's' : ''}</p>
                     </div>
                     <button
                         onClick={() => setShowCreateFolderModal(true)}
@@ -228,15 +234,21 @@ export default function FolderContentPage() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {folders.filter(i => i?.parent_folder_id === null).map(folder => (
+                    {folders.map(folder => (
                         <motion.div
                             key={folder.id}
                             whileHover={activeDropdown !== folder.id ? { y: -4 } : {}}
                             onClick={() => router.push(`/dashboard/Folders/${folder.id}`)}
                             className={`group relative cursor-pointer ${activeDropdown === folder.id ? 'z-[100]' : 'z-10 hover:z-20'}`}
                         >
-                            <div className="absolute -top-2 left-0 w-16 h-4 bg-[var(--layer3)] rounded-t-lg
-                            group-hover:bg-[var(--nice-blue)] transition-colors duration-300" />
+                            <div className={`absolute -top-3.5 left-0 px-3 h-5 bg-[var(--layer3)] rounded-t-lg group-hover:bg-[var(--nice-blue)] transition-colors duration-300 flex items-center justify-center gap-1.5 text-[9px] font-bold uppercase tracking-wider text-[var(--text-muted)] group-hover:text-white z-0 ${folder.parent_folder_id ? 'w-auto' : 'w-16'}`}>
+                                {folder.parent_folder_id && (
+                                    <>
+                                        <Folder size={10} fill="currentColor" fillOpacity={0.2} />
+                                        <span className="max-w-[120px] truncate">{getParentFolderName(folder.parent_folder_id)}</span>
+                                    </>
+                                )}
+                            </div>
 
                             <div className="relative bg-[var(--layer2)] border border-[var(--layer3)] rounded-xl
                             rounded-tl-none p-5 flex flex-col min-h-[140px] shadow-sm group-hover:border-[var(--nice-blue)]

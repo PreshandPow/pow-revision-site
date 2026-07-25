@@ -61,12 +61,6 @@ export default function MaterialsPage() {
     const deleteModalRef = useRef(null);
     const createFolderModalRef = useRef(null);
 
-    // Temporary mock items for Flashcards
-    const [items] = useState([
-        { id: 5, name: 'Calculus Definitions', type: 'flashcard', date: 'May 10' },
-        { id: 6, name: 'Spanish Vocab', type: 'flashcard', date: 'Jun 22' },
-    ]);
-
     const toastStyle = {
         style: {
             border: '1px solid var(--nice-blue)',
@@ -93,8 +87,8 @@ export default function MaterialsPage() {
                 return;
             }
 
-            // Fetch ALL folders and notes for this user
-            const [foldersRes, notesRes] = await Promise.all([
+            // Fetch ALL materials for this user concurrently
+            const [foldersRes, notesRes, flashcardsRes] = await Promise.all([
                 supabase
                     .from('folders')
                     .select('*')
@@ -102,6 +96,11 @@ export default function MaterialsPage() {
                     .order('updated_at', { ascending: false }),
                 supabase
                     .from('notes')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .order('updated_at', { ascending: false }),
+                supabase
+                    .from('flashcard_decks')
                     .select('*')
                     .eq('user_id', user.id)
                     .order('updated_at', { ascending: false })
@@ -112,6 +111,9 @@ export default function MaterialsPage() {
 
             if (notesRes.error) toast.error('Error fetching notes', toastStyle);
             else setNotes(notesRes.data || []);
+
+            if (flashcardsRes.error) toast.error('Error fetching flashcards', toastStyle);
+            else setFlashcards(flashcardsRes.data || []);
 
             setLoading(false);
         };
@@ -131,16 +133,41 @@ export default function MaterialsPage() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // ─── 5. SMART ACTION HANDLERS ───────────────────────────────────────────────
-    const handleRenameConfirm = async (newName) => {
-        const isNote = selectedItem.title !== undefined;
-        const itemType = isNote ? 'note' : 'folder';
+    // ─── HELPER FUNCTIONS ───────────────────────────────────────────────────────
 
+    const getItemType = (item) => {
+        if (!item) return null;
+        if (item.title !== undefined) return 'note';
+        if (item.card_count !== undefined || item.description !== undefined) return 'flashcard';
+        return 'folder';
+    };
+
+    const getParentFolderName = (parentId) => {
+        if (!parentId) return null;
+        const parent = folders.find(f => f.id === parentId);
+        return parent ? parent.name : 'Unknown Folder';
+    };
+
+    const formatDate = (date) => new Date(date).toLocaleDateString('en-GB', {
+        day: 'numeric', month: 'short', year: 'numeric'
+    });
+
+    // Unified 2-Row Horizontal Scroll Grid with Padding Buffer to prevent dropdown clipping
+    const gridWrapperClasses = "grid grid-rows-2 grid-flow-col auto-cols-max gap-6 gap-y-10 pt-5 pb-40 -mb-32 " +
+        "overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pr-24";
+
+
+    // ─── 5. SMART ACTION HANDLERS ───────────────────────────────────────────────
+
+    const handleRenameConfirm = async (newName) => {
+        const itemType = getItemType(selectedItem);
         const success = await rename(itemType, selectedItem.id, newName);
 
         if (success) {
-            if (isNote) {
+            if (itemType === 'note') {
                 setNotes(prev => prev.map(n => n.id === selectedItem.id ? { ...n, title: newName } : n));
+            } else if (itemType === 'flashcard') {
+                setFlashcards(prev => prev.map(f => f.id === selectedItem.id ? { ...f, name: newName } : f));
             } else {
                 setFolders(prev => prev.map(f => f.id === selectedItem.id ? { ...f, name: newName } : f));
             }
@@ -149,59 +176,54 @@ export default function MaterialsPage() {
     };
 
     const handleMoveConfirm = async (destinationId) => {
-        const isNote = selectedItem.title !== undefined;
-        const itemType = isNote ? 'note' : 'folder';
-
+        const itemType = getItemType(selectedItem);
         const loadingToast = toast.loading(`Moving ${itemType}...`, toastStyle);
         const success = await moveItem(itemType, selectedItem.id, destinationId);
         toast.dismiss(loadingToast);
 
         if (success) {
             setShowMoveItemModal(false);
-            // Even if we move it to a specific folder, can be kept visible on the "All Materials" page
-            // so we don't need to filter it out of the array here!
+            const updateParentId = (items) => items.map(item => item.id === selectedItem.id ? { ...item, folder_id: destinationId, parent_folder_id: destinationId } : item);
+
+            if (itemType === 'note') setNotes(updateParentId);
+            else if (itemType === 'flashcard') setFlashcards(updateParentId);
+            else setFolders(updateParentId);
+
             toast.success(`${itemType} moved successfully`, toastStyle);
             setSelectedItem(null);
         }
     };
 
     const handleDeleteConfirm = async () => {
-        const isNote = itemToDelete.title !== undefined;
-        const itemType = isNote ? 'note' : 'folder';
-
+        const itemType = getItemType(itemToDelete);
         const loadingToast = toast.loading(`Deleting ${itemType}...`, toastStyle);
         const success = await deleteItem(itemType, itemToDelete.id);
         toast.dismiss(loadingToast);
 
         if (success) {
-            if (isNote) {
-                setNotes(prev => prev.filter(n => n.id !== itemToDelete.id));
-            } else {
-                setFolders(prev => prev.filter(f => f.id !== itemToDelete.id));
-            }
+            if (itemType === 'note') setNotes(prev => prev.filter(n => n.id !== itemToDelete.id));
+            else if (itemType === 'flashcard') setFlashcards(prev => prev.filter(f => f.id !== itemToDelete.id));
+            else setFolders(prev => prev.filter(f => f.id !== itemToDelete.id));
+
             setItemToDelete(null);
         }
     };
 
     const handleDuplicateConfirm = async (itemToDuplicate) => {
-        const isNote = itemToDuplicate.title !== undefined;
-        const itemType = isNote ? 'note' : 'folder';
-
+        const itemType = getItemType(itemToDuplicate);
         const loadingToast = toast.loading(`Duplicating ${itemType}...`, toastStyle);
         const newItem = await duplicateItem(itemType, itemToDuplicate);
         toast.dismiss(loadingToast);
 
         if (newItem) {
-            if (isNote) {
-                setNotes(prev => [newItem, ...prev]);
-            } else {
-                setFolders(prev => [newItem, ...prev]);
-            }
+            if (itemType === 'note') setNotes(prev => [newItem, ...prev]);
+            else if (itemType === 'flashcard') setFlashcards(prev => [newItem, ...prev]);
+            else setFolders(prev => [newItem, ...prev]);
+
             toast.success(`${itemType} duplicated`, toastStyle);
         }
     };
 
-    // Note: Passing null as folderId so it gets created at the root level!
     const handleCreateNoteInRoot = async () => {
         const newNote = await createNoteAction(null, router);
         if (newNote) setNotes(prev => [newNote, ...prev]);
@@ -214,10 +236,6 @@ export default function MaterialsPage() {
         setShowCreateFolderModal(false);
         setNewFolderName('');
     };
-
-    const formatDate = (date) => new Date(date).toLocaleDateString('en-GB', {
-        day: 'numeric', month: 'short', year: 'numeric'
-    });
 
     // ─── 6. RENDER ──────────────────────────────────────────────────────────────
     if (loading) return (
@@ -258,7 +276,7 @@ export default function MaterialsPage() {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
                     <div>
                         <h1 className="text-3xl font-bold text-[var(--text)]">Materials</h1>
-                        <p className="text-[var(--vanilla-cream)] mt-1 text-sm">Everything you have created all in one place.</p>
+                        <p className="text-[var(--text-muted)] mt-1 text-sm">Everything you have created all in one place.</p>
                     </div>
 
                     <button
@@ -282,10 +300,7 @@ export default function MaterialsPage() {
                         </div>
                     ) : (
                         <div className="relative">
-                            {/* 1. Updated Container: 2-Rows, Column Flow, Right Padding added */}
-                            <div className="grid grid-rows-2 grid-flow-col auto-cols-max gap-6 pt-2 pb-64 -mb-60
-                            overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none]
-                            [scrollbar-width:none] pr-24">
+                            <div className={gridWrapperClasses}>
                                 {folders.map((folder) => (
                                     <motion.div
                                         key={folder.id}
@@ -294,9 +309,16 @@ export default function MaterialsPage() {
                                         className={`w-[85vw] sm:w-[320px] shrink-0 snap-start group relative cursor-pointer
                                          ${activeDropdown === folder.id ? 'z-[100]' : 'z-10 hover:z-20'}`}
                                     >
-                                        <div className="absolute -top-2 left-0 w-16 h-4 bg-[var(--layer3)] rounded-t-lg
-                                            group-hover:bg-[var(--nice-blue)] transition-colors duration-300" />
-                                        <div className="relative bg-[var(--layer2)] border border-[var(--layer3)] rounded-xl
+                                        <div className={`absolute -top-3.5 left-0 px-3 h-5 bg-[var(--layer3)] rounded-t-lg group-hover:bg-[var(--nice-blue)] transition-colors duration-300 flex items-center justify-center gap-1.5 text-[9px] font-bold uppercase tracking-wider text-[var(--text-muted)] group-hover:text-white z-0 ${folder.parent_folder_id ? 'w-auto' : 'w-16'}`}>
+                                            {folder.parent_folder_id && (
+                                                <>
+                                                    <Folder size={10} fill="currentColor" fillOpacity={0.2} />
+                                                    <span className="max-w-[120px] truncate">{getParentFolderName(folder.parent_folder_id)}</span>
+                                                </>
+                                            )}
+                                        </div>
+
+                                        <div className="relative z-10 bg-[var(--layer2)] border border-[var(--layer3)] rounded-xl
                                             rounded-tl-none p-5 flex flex-col min-h-[140px] shadow-sm group-hover:border-[var(--nice-blue)]
                                             group-hover:shadow-md transition-all duration-300">
 
@@ -337,17 +359,14 @@ export default function MaterialsPage() {
                                                     {folder.name || 'Untitled Folder'}
                                                 </h3>
 
-                                                <div className="flex items-center justify-between border-t border-[var(--layer3)]
-                                            pt-3 mt-3">
-                                                    <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase
-                                                tracking-wider text-[var(--text-muted)]">
+                                                <div className="flex items-center justify-between border-t border-[var(--layer3)] pt-3 mt-3">
+                                                    <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
                                                         <Clock size={12} />
                                                         {formatDate(folder.updated_at)}
                                                     </div>
-                                                    <span className="text-[10px] bg-[var(--layer3)] px-2 py-0.5 rounded-full
-                                                text-[var(--text-muted)] font-semibold">
-                                                    Folder
-                                                </span>
+                                                    <span className="text-[10px] bg-[var(--layer3)] px-2 py-0.5 rounded-full text-[var(--text-muted)] font-semibold">
+                                                        Folder
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
@@ -372,9 +391,7 @@ export default function MaterialsPage() {
                         </div>
                     ) : (
                         <div className="relative">
-                            <div className="grid grid-rows-2 grid-flow-col auto-cols-max gap-6 pt-2 pb-64 -mb-60
-                            overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none]
-                            [scrollbar-width:none] pr-24">
+                            <div className={gridWrapperClasses}>
                                 {notes.map((note) => (
                                     <motion.div
                                         key={note.id}
@@ -383,14 +400,18 @@ export default function MaterialsPage() {
                                         className={`w-[85vw] sm:w-[320px] shrink-0 snap-start group relative flex flex-col 
                                         cursor-pointer ${activeDropdown === note.id ? 'z-[100]' : 'z-10 hover:z-20'}`}
                                     >
+                                        {note.folder_id && (
+                                            <div className="absolute -top-3.5 left-4 px-3 h-5 bg-[var(--layer3)] rounded-t-lg group-hover:bg-[var(--nice-blue)] transition-colors duration-300 flex items-center justify-center gap-1.5 text-[9px] font-bold uppercase tracking-wider text-[var(--text-muted)] group-hover:text-white z-0">
+                                                <Folder size={10} fill="currentColor" fillOpacity={0.2} />
+                                                <span className="max-w-[120px] truncate">{getParentFolderName(note.folder_id)}</span>
+                                            </div>
+                                        )}
+
                                         <div className="absolute top-0 right-0 w-8 h-8 bg-gradient-to-bl from-[var(--layer1)]
-                                            to-[var(--layer2)] border-b border-l border-[var(--layer3)] rounded-bl-xl z-10
-                                            group-hover:border-[var(--nice-blue)] group-hover:from-[var(--nice-blue)]/10
-                                            transition-all duration-300" />
-                                        <div className="relative bg-[var(--layer2)] border border-[var(--layer3)]
-                                        rounded-xl p-4 flex flex-col h-full min-h-[100px] max-h-[200px] shadow-sm
-                                        group-hover:border-[var(--nice-blue)]
-                                         group-hover:shadow-md transition-all duration-300">
+                                            to-[var(--layer2)] border-b border-l border-[var(--layer3)] rounded-bl-xl z-20
+                                            group-hover:border-[var(--nice-blue)] group-hover:from-[var(--nice-blue)]/10 transition-all duration-300" />
+
+                                        <div className="relative z-10 bg-[var(--layer2)] border border-[var(--layer3)] rounded-xl p-4 flex flex-col h-full min-h-[100px] max-h-[200px] shadow-sm group-hover:border-[var(--nice-blue)] group-hover:shadow-md transition-all duration-300">
                                             <div className="flex items-start justify-between mb-2 pr-6 relative dropdown-container">
                                                 <div className="p-2 bg-[var(--nice-blue)]/10 rounded-lg text-[var(--nice-blue)]">
                                                     <FileText size={20} />
@@ -400,8 +421,7 @@ export default function MaterialsPage() {
                                                         e.stopPropagation();
                                                         setActiveDropdown(activeDropdown === note.id ? null : note.id);
                                                     }}
-                                                    className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text)]
-                                                hover:bg-[var(--layer3)] transition-colors cursor-pointer"
+                                                    className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                                                 >
                                                     <MoreVertical size={18} />
                                                 </button>
@@ -424,12 +444,10 @@ export default function MaterialsPage() {
                                             </div>
 
                                             <div className="flex-1 flex flex-col min-h-0">
-                                                <h3 className="font-bold text-[var(--text)] text-base line-clamp-2 mb-2 pr-4
-                                            leading-tight shrink-0">
+                                                <h3 className="font-bold text-[var(--text)] text-base line-clamp-2 mb-2 pr-4 leading-tight shrink-0">
                                                     {note.title || 'Untitled Note'}
                                                 </h3>
-                                                <div className="text-xs text-[var(--text-muted)] line-clamp-3 mb-4 flex-1
-                                            leading-relaxed overflow-hidden break-words">
+                                                <div className="text-xs text-[var(--text-muted)] line-clamp-3 mb-4 flex-1 leading-relaxed overflow-hidden break-words">
                                                     {note.content
                                                         ? (
                                                             note.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 90)
@@ -439,15 +457,13 @@ export default function MaterialsPage() {
                                                 </div>
 
                                                 <div className="flex items-center justify-between border-t border-[var(--layer3)] pt-3 mt-auto">
-                                                    <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase
-                                                tracking-wider text-[var(--text-muted)]">
+                                                    <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
                                                         <Clock size={12} />
                                                         {formatDate(note.updated_at)}
                                                     </div>
-                                                    <span className="text-[10px] bg-[var(--layer3)] px-2 py-0.5 rounded-full
-                                                text-[var(--text-muted)] font-semibold">
-                                                    Note
-                                                </span>
+                                                    <span className="text-[10px] bg-[var(--layer3)] px-2 py-0.5 rounded-full text-[var(--text-muted)] font-semibold">
+                                                        Note
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
@@ -456,8 +472,7 @@ export default function MaterialsPage() {
                             </div>
 
                             {notes.length > 2 && (
-                                <div className="absolute right-0 top-0 bottom-[15rem] w-24 bg-gradient-to-l
-                                from-[var(--layer1)] to-transparent pointer-events-none z-30" />
+                                <div className="absolute right-0 top-0 bottom-[15rem] w-24 bg-gradient-to-l from-[var(--layer1)] to-transparent pointer-events-none z-30" />
                             )}
                         </div>
                     )}
@@ -466,43 +481,95 @@ export default function MaterialsPage() {
                 {/* ─── FLASHCARDS SECTION ─── */}
                 <div className="mb-12">
                     <h2 className="text-xs font-black uppercase tracking-widest text-[var(--text-muted)] mb-5">Flashcards</h2>
-                    <div className="grid grid-rows-2 grid-flow-col auto-cols-max gap-6 pt-2 pb-64 -mb-60 overflow-x-auto
-                    snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pr-24">
-                        {items.filter(i => i.type === 'flashcard').map((flashcard) => (
-                            <motion.div
-                                key={flashcard.id}
-                                whileHover={{ y: -6 }}
-                                className="min-w-[85vw] sm:min-w-[320px] shrink-0 snap-start group relative aspect-[4/3] cursor-pointer"
-                            >
-                                <div className="absolute -bottom-2 inset-x-4 h-full bg-[var(--layer3)]
-                                border border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-1" />
-                                <div className="absolute -bottom-1 inset-x-2 h-full bg-[var(--layer2)]
-                                border border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-0.5" />
+                    {flashcards.length === 0 ? (
+                        <div className="col-span-full py-10 flex flex-col items-center justify-center border-2 border-dashed border-[var(--layer3)] rounded-2xl bg-[var(--layer1)]/30 text-center">
+                            <p className="text-sm font-medium text-[var(--text-muted)]">No flashcard decks yet.</p>
+                        </div>
+                    ) : (
+                        <div className="relative">
+                            <div className={gridWrapperClasses}>
+                                {flashcards.map((deck) => (
+                                    <motion.div
+                                        key={deck.id}
+                                        whileHover={activeDropdown !== deck.id ? { y: -4 } : {}}
+                                        onClick={() => router.push(`/dashboard/Flashcards/${deck.id}`)}
+                                        className={`w-[85vw] sm:w-[320px] shrink-0 snap-start group relative cursor-pointer aspect-[16/10] ${activeDropdown === deck.id ? 'z-[100]' : 'z-10 hover:z-20'}`}
+                                    >
+                                        {deck.folder_id && (
+                                            <div className="absolute -top-3.5 left-4 px-3 h-5 bg-[var(--layer3)] rounded-t-lg group-hover:bg-[var(--nice-blue)] transition-colors duration-300 flex items-center justify-center gap-1.5 text-[9px] font-bold uppercase tracking-wider text-[var(--text-muted)] group-hover:text-white z-0">
+                                                <Folder size={10} fill="currentColor" fillOpacity={0.2} />
+                                                <span className="max-w-[120px] truncate">{getParentFolderName(deck.folder_id)}</span>
+                                            </div>
+                                        )}
+                                        <div className="absolute -bottom-2 inset-x-4 h-full bg-[var(--layer3)] border border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-1 z-0" />
+                                        <div className="absolute -bottom-1 inset-x-2 h-full bg-[var(--layer2)] border border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-0.5 z-0" />
 
-                                <div className="relative h-full p-5 bg-[var(--layer1)] border border-[var(--layer3)]
-                                rounded-xl group-hover:border-[var(--nice-blue)] transition-colors shadow-sm z-10 flex
-                                flex-col justify-between">
-                                    <div className="flex justify-between items-start">
-                                        <div className="p-2 bg-purple-500/10 rounded-lg text-purple-500">
-                                            <CreditCard size={20} />
-                                        </div>
-                                    </div>
+                                        <div className="relative z-10 h-full p-4 sm:p-5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-xl group-hover:border-[var(--nice-blue)] transition-colors shadow-sm flex flex-col justify-between">
+                                            <div className={`flex justify-between items-start mb-2 relative dropdown-container ${activeDropdown === deck.id ? 'z-[100]' : 'z-10'}`}>
+                                                <div className="p-2 bg-purple-500/10 rounded-lg text-purple-400">
+                                                    <CreditCard size={18} />
+                                                </div>
 
-                                    <div>
-                                        <h3 className="font-bold text-[var(--text)] leading-snug mb-1">{flashcard.name}</h3>
-                                        <div className="flex items-center justify-between">
-                                            <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase
-                                            tracking-tight">Edited {flashcard.date}</p>
-                                            <span className="text-[10px] bg-purple-500/10 text-purple-500 px-2
-                                            py-0.5 rounded-full font-bold">
-                                                Deck
-                                            </span>
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className="text-[10px] bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full font-bold">
+                                                        {deck?.card_count ?? deck.cards?.length ?? 0} cards
+                                                    </span>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setActiveDropdown(activeDropdown === deck.id ? null : deck.id);
+                                                        }}
+                                                        className="p-1 hover:bg-[var(--layer3)] text-[var(--text-muted)] hover:text-[var(--text)] rounded-md transition-colors cursor-pointer"
+                                                    >
+                                                        <MoreVertical size={15} />
+                                                    </button>
+                                                </div>
+
+                                                <AnimatePresence>
+                                                    {activeDropdown === deck.id && (
+                                                        <UseItemOptionDropdown
+                                                            item={deck}
+                                                            itemType='flashcard'
+                                                            setActiveDropdown={setActiveDropdown}
+                                                            setShowRenameNoteModal={setShowRenameItemModal}
+                                                            setItemName={setItemNameInput}
+                                                            setSelectedItem={setSelectedItem}
+                                                            setShowMoveItemModal={setShowMoveItemModal}
+                                                            handleDuplicateNote={handleDuplicateConfirm}
+                                                            setNoteToDelete={setItemToDelete}
+                                                        />
+                                                    )}
+                                                </AnimatePresence>
+                                            </div>
+
+                                            <div className="flex-1 flex flex-col min-h-0 mt-1">
+                                                <h3 className="font-bold text-[var(--text)] text-sm sm:text-base leading-tight mb-1 truncate">
+                                                    {deck.name || deck.title || 'Untitled Deck'}
+                                                </h3>
+                                                <p className="text-[10px] sm:text-xs text-[var(--text-muted)] line-clamp-2 leading-relaxed">
+                                                    {deck.description || 'No description added yet.'}
+                                                </p>
+                                            </div>
+
+                                            <div className="flex items-center justify-between mt-auto pt-2">
+                                                <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-tight text-[var(--text-muted)]">
+                                                    <Clock size={12} />
+                                                    Edited {formatDate(deck.updated_at)}
+                                                </div>
+                                                <span className="text-[10px] bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full font-bold hidden sm:block">
+                                                    Deck
+                                                </span>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
+                                    </motion.div>
+                                ))}
+                            </div>
+
+                            {flashcards.length > 2 && (
+                                <div className="absolute right-0 top-0 bottom-[15rem] w-24 bg-gradient-to-l from-[var(--layer1)] to-transparent pointer-events-none z-30" />
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* ─── MODALS ──────────────────────────────────────────────────────────── */}
@@ -510,7 +577,7 @@ export default function MaterialsPage() {
                     {itemToDelete && (
                         <UseDeleteItemModal
                             item={itemToDelete}
-                            itemType={itemToDelete.title !== undefined ? 'note' : 'folder'}
+                            itemType={getItemType(itemToDelete)}
                             deleteItemModalRef={deleteModalRef}
                             handleDeleteConfirm={handleDeleteConfirm}
                             setNoteToDelete={setItemToDelete}
@@ -537,7 +604,7 @@ export default function MaterialsPage() {
                                 setShowMoveItemModal(false);
                                 setSelectedItem(null);
                             }}
-                            itemType={selectedItem.title !== undefined ? 'note' : 'folder'}
+                            itemType={getItemType(selectedItem)}
                         />
                     )}
 

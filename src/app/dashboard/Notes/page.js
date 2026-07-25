@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
-import { Plus, FileText, Clock, MoreVertical } from 'lucide-react';
+import { Plus, FileText, Clock, MoreVertical, Folder } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -183,6 +183,12 @@ export default function NotesPage() {
         return html.replace(/<[^>]*>?/gm, '');
     };
 
+    const getParentFolderName = (parentId) => {
+        if (!parentId) return null;
+        const parent = folders.find(f => f.id === parentId);
+        return parent ? parent.name : 'Unknown Folder';
+    };
+
     // ─── 9. RENDER ────────────────────────────────────────────────────────────────
     if (loading) return (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--layer1)] backdrop-blur-xl p-6">
@@ -219,7 +225,7 @@ export default function NotesPage() {
                 <div className="flex items-center justify-between mb-8">
                     <div>
                         <h1 className="text-3xl font-bold text-[var(--text)]">Notes</h1>
-                        <p className="text-[var(--vanilla-cream)] mt-1 text-sm">{notes.length} note{notes.length !== 1 ? 's' : ''}</p>
+                        <p className="text-[var(--text-muted)] mt-1 text-sm">{notes.length} note{notes.length !== 1 ? 's' : ''}</p>
                     </div>
                     <button
                         onClick={handleCreateNote}
@@ -256,6 +262,12 @@ export default function NotesPage() {
                                         rounded-2xl p-5 flex flex-col gap-3 cursor-pointer transition-colors duration-200
                                         ${activeDropdown === note.id ? 'z-[100] border-[var(--nice-blue)]' : 'z-10 hover:border-[var(--nice-blue)]'}`}
                             >
+                                {note.folder_id && (
+                                    <div className="absolute -top-3.5 left-4 px-3 h-5 bg-[var(--layer3)] rounded-t-lg group-hover:bg-[var(--nice-blue)] transition-colors duration-300 flex items-center justify-center gap-1.5 text-[9px] font-bold uppercase tracking-wider text-[var(--text-muted)] group-hover:text-white z-0">
+                                        <Folder size={10} fill="currentColor" fillOpacity={0.2} />
+                                        <span className="max-w-[120px] truncate">{getParentFolderName(note.folder_id)}</span>
+                                    </div>
+                                )}
                                 <div className={`flex items-start justify-between gap-2 dropdown-container ${activeDropdown === 'header' ? 'z-[100]' : 'z-10'}`}>
                                     <p className="font-bold text-[var(--text)] truncate flex-1">{note.title || 'Untitled'}</p>
                                     <button
