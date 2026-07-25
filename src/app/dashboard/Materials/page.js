@@ -277,7 +277,9 @@ export default function MaterialsPage() {
                 <div className="mb-12">
                     <h2 className="text-xs font-black uppercase tracking-widest text-[var(--text-muted)] mb-5">Folders</h2>
                     {folders.length === 0 ? (
-                        <p className="text-sm text-[var(--text-muted)]">No folders yet.</p>
+                        <div className="col-span-full py-10 flex flex-col items-center justify-center border-2 border-dashed border-[var(--layer3)] rounded-2xl bg-[var(--layer1)]/30 text-center">
+                            <p className="text-sm font-medium text-[var(--text-muted)]">No Folders yet.</p>
+                        </div>
                     ) : (
                         <div className="relative">
                             {/* 1. Updated Container: 2-Rows, Column Flow, Right Padding added */}
@@ -365,7 +367,9 @@ export default function MaterialsPage() {
                 <div className="mb-12">
                     <h2 className="text-xs font-black uppercase tracking-widest text-[var(--text-muted)] mb-5">Notes</h2>
                     {notes.length === 0 ? (
-                        <p className="text-sm text-[var(--text-muted)]">No notes yet.</p>
+                        <div className="col-span-full py-10 flex flex-col items-center justify-center border-2 border-dashed border-[var(--layer3)] rounded-2xl bg-[var(--layer1)]/30 text-center">
+                            <p className="text-sm font-medium text-[var(--text-muted)]">No notes yet.</p>
+                        </div>
                     ) : (
                         <div className="relative">
                             <div className="grid grid-rows-2 grid-flow-col auto-cols-max gap-6 pt-2 pb-64 -mb-60

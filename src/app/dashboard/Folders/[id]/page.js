@@ -64,11 +64,6 @@ export default function FolderContentPage() {
     const deleteModalRef = useRef(null);
     const createFolderModalRef = useRef(null);
 
-    // Temporary mock items for Flashcards
-    const [items] = useState([
-        { id: 5, name: 'Calculus Definitions', type: 'flashcard', date: 'May 10' },
-    ]);
-
     const toastStyle = {
         style: {
             border: '1px solid var(--nice-blue)',
@@ -144,7 +139,6 @@ export default function FolderContentPage() {
                 .from('flashcard_decks')
                 .select('*')
                 .eq('folder_id', id)
-                .is('folder_id', null) // Only fetch root-level decks here
                 .order('updated_at', { ascending: false });
 
             if (error) toast.error('Error fetching flashcards', toastStyle);
@@ -271,6 +265,9 @@ export default function FolderContentPage() {
         day: 'numeric', month: 'short', year: 'numeric'
     });
 
+    // Unified wrapper class for all three grid sections to prevent dropdown clipping
+    const gridWrapperClasses = "flex overflow-x-auto sm:overflow-visible sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-2 pb-40 -mb-32 sm:pb-32 sm:-mb-24 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]";
+
     // ─── 6. RENDER ──────────────────────────────────────────────────────────────
     if (loading) return (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--layer1)] backdrop-blur-xl p-6">
@@ -363,15 +360,15 @@ export default function FolderContentPage() {
                     </button>
                 </div>
 
-                {/* Folders */}
+                {/* ─── FOLDERS SECTION ─── */}
                 <div className="mb-12">
                     <h2 className="text-xs font-black uppercase tracking-widest text-[var(--text-muted)] mb-5">Folders</h2>
                     {folders.length === 0 ? (
-                        <p className="text-sm text-[var(--text-muted)]">No folders yet.</p>
+                        <div className="col-span-full py-10 flex flex-col items-center justify-center border-2 border-dashed border-[var(--layer3)] rounded-2xl bg-[var(--layer1)]/30 text-center">
+                            <p className="text-sm font-medium text-[var(--text-muted)]">No folders in this folder yet.</p>
+                        </div>
                     ) : (
-                        <div className="flex overflow-x-auto sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6
-                        pt-2 pb-64 -mb-60 sm:pb-0 sm:mb-0 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden
-                        [-ms-overflow-style:none] [scrollbar-width:none]">
+                        <div className={gridWrapperClasses}>
                             {folders.map((folder) => (
                                 <motion.div
                                     key={folder.id}
@@ -387,7 +384,7 @@ export default function FolderContentPage() {
                                     group-hover:border-[var(--nice-blue)] group-hover:shadow-md transition-all duration-300">
 
                                         <div className={`flex items-start justify-between mb-3 relative 
-                                        dropdown-container ${activeDropdown === 'header' ? 'z-[100]' : 'z-10'}`}>
+                                        dropdown-container ${activeDropdown === folder.id ? 'z-[100]' : 'z-10'}`}>
                                             <div className="p-2 bg-[var(--nice-blue)]/10 rounded-lg text-[var(--nice-blue)]">
                                                 <Folder size={20} fill="currentColor" fillOpacity={0.2} />
                                             </div>
@@ -441,15 +438,15 @@ export default function FolderContentPage() {
                     )}
                 </div>
 
-                {/* Notes */}
+                {/* ─── NOTES SECTION ─── */}
                 <div className="mb-12">
                     <h2 className="text-xs font-black uppercase tracking-widest text-[var(--text-muted)] mb-5">Notes</h2>
                     {notes.length === 0 ? (
-                        <p className="text-sm text-[var(--text-muted)]">No notes yet.</p>
+                        <div className="col-span-full py-10 flex flex-col items-center justify-center border-2 border-dashed border-[var(--layer3)] rounded-2xl bg-[var(--layer1)]/30 text-center">
+                            <p className="text-sm font-medium text-[var(--text-muted)]">No notes in this folder yet.</p>
+                        </div>
                     ) : (
-                        <div className="flex overflow-x-auto sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4
-                        gap-6 pt-2 pb-64 -mb-60 sm:pb-0 sm:mb-0 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden
-                        [-ms-overflow-style:none] [scrollbar-width:none]">
+                        <div className={gridWrapperClasses}>
                             {notes.map((note) => (
                                 <motion.div
                                     key={note.id}
@@ -466,7 +463,7 @@ export default function FolderContentPage() {
                                      p-5 flex flex-col h-full min-h-[160px] shadow-sm group-hover:border-[var(--nice-blue)]
                                       group-hover:shadow-md transition-all duration-300">
                                         <div className={`flex items-start justify-between mb-4 pr-6 relative dropdown-container
-                                         ${activeDropdown === 'header' ? 'z-[100]' : 'z-10'}`}>
+                                         ${activeDropdown === note.id ? 'z-[100]' : 'z-10'}`}>
                                             <div className="p-2 bg-[var(--nice-blue)]/10 rounded-lg text-[var(--nice-blue)]">
                                                 <FileText size={20} />
                                             </div>
@@ -502,7 +499,7 @@ export default function FolderContentPage() {
                                             <h3 className="font-bold text-[var(--text)] text-base line-clamp-2 mb-2 pr-4 leading-tight">
                                                 {note.title || 'Untitled Note'}
                                             </h3>
-                                            <div className="text-xs text-[var(--text-muted)] line-clamp-3 mb-4 flex-1 leading-relaxed overflow-hidden break-words"> {/* 👈 Added overflow-hidden and break-words */}
+                                            <div className="text-xs text-[var(--text-muted)] line-clamp-3 mb-4 flex-1 leading-relaxed overflow-hidden break-words">
                                                 {note.content
                                                     ? (
                                                         note.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 40)
@@ -528,65 +525,90 @@ export default function FolderContentPage() {
                     )}
                 </div>
 
-                {/* Flashcards Section */}
+                {/* ─── FLASHCARDS SECTION ─── */}
                 <div className="mb-12">
                     <div className="flex items-center justify-between mb-5">
                         <h2 className="text-xs font-black uppercase tracking-widest text-[var(--text-muted)]">Flashcards</h2>
-                        <span className="text-xs font-bold text-[var(--text-muted)]">{flashcards.length} Decks</span>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {flashcards.length === 0 ? (
-                            <div className="col-span-full py-10 flex flex-col items-center justify-center border-2 border-dashed border-[var(--layer3)] rounded-2xl bg-[var(--layer1)]/30 text-center">
-                                <p className="text-sm font-medium text-[var(--text-muted)]">No flashcard decks in this folder yet.</p>
-                            </div>
-                        ) : (
-                            flashcards.map((deck) => (
+                    {flashcards.length === 0 ? (
+                        <div className="col-span-full py-10 flex flex-col items-center justify-center border-2 border-dashed border-[var(--layer3)] rounded-2xl bg-[var(--layer1)]/30 text-center">
+                            <p className="text-sm font-medium text-[var(--text-muted)]">No flashcard decks in this folder yet.</p>
+                        </div>
+                    ) : (
+                        <div className={gridWrapperClasses}>
+                            {flashcards.map((deck) => (
                                 <motion.div
                                     key={deck.id}
-                                    whileHover={{ y: -4 }}
+                                    whileHover={activeDropdown !== deck.id ? { y: -4 } : {}}
                                     onClick={() => router.push(`/dashboard/Flashcards/${deck.id}`)}
-                                    className="group relative aspect-[16/10] cursor-pointer"
+                                    className={`min-w-[85vw] sm:min-w-0 shrink-0 snap-center group relative cursor-pointer aspect-[16/10] ${activeDropdown === deck.id ? 'z-[100]' : 'z-10 hover:z-20'}`}
                                 >
+                                    {/* Layered Card Backs */}
                                     <div className="absolute -bottom-2 inset-x-4 h-full bg-[var(--layer3)] border border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-1" />
                                     <div className="absolute -bottom-1 inset-x-2 h-full bg-[var(--layer2)] border border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-0.5" />
 
                                     <div className="relative h-full p-4 sm:p-5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-xl group-hover:border-[var(--nice-blue)] transition-colors shadow-sm z-10 flex flex-col justify-between">
-                                        <div className="flex justify-between items-start">
+                                        <div className={`flex justify-between items-start mb-2 relative dropdown-container ${activeDropdown === deck.id ? 'z-[100]' : 'z-10'}`}>
                                             <div className="p-2 bg-purple-500/10 rounded-lg text-purple-400">
                                                 <CreditCard size={18} />
                                             </div>
 
                                             <div className="flex items-center gap-1.5">
-                                            <span className="text-[10px] bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full font-bold">
-                                                {deck?.card_count ?? '?'} cards
-                                            </span>
+                                                <span className="text-[10px] bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full font-bold">
+                                                    {deck?.card_count ?? deck.cards?.length ?? 0} cards
+                                                </span>
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        setSelectedItem(flashcard);
-                                                        setShowOptionsModal(true);
+                                                        setActiveDropdown(activeDropdown === deck.id ? null : deck.id);
                                                     }}
                                                     className="p-1 hover:bg-[var(--layer3)] text-[var(--text-muted)] hover:text-[var(--text)] rounded-md transition-colors cursor-pointer"
                                                 >
                                                     <MoreVertical size={15} />
                                                 </button>
                                             </div>
+
+                                            <AnimatePresence>
+                                                {activeDropdown === deck.id && (
+                                                    <UseItemOptionDropdown
+                                                        item={deck}
+                                                        itemType='flashcard'
+                                                        setActiveDropdown={setActiveDropdown}
+                                                        setShowRenameNoteModal={setShowRenameItemModal}
+                                                        setItemName={setItemNameInput}
+                                                        setSelectedItem={setSelectedItem}
+                                                        setShowMoveItemModal={setShowMoveItemModal}
+                                                        handleDuplicateNote={handleDuplicateConfirm}
+                                                        setNoteToDelete={setItemToDelete}
+                                                    />
+                                                )}
+                                            </AnimatePresence>
                                         </div>
 
-                                        <div className="mt-2">
+                                        <div className="flex-1 flex flex-col min-h-0 mt-1">
                                             <h3 className="font-bold text-[var(--text)] text-sm sm:text-base leading-tight mb-1 truncate">
                                                 {deck.name || deck.title}
                                             </h3>
-                                            <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-tight">
-                                                Edited {deck.date || 'Recently'}
+                                            <p className="text-[10px] sm:text-xs text-[var(--text-muted)] line-clamp-2 leading-relaxed">
+                                                {deck.description || 'No description added yet.'}
                                             </p>
+                                        </div>
+
+                                        <div className="flex items-center justify-between mt-auto pt-2">
+                                            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-tight text-[var(--text-muted)]">
+                                                <Clock size={12} />
+                                                Edited {formatDate(deck.updated_at)}
+                                            </div>
+                                            <span className="text-[10px] bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full font-bold hidden sm:block">
+                                                Deck
+                                            </span>
                                         </div>
                                     </div>
                                 </motion.div>
-                            ))
-                        )}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 {/* ─── MODALS ──────────────────────────────────────────────────────────── */}

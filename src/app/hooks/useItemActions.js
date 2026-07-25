@@ -68,6 +68,10 @@ export function useMoveItem() {
                 tableName = 'notes';
                 tableRow = 'folder_id';
             }
+            if (itemType === 'flashcard') {
+                tableName = 'flashcard_decks';
+                tableRow = 'folder_id';
+            }
             if (destinationId === 'root') {
                 const { error } = await supabase
                     .from(tableName)

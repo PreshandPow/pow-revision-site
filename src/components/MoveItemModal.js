@@ -1,29 +1,24 @@
 'use client';
 
 import { motion } from "framer-motion";
-import {useEffect, useState} from "react";
+import { useState } from "react";
 import { Folder } from "lucide-react";
 
-export default function MoveItemModal({ moveModalRef, onClose, folders, currentItem, onMove, itemType }) {
+export default function MoveItemModal({ moveModalRef, onClose, folders = [], currentItem, onMove, itemType }) {
     const [selectedDestination, setSelectedDestination] = useState(null);
-    const [parentRowName, setParentRowName] = useState(null);
-    const [rowName, setRowName] = useState(null);
 
-    const currentParentFolder = folders.find(f => f.id === currentItem?.[parentRowName]);
-    const availableFolders = folders.filter(f => f.id !== currentItem?.id && f.id !== currentParentFolder?.id);
+    // 1. Derive keys synchronously based on itemType (No useEffect needed!)
+    const parentRowName = itemType === 'folder' ? 'parent_folder_id' : 'folder_id';
+    const rowName = itemType === 'note' ? 'title' : 'name';
 
-    useEffect(() => {
-        if (itemType === 'note') {
-            setParentRowName('folder_id');
-            setRowName('title');
-        }
-        if (itemType === 'folder') {
-            setParentRowName('parent_folder_id');
-            setRowName('name');
-        }
-    })
+    // 2. Identify the parent ID and if it lives in the root directory
+    const parentId = currentItem?.[parentRowName];
+    const isAtRoot = !parentId; // If it's null or undefined, it's in the main directory
 
-    console.log("DEBUG MOVE ITEM:", { rowName });
+    const currentParentFolder = folders.find(f => f.id === parentId);
+
+    // 3. Filter out the item itself and the folder it currently lives in
+    const availableFolders = folders.filter(f => f.id !== currentItem?.id && f.id !== parentId);
 
     return (
         <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
@@ -41,27 +36,29 @@ export default function MoveItemModal({ moveModalRef, onClose, folders, currentI
                         Select a destination for <span className="font-bold text-[var(--text)]">{currentItem?.[rowName] || 'this item'}</span>.
                     </p>
                 </div>
+
                 <div className="px-6 pb-6 max-h-[300px] overflow-y-auto custom-scrollbar flex flex-col gap-2">
 
-                    {currentParentFolder && (
-                        <>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Current location</p>
-                            <div className="flex items-center gap-3 w-full p-3 rounded-lg border border-[var(--nice-blue)] bg-[var(--nice-blue)]/5 text-left">
-                                <div className="p-1.5 rounded-md bg-[var(--nice-blue)] text-white">
-                                    <Folder size={18} fill="currentColor" />
-                                </div>
-                                <span className="text-sm font-medium truncate text-[var(--text)]">
-                    {currentParentFolder.name || 'Untitled Folder'}
-                </span>
+                    {/* CURRENT LOCATION (Always Shows) */}
+                    <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-2 mt-1">Current location</p>
+                        <div className="flex items-center gap-3 w-full p-3 rounded-lg border border-[var(--nice-blue)] bg-[var(--nice-blue)]/5 text-left">
+                            <div className="p-1.5 rounded-md bg-[var(--nice-blue)] text-white">
+                                <Folder size={18} fill="currentColor" />
                             </div>
-                            <div className="h-px bg-[var(--layer3)] my-1" />
-                        </>
-                    )}
-                    {parentRowName && (
+                            <span className="text-sm font-medium truncate text-[var(--text)]">
+                                {isAtRoot ? 'Main Directory (Root)' : (currentParentFolder?.name || 'Unknown Folder')}
+                            </span>
+                        </div>
+                        <div className="h-px bg-[var(--layer3)] my-3" />
+                    </div>
+
+                    {/* ROOT DESTINATION (Only shows if NOT currently at root) */}
+                    {!isAtRoot && (
                         <button
                             onClick={() => setSelectedDestination('root')}
-                            className={`flex items-center gap-3 w-full p-3 rounded-lg border transition-all duration-200 text-left cursor-pointer
-                ${selectedDestination === 'root'
+                            className={`flex items-center gap-3 w-full p-3 rounded-lg border transition-all duration-200 text-left cursor-pointer mb-1
+                            ${selectedDestination === 'root'
                                 ? 'border-[var(--nice-blue)] bg-[var(--nice-blue)]/5'
                                 : 'border-[var(--layer3)] bg-[var(--layer2)] hover:border-[var(--text-muted)]'}`}
                         >
@@ -69,12 +66,14 @@ export default function MoveItemModal({ moveModalRef, onClose, folders, currentI
                                 <Folder size={18} />
                             </div>
                             <span className="text-sm font-medium text-[var(--nice-blue)]">
-                Main Directory (Root)
-            </span>
+                                Main Directory (Root)
+                            </span>
                         </button>
                     )}
+
+                    {/* AVAILABLE FOLDER DESTINATIONS */}
                     {availableFolders.length === 0 ? (
-                        <div className="text-center py-8 text-sm text-[var(--text-muted)] border border-dashed border-[var(--layer3)] rounded-xl bg-[var(--layer2)]/50">
+                        <div className="text-center py-8 text-sm text-[var(--text-muted)] border border-dashed border-[var(--layer3)] rounded-xl bg-[var(--layer2)]/50 mt-1">
                             No other folders available.
                         </div>
                     ) : (
@@ -84,16 +83,16 @@ export default function MoveItemModal({ moveModalRef, onClose, folders, currentI
                                     key={folder.id}
                                     onClick={() => setSelectedDestination(folder.id)}
                                     className={`flex items-center gap-3 w-full p-3 rounded-lg border transition-all duration-200 text-left cursor-pointer
-                    ${selectedDestination === folder.id
+                                    ${selectedDestination === folder.id
                                         ? 'border-[var(--nice-blue)] bg-[var(--nice-blue)]/5'
                                         : 'border-[var(--layer3)] bg-[var(--layer2)] hover:border-[var(--text-muted)]'}`}
                                 >
                                     <div className={`p-1.5 rounded-md ${selectedDestination === folder.id ? 'bg-[var(--nice-blue)] text-white' : 'bg-[var(--layer3)] text-[var(--text-muted)]'}`}>
                                         <Folder size={18} fill={selectedDestination === folder.id ? "currentColor" : "none"} />
                                     </div>
-                                    <span className="text-sm font-medium truncate">
-                        {folder.name || 'Untitled Folder'}
-                    </span>
+                                    <span className="text-sm font-medium truncate text-[var(--text)]">
+                                        {folder.name || 'Untitled Folder'}
+                                    </span>
                                 </button>
                             ))}
                         </div>

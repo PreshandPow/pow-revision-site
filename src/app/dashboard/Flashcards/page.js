@@ -33,6 +33,7 @@ export default function FlashcardsMainPage() {
 
     const [loading, setLoading] = useState(true);
     const [flashcards, setFlashcards] = useState([]);
+    const [folders, setFolders] = useState([]);
 
     // UI & Action States
     const [activeDropdown, setActiveDropdown] = useState(null);
@@ -66,26 +67,41 @@ export default function FlashcardsMainPage() {
     const { deleteItem } = useDeleteItem();
     const { duplicateItem } = useDuplicateItem();
 
-    // ─── 3. LIFECYCLE EFFECTS ───────────────────────────────────────────────────
+    // ─── 3. DATA FETCHING & EFFECTS ───────────────────────────────────────────────────
     useEffect(() => {
-        const fetchFlashcards = async () => {
+        const fetchAllData = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) { router.replace('/'); return; }
 
-            const { data, error } = await supabase
-                .from('flashcard_decks')
-                .select('*')
-                .eq('user_id', user.id)
-                .is('folder_id', null) // Only fetch root-level decks here
-                .order('updated_at', { ascending: false });
+            const [flashcardDecksResponse, foldersResponse] = await Promise.all([
+                supabase
+                    .from('flashcard_decks')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .order('updated_at', { ascending: false }),
+                supabase
+                    .from('folders')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .order('updated_at', { ascending: false })
+            ]);
 
-            if (error) toast.error('Error fetching flashcards', toastStyle);
-            else setFlashcards(data || []);
+            if (flashcardDecksResponse.error) {
+                toast.error(flashcardDecksResponse.error.message, toastStyle);
+            } else {
+                setFlashcards(flashcardDecksResponse.data || []);
+            }
+
+            if (foldersResponse.error) {
+                toast.error(foldersResponse.error.message, toastStyle);
+            } else {
+                setFolders(foldersResponse.data || []);
+            }
 
             setLoading(false);
         };
 
-        fetchFlashcards();
+        fetchAllData();
     }, []);
 
     useEffect(() => {
@@ -114,7 +130,6 @@ export default function FlashcardsMainPage() {
 
         if (success) {
             setShowMoveItemModal(false);
-            setFlashcards(prev => prev.filter(f => f.id !== selectedItem.id));
             toast.success(`Deck moved successfully`, toastStyle);
             setSelectedItem(null);
         }
@@ -318,7 +333,7 @@ export default function FlashcardsMainPage() {
                     {showMoveItemModal && selectedItem && (
                         <MoveItemModal
                             moveModalRef={moveModalRef}
-                            folders={[]}
+                            folders={folders}
                             currentItem={selectedItem}
                             onMove={handleMoveConfirm}
                             onClose={() => {
