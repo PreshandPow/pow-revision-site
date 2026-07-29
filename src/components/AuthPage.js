@@ -95,10 +95,8 @@ export default function AuthPage( { authMode, setAuthMode}) {
             return;
         }
 
-        // 3. Format DOB (Safely coerced to Strings)
         const dobString = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
-        // 4. Supabase Sign Up
         const { data, error: signUpError } = await supabase.auth.signUp({
             email,
             password,
