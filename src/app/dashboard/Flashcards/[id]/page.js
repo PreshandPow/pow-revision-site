@@ -18,6 +18,9 @@ import {
 
 // ─── MODAL IMPORTS ───────────────────────────────────────────────────────
 import UseItemOptionDropdown from '../../../../components/itemOptionsDropdown';
+import UseDeleteItemModal from '../../../../components/deleteItemModal';
+import RenameItemModal from "../../../../components/RenameItemModal";
+import MoveItemModal from "../../../../components/MoveItemModal";
 
 // ─── HOOK IMPORTS ───────────────────────────────────────────────────────
 import { useRenameItem, useMoveItem, useDeleteItem, useDuplicateItem } from '../../../hooks/useItemActions';
@@ -38,6 +41,7 @@ export default function FlashcardStudyPage() {
     // ─── 1. REAL DATA STATES ───────────────────────────────────────────────────
     const [deck, setDeck] = useState(null);
     const [cards, setCards] = useState([]);
+    const [folders, setFolders] = useState([]);
 
     // ─── 2. UI STATES ──────────────────────────────────────────────────────────
     const [currentCardIndex, setCurrentCardIndex] = useState(0);
@@ -66,23 +70,22 @@ export default function FlashcardStudyPage() {
 
         const fetchDeckData = async () => {
             try {
-                const { data: deckData, error: deckError } = await supabase
-                    .from('flashcard_decks')
-                    .select('*')
-                    .eq('id', id)
-                    .single();
+                const { data: { user } } = await supabase.auth.getUser();
 
-                if (deckError) throw deckError;
-                const { data: cardsData, error: cardsError } = await supabase
-                    .from('flashcards')
-                    .select('*')
-                    .eq('deck_id', id)
-                    .order('order_index', { ascending: true });
+                const [deckResponse, cardsResponse, foldersResponse] = await Promise.all([
+                    supabase.from('flashcard_decks').select('*').eq('id', id).single(),
+                    supabase.from('flashcards').select('*').eq('deck_id', id).order('order_index', { ascending: true }),
+                    user
+                        ? supabase.from('folders').select('*').eq('user_id', user.id).order('updated_at', { ascending: false })
+                        : Promise.resolve({ data: [] }),
+                ]);
 
-                if (cardsError) throw cardsError;
+                if (deckResponse.error) throw deckResponse.error;
+                if (cardsResponse.error) throw cardsResponse.error;
 
-                setDeck(deckData);
-                setCards(cardsData || []);
+                setDeck(deckResponse.data);
+                setCards(cardsResponse.data || []);
+                setFolders(foldersResponse.data || []);
 
             } catch (error) {
                 console.error("Error fetching flashcard data:", error);
@@ -119,27 +122,71 @@ export default function FlashcardStudyPage() {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [cards.length, cardToEdit]);
 
-    // ─── 5. CLOSE DROPDOWN ON OUTSIDE CLICK ────────────────────────────────────
+    // ─── 5. RENAME DECK FEATURE ───────────────────────────────────────────────────
+    const [showRenameItemModal, setShowRenameItemModal] = useState(false);
+    const [itemName, setItemName] = useState('Untitled Deck');
+    const showRenameDeckModalRef = useRef(null);
+
+    const { rename, isRenaming } = useRenameItem();
+
+    const handleDeckRename = async (newName) => {
+        const success = await rename('flashcard', selectedItem.id, newName);
+
+        if (success) {
+            setDeck(prev => ({ ...prev, name: newName }));
+            setSelectedItem(null);
+        }
+    };
+
+    // ─── 6. MOVE DECK FEATURE ─────────────────────────────────────────────────────
+    const [showMoveItemModal, setShowMoveItemModal] = useState(false);
+    const itemToMoveRef = useRef(null);
+
+    const { moveItem, isMoving } = useMoveItem();
+
+    const handleDeckMove = async (destinationId) => {
+        const loadingToast = toast.loading('Moving flashcard deck...', toastStyle);
+        const success = await moveItem('flashcard', selectedItem.id, destinationId);
+        toast.dismiss(loadingToast);
+
+        if (success) {
+            setShowMoveItemModal(false);
+            setDeck(prev => ({ ...prev, folder_id: destinationId === 'root' ? null : destinationId }));
+            toast.success('Deck moved successfully', toastStyle);
+            setSelectedItem(null);
+        }
+    };
+
+    // ─── 7. CLOSE DROPDOWN/MODALS ON OUTSIDE CLICK ─────────────────────────────
     useEffect(() => {
         const handleClickOutside = (e) => {
             if (!e.target.closest('.dropdown-container')) setActiveDropdown(null);
+            if (showRenameDeckModalRef.current && !showRenameDeckModalRef.current.contains(e.target)) {
+                setShowRenameItemModal(false);
+            }
+            if (itemToMoveRef.current && !itemToMoveRef.current.contains(e.target)) {
+                setShowMoveItemModal(false);
+            }
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // ─── 6. RENAME DECK FEATURE ───────────────────────────────────────────────────
-    const [showRenameItemModal, setShowRenameItemModal] = useState(false);
-    const [itemName, setItemName] = useState('Untitled Deck');
-    const showRenameDeckModalRef = useRef(null);
-
-    // ─── 7. MOVE DECK FEATURE ─────────────────────────────────────────────────────
-    const [showMoveItemModal, setShowMoveItemModal] = useState(false);
-    const itemToMoveRef = useRef(null);
-
     // ─── 8. DELETE DECK FEATURE ───────────────────────────────────────────────────
     const [deckToDelete, setDeckToDelete] = useState(null);
     const deleteDeckModalRef = useRef(null);
+
+    const { deleteItem, issDeleting } = useDeleteItem();
+
+    const handleDeleteConfirm = async () => {
+        const loadingToast = toast.loading('Deleting flashcard deck...', toastStyle);
+        const success = await deleteItem('flashcard', deckToDelete.id);
+        toast.dismiss(loadingToast);
+
+        if (success) {
+            router.push('/dashboard/Flashcards')
+        }
+    };
 
     // ─── 9. DUPLICATE DECK FEATURE ────────────────────────────────────────────────
     const { duplicateItem, isDuplicating } = useDuplicateItem();
@@ -528,9 +575,39 @@ export default function FlashcardStudyPage() {
                 </div>
             </div>
 
-            {/* Portaled Modals */}
+            {/* ─── MODALS ──────────────────────────────────────────────────────────── */}
             <AnimatePresence>
-                {cardToEdit && <EditCardModal />}
+                {deckToDelete && (
+                    <UseDeleteItemModal
+                        item={deck}
+                        itemType='flashcard'
+                        deleteItemModalRef={deleteDeckModalRef}
+                        handleDeleteConfirm={handleDeleteConfirm}
+                        setNoteToDelete={setDeckToDelete}
+                    />
+                )}
+                {showRenameItemModal && (
+                    <RenameItemModal
+                        renameModalRef={showRenameDeckModalRef}
+                        currentName={itemName}
+                        handleRename={handleDeckRename}
+                        setItemName={setItemName}
+                        setShowRenameItemModal={setShowRenameItemModal}
+                    />
+                )}
+                {showMoveItemModal && selectedItem && (
+                    <MoveItemModal
+                        moveModalRef={itemToMoveRef}
+                        folders={folders}
+                        currentItem={selectedItem}
+                        onMove={handleDeckMove}
+                        onClose={() => {
+                            setShowMoveItemModal(false);
+                            setSelectedItem(null);
+                        }}
+                        itemType='flashcard'
+                    />
+                )}
             </AnimatePresence>
 
         </div>

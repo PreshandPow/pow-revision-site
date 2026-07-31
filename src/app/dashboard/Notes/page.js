@@ -75,7 +75,7 @@ export default function NotesPage() {
                     n.id === selectedItem.id ? { ...n, title: newName } : n
                 )
             );
-            selectedItem(null);
+            setSelectedItem(null);
         }
     };
 
@@ -289,6 +289,7 @@ export default function NotesPage() {
                                                 setShowRenameNoteModal={setShowRenameNoteModal}
                                                 setItemName={setNoteName}
                                                 setShowMoveItemModal={setShowMoveItemModal}
+                                                setSelectedItem={setSelectedItem}
                                                 handleDuplicateNote={handleDuplicateNote}
                                                 setNoteToDelete={setNoteToDelete}
                                             />

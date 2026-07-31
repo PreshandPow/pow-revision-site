@@ -17,10 +17,11 @@ import UseDeleteItemModal from "../../../../components/deleteItemModal";
 import UseItemOptionDropdown from "../../../../components/itemOptionsDropdown";
 import CreateModal from '../../../../components/CreateModal';
 import CreateFolderModal from "../../../../components/createFolderModal";
+import CreateFlashcardModal from "../../../../components/createFlashcardModal";
 
 // Hooks
 import { useRenameItem, useMoveItem, useDeleteItem, useDuplicateItem } from "../../../hooks/useItemActions";
-import { createNoteAction, createFolderAction } from "../../../hooks/createItemActions";
+import { createNoteAction, createFolderAction, createFlashcardAction } from "../../../hooks/createItemActions";
 
 // ─── 1. SUPABASE CLIENT ───────────────────────────────────────────────────────
 export function createClient() {
@@ -57,6 +58,7 @@ export default function FolderContentPage() {
     const [activeTaskModal, setActiveTaskModal] = useState(null);
     const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
     const [newFolderName, setNewFolderName] = useState('');
+    const [showCreateFlashcardModal, setShowCreateFlashcardModal] = useState(false);
 
     // Refs
     const renameModalRef = useRef(null);
@@ -170,17 +172,26 @@ export default function FolderContentPage() {
 
     // ─── 5. SMART ACTION HANDLERS ───────────────────────────────────────────────
 
+    // Notes have `.title`, folders have `.parent_folder_id`, flashcard decks have neither.
+    const getItemType = (item) => {
+        if (!item) return null;
+        if (item.title !== undefined) return 'note';
+        if (item.parent_folder_id !== undefined) return 'folder';
+        return 'flashcard';
+    };
+
     const handleRenameConfirm = async (newName) => {
-        const isNote = selectedItem.title !== undefined;
-        const itemType = isNote ? 'note' : 'folder';
+        const itemType = getItemType(selectedItem);
 
         const success = await rename(itemType, selectedItem.id, newName);
 
         if (success) {
             if (selectedItem.id === currentFolder?.id) {
                 setCurrentFolder({ ...currentFolder, name: newName });
-            } else if (isNote) {
+            } else if (itemType === 'note') {
                 setNotes(prev => prev.map(n => n.id === selectedItem.id ? { ...n, title: newName } : n));
+            } else if (itemType === 'flashcard') {
+                setFlashcards(prev => prev.map(f => f.id === selectedItem.id ? { ...f, name: newName } : f));
             } else {
                 setFolders(prev => prev.map(f => f.id === selectedItem.id ? { ...f, name: newName } : f));
             }
@@ -189,8 +200,7 @@ export default function FolderContentPage() {
     };
 
     const handleMoveConfirm = async (destinationId) => {
-        const isNote = selectedItem.title !== undefined;
-        const itemType = isNote ? 'note' : 'folder';
+        const itemType = getItemType(selectedItem);
 
         const loadingToast = toast.loading(`Moving ${itemType}...`, toastStyle);
         const success = await moveItem(itemType, selectedItem.id, destinationId);
@@ -198,8 +208,10 @@ export default function FolderContentPage() {
 
         if (success) {
             setShowMoveItemModal(false);
-            if (isNote) {
+            if (itemType === 'note') {
                 setNotes(prev => prev.filter(n => n.id !== selectedItem.id));
+            } else if (itemType === 'flashcard') {
+                setFlashcards(prev => prev.filter(f => f.id !== selectedItem.id));
             } else {
                 setFolders(prev => prev.filter(f => f.id !== selectedItem.id));
             }
@@ -209,16 +221,17 @@ export default function FolderContentPage() {
     };
 
     const handleDeleteConfirm = async () => {
-        const isNote = itemToDelete.title !== undefined;
-        const itemType = isNote ? 'note' : 'folder';
+        const itemType = getItemType(itemToDelete);
 
         const loadingToast = toast.loading(`Deleting ${itemType}...`, toastStyle);
         const success = await deleteItem(itemType, itemToDelete.id);
         toast.dismiss(loadingToast);
 
         if (success) {
-            if (isNote) {
+            if (itemType === 'note') {
                 setNotes(prev => prev.filter(n => n.id !== itemToDelete.id));
+            } else if (itemType === 'flashcard') {
+                setFlashcards(prev => prev.filter(f => f.id !== itemToDelete.id));
             } else {
                 setFolders(prev => prev.filter(f => f.id !== itemToDelete.id));
             }
@@ -227,16 +240,17 @@ export default function FolderContentPage() {
     };
 
     const handleDuplicateConfirm = async (itemToDuplicate) => {
-        const isNote = itemToDuplicate.title !== undefined;
-        const itemType = isNote ? 'note' : 'folder';
+        const itemType = getItemType(itemToDuplicate);
 
         const loadingToast = toast.loading(`Duplicating ${itemType}...`, toastStyle);
         const newItem = await duplicateItem(itemType, itemToDuplicate);
         toast.dismiss(loadingToast);
 
         if (newItem) {
-            if (isNote) {
+            if (itemType === 'note') {
                 setNotes(prev => [newItem, ...prev]);
+            } else if (itemType === 'flashcard') {
+                setFlashcards(prev => [newItem, ...prev]);
             } else {
                 setFolders(prev => [newItem, ...prev]);
             }
@@ -259,6 +273,17 @@ export default function FolderContentPage() {
         }
         setShowCreateFolderModal(false);
         setNewFolderName('');
+    };
+
+    const handleCreateFlashcardInFolder = async (deckData) => {
+        const loadingToast = toast.loading('Creating deck...', toastStyle);
+        const newDeck = await createFlashcardAction(deckData, id, router);
+        toast.dismiss(loadingToast);
+
+        if (newDeck) {
+            setShowCreateFlashcardModal(false);
+            setFlashcards(prev => [newDeck, ...prev]);
+        }
     };
 
     const formatDate = (date) => new Date(date).toLocaleDateString('en-GB', {
@@ -615,7 +640,7 @@ export default function FolderContentPage() {
                     {itemToDelete && (
                         <UseDeleteItemModal
                             item={itemToDelete}
-                            itemType={itemToDelete.title !== undefined ? 'note' : 'folder'}
+                            itemType={getItemType(itemToDelete)}
                             deleteItemModalRef={deleteModalRef}
                             handleDeleteConfirm={handleDeleteConfirm}
                             setNoteToDelete={setItemToDelete}
@@ -642,7 +667,7 @@ export default function FolderContentPage() {
                                 setShowMoveItemModal(false);
                                 setSelectedItem(null);
                             }}
-                            itemType={selectedItem.title !== undefined ? 'note' : 'folder'}
+                            itemType={getItemType(selectedItem)}
                         />
                     )}
                     {showCreateItemModal && (
@@ -653,6 +678,7 @@ export default function FolderContentPage() {
                             handleCreateNote={handleCreateNoteInFolder}
                             handleCreateFolder={handleCreateFolderInFolder}
                             setShowCreateFolderModal={setShowCreateFolderModal}
+                            setShowCreateFlashcardModal={setShowCreateFlashcardModal}
                         />
                     )}
                     {showCreateFolderModal && (
@@ -662,6 +688,12 @@ export default function FolderContentPage() {
                             folderName={newFolderName}
                             setFolderName={setNewFolderName}
                             handleCreateFolder={handleCreateFolderInFolder}
+                        />
+                    )}
+                    {showCreateFlashcardModal && (
+                        <CreateFlashcardModal
+                            setShowCreateFlashcardModal={setShowCreateFlashcardModal}
+                            handleSaveDeck={handleCreateFlashcardInFolder}
                         />
                     )}
                 </AnimatePresence>

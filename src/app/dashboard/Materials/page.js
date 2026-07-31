@@ -17,10 +17,11 @@ import UseDeleteItemModal from "../../../components/deleteItemModal";
 import UseItemOptionDropdown from "../../../components/itemOptionsDropdown";
 import CreateModal from '../../../components/CreateModal';
 import CreateFolderModal from '../../../components/createFolderModal';
+import CreateFlashcardModal from '../../../components/createFlashcardModal';
 
 // Hooks
 import { useRenameItem, useMoveItem, useDeleteItem, useDuplicateItem } from "../../hooks/useItemActions";
-import { createNoteAction, createFolderAction } from "../../hooks/createItemActions";
+import { createNoteAction, createFolderAction, createFlashcardAction } from "../../hooks/createItemActions";
 
 // ─── 1. SUPABASE CLIENT ───────────────────────────────────────────────────────
 export function createClient() {
@@ -54,6 +55,7 @@ export default function MaterialsPage() {
     const [activeTaskModal, setActiveTaskModal] = useState(null);
     const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
     const [newFolderName, setNewFolderName] = useState('');
+    const [showCreateFlashcardModal, setShowCreateFlashcardModal] = useState(false);
 
     // Refs
     const renameModalRef = useRef(null);
@@ -235,6 +237,17 @@ export default function MaterialsPage() {
         if (newFolder) setFolders(prev => [newFolder, ...prev]);
         setShowCreateFolderModal(false);
         setNewFolderName('');
+    };
+
+    const handleCreateFlashcardInRoot = async (deckData) => {
+        const loadingToast = toast.loading('Creating deck...', toastStyle);
+        const newDeck = await createFlashcardAction(deckData, null, router);
+        toast.dismiss(loadingToast);
+
+        if (newDeck) {
+            setShowCreateFlashcardModal(false);
+            setFlashcards(prev => [newDeck, ...prev]);
+        }
     };
 
     // ─── 6. RENDER ──────────────────────────────────────────────────────────────
@@ -616,6 +629,7 @@ export default function MaterialsPage() {
                             handleCreateNote={handleCreateNoteInRoot}
                             handleCreateFolder={handleCreateFolderInRoot}
                             setShowCreateFolderModal={setShowCreateFolderModal}
+                            setShowCreateFlashcardModal={setShowCreateFlashcardModal}
                         />
                     )}
 
@@ -626,6 +640,13 @@ export default function MaterialsPage() {
                             folderName={newFolderName}
                             setFolderName={setNewFolderName}
                             handleCreateFolder={handleCreateFolderInRoot}
+                        />
+                    )}
+
+                    {showCreateFlashcardModal && (
+                        <CreateFlashcardModal
+                            setShowCreateFlashcardModal={setShowCreateFlashcardModal}
+                            handleSaveDeck={handleCreateFlashcardInRoot}
                         />
                     )}
                 </AnimatePresence>

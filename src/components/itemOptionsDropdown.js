@@ -9,7 +9,7 @@ export default function UseItemOptionDropdown({
                                                   setShowMoveItemModal, handleDuplicateNote,
                                                   setNoteToDelete, setSelectedItem
                                               }) {
-    const targetUrl = `/dashboard/${itemType === 'folder' ? 'Folders' : 'Notes'}/${item?.id}`;
+    const targetUrl = `/dashboard/${itemType === 'folder' ? 'Folders' : itemType === 'flashcard' ? 'Flashcards' : 'Notes'}/${item?.id}`;
 
     return (
         <motion.div
@@ -36,6 +36,7 @@ export default function UseItemOptionDropdown({
 
                     if (itemType === 'note') setItemName(item.title);
                     if (itemType === 'folder') setItemName(item.name);
+                    if (itemType === 'flashcard') setItemName(item.name);
 
                     setActiveDropdown(null);
                 }}
