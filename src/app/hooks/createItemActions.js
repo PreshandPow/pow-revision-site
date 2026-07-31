@@ -53,7 +53,7 @@ export const createNoteAction = async (folderId = null, router) => {
     return note;
 };
 
-export const createFlashcardAction = async (deckData, folderId = null, router  ) => {
+export const createFlashcardAction = async (deckData, folderId = null, router) => {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
 

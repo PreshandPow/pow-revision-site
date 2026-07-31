@@ -189,13 +189,17 @@ export default function AuthPage( { authMode, setAuthMode}) {
     // ─── 5. RENDER ────────────────────────────────────────────────────────────────
     return (
         <motion.div
-            className="fixed inset-0 flex flex-col lg:flex-row w-full min-h-screen bg-[var(--layer1)]/95 z-[60] backdrop-blur-sm transition-opacity"
+            className="fixed inset-0 flex flex-col lg:flex-row w-full min-h-screen bg-[var(--layer1)]/95 z-[60]
+            backdrop-blur-sm transition-opacity"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
         >
-            <div className="relative hidden lg:flex lg:w-1/2 lg:h-screen bg-[var(--layer1)] p-20 sticky top-0 overflow-hidden">
+            <div
+                className="relative hidden lg:flex lg:w-1/2 lg:h-screen bg-[var(--layer1)] p-20 sticky top-0
+                overflow-hidden"
+            >
                 <Image
                     src="/authPage-image.svg"
                     alt="POWer learning illustration"
@@ -208,16 +212,23 @@ export default function AuthPage( { authMode, setAuthMode}) {
                 <h1 className="font-brand relative z-10 text-6xl font-black text-[var(--layer3)] leading-tight">
                     {authMode === 'resetpassword' ? 'Try to retrace your steps.' : (authMode === 'signup' ? `The best way to study. Sign up for free.` : `Pow bot has been waiting to see you again.`)}
                 </h1>
-                <Link href="/" className="font-brand font-black tracking-tighter absolute bottom-10 left-10 z-20 text-5xl font-black text-[var(--nice-blue)]">
+                <Link
+                    href="/"
+                    className="font-brand font-black tracking-tighter absolute bottom-10 left-10 z-20 text-5xl
+                    font-black text-[var(--nice-blue)]"
+                >
                     POW
                 </Link>
             </div>
             <div className="flex-1 flex flex-col w-full min-h-screen overflow-y-auto p-4 md:p-12">
-                <div className={`w-full flex ${authMode === 'resetpassword' ? 'justify-end' : 'justify-between'} items-center mb-8`}>
+                <div
+                    className={`w-full flex ${authMode === 'resetpassword' ? 'justify-end' : 'justify-between'} items-center mb-8`}
+                >
                     {authMode !== 'resetpassword' && (
                         <div className="flex gap-4 md:gap-8" onClick={(e) => e.stopPropagation()}>
                             <button
-                                className="whitespace-nowrap relative font-bold text-[var(--text)] text-2xl cursor-pointer transition-colors"
+                                className="whitespace-nowrap relative font-bold text-[var(--text)] text-2xl
+                                cursor-pointer transition-colors"
                                 onClick={() => setAuthMode('signup')}
                             >
                                 Sign up
@@ -233,7 +244,8 @@ export default function AuthPage( { authMode, setAuthMode}) {
                                 )}
                             </button>
                             <button
-                                className="whitespace-nowrap relative font-bold text-[var(--text)] text-2xl cursor-pointer transition-colors"
+                                className="whitespace-nowrap relative font-bold text-[var(--text)] text-2xl
+                                cursor-pointer transition-colors"
                                 onClick={() => setAuthMode('login')}
                             >
                                 Log in
@@ -249,7 +261,8 @@ export default function AuthPage( { authMode, setAuthMode}) {
                                 )}
                             </button>
                             <button
-                                className="text-[var(--text)] text-2xl font-bold absolute right-8 cursor-pointer hover:text-[var(--text-muted)] p-2"
+                                className="text-[var(--text)] text-2xl font-bold absolute right-8 cursor-pointer
+                                hover:text-[var(--text-muted)] p-2"
                                 onClick={() => setAuthMode(null)}
                             >
                                 ✕
@@ -264,7 +277,8 @@ export default function AuthPage( { authMode, setAuthMode}) {
                                 <button
                                     type="button"
                                     onClick={handleGoogleLogin}
-                                    className="w-full flex items-center justify-center gap-4 p-4 font-bold border-2 border-[var(--layer2)] rounded-full hover:bg-[var(--layer2)] transition-colors cursor-pointer text-[var(--text)]"
+                                    className="w-full flex items-center justify-center gap-4 p-4 font-bold border-2
+                                    border-[var(--layer2)] rounded-full hover:bg-[var(--layer2)] transition-colors cursor-pointer text-[var(--text)]"
                                 >
                                     <svg width="20" height="20" viewBox="0 0 24 24">
                                         <path
@@ -298,7 +312,8 @@ export default function AuthPage( { authMode, setAuthMode}) {
                                     type="email"
                                     id="email"
                                     placeholder="Enter your email address"
-                                    className="p-4.5 font-semibold border rounded-xl w-full bg-[var(--layer2)] text-[var(--text-muted)] border-none focus:ring-2 focus:ring-[var(--nice-blue)] outline-none mb-8"
+                                    className="p-4.5 font-semibold border rounded-xl w-full bg-[var(--layer2)] text-[var(--text-muted)]
+                                    border-none focus:ring-2 focus:ring-[var(--nice-blue)] outline-none mb-8"
                                     onChange={(e) => setEmail(e.target.value)}
                                 />
                                 <div className="w-full mb-3">
@@ -319,12 +334,13 @@ export default function AuthPage( { authMode, setAuthMode}) {
                                             type={showPassword ? "text" : "password"}
                                             id="password"
                                             placeholder="Enter your password"
-                                            className="p-4.5 pr-12 font-semibold border rounded-xl w-full bg-[var(--layer2)] text-[var(--text-muted)] border-none focus:ring-2 focus:ring-[var(--nice-blue)] outline-none"
+                                            className="p-4.5 pr-12 font-semibold border rounded-xl w-full bg-[var(--layer2)] text-[var(--text-muted)]
+                                            border-none focus:ring-2 focus:ring-[var(--nice-blue)] outline-none"
                                             onChange={(e) => setPassword(e.target.value)}
                                         />
                                         <button
                                             type="button"
-                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--nice-blue)] cursor-pointer "
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--nice-blue)] cursor-pointer"
                                             onClick={() => setShowPassword(!showPassword)}
                                         >
                                             {showPassword ? (
@@ -370,7 +386,8 @@ export default function AuthPage( { authMode, setAuthMode}) {
                                 <button
                                     type="button"
                                     onClick={handleGoogleLogin}
-                                    className="w-full flex items-center justify-center gap-4 p-4 font-bold border-2 border-[var(--layer2)] rounded-full hover:bg-[var(--layer2)] transition-colors cursor-pointer text-[var(--text)]"
+                                    className="w-full flex items-center justify-center gap-4 p-4 font-bold border-2
+                                    border-[var(--layer2)] rounded-full hover:bg-[var(--layer2)] transition-colors cursor-pointer text-[var(--text)]"
                                 >
                                     <svg width="20" height="20" viewBox="0 0 24 24">
                                         <path
@@ -454,7 +471,8 @@ export default function AuthPage( { authMode, setAuthMode}) {
                                     type="email"
                                     placeholder="user@email.co.uk"
                                     name="email"
-                                    className="p-4.5 font-semibold border rounded-xl w-full bg-[var(--layer2)] text-[var(--text-muted)] border-none focus:ring-2 focus:ring-[var(--nice-blue)] outline-none mb-3"
+                                    className="p-4.5 font-semibold border rounded-xl w-full bg-[var(--layer2)] text-[var(--text-muted)]
+                                    border-none focus:ring-2 focus:ring-[var(--nice-blue)] outline-none mb-3"
                                     onChange={(e) => setEmail(e.target.value)}
                                 />
                                 <label htmlFor="username" className="font-bold text-[var(--text-muted)] w-full text-left text-[1rem] mb-3">
@@ -464,7 +482,8 @@ export default function AuthPage( { authMode, setAuthMode}) {
                                     type="text"
                                     placeholder="Create a username"
                                     name="username"
-                                    className="p-4.5 font-semibold border rounded-xl w-full bg-[var(--layer2)] text-[var(--text-muted)] border-none focus:ring-2 focus:ring-[var(--nice-blue)] outline-none mb-3"
+                                    className="p-4.5 font-semibold border rounded-xl w-full bg-[var(--layer2)] text-[var(--text-muted)]
+                                    border-none focus:ring-2 focus:ring-[var(--nice-blue)] outline-none mb-3"
                                     onChange={(e) => setName(e.target.value)}
                                 />
                                 <div className="w-full mb-3">
@@ -476,7 +495,8 @@ export default function AuthPage( { authMode, setAuthMode}) {
                                             type={showPassword ? "text" : "password"}
                                             placeholder="Create a secure password"
                                             name="password"
-                                            className="p-4.5 pr-12 font-semibold border rounded-xl w-full bg-[var(--layer2)] text-[var(--text-muted)] border-none focus:ring-2 focus:ring-[var(--nice-blue)] outline-none"
+                                            className="p-4.5 pr-12 font-semibold border rounded-xl w-full bg-[var(--layer2)] text-[var(--text-muted)]
+                                            border-none focus:ring-2 focus:ring-[var(--nice-blue)] outline-none"
                                             onChange={(e) => setPassword(e.target.value)}
                                         />
                                         <button
@@ -524,7 +544,7 @@ export default function AuthPage( { authMode, setAuthMode}) {
                                     <h1 className={'text-5xl font-bold text-[var(--text)] mb-8'}>
                                         Reset your password
                                     </h1>
-                                    <p className={'text-xxl text-[var(--text-muted)] mb-8'}>
+                                    <p className={'text-xl text-[var(--text-muted)] mb-8'}>
                                         Enter the email you signed up with. We'll send you a link to log in and reset your password. If you signed up with a parent’s email, we’ll send them the link.
                                     </p>
                                     <label htmlFor="email" className="font-bold text-[var(--text-muted)] w-full text-left text-[1rem] mb-2">
@@ -533,7 +553,8 @@ export default function AuthPage( { authMode, setAuthMode}) {
                                     <input
                                         type="email"
                                         placeholder="user@email.co.uk"
-                                        className="p-4.5 font-semibold border rounded-xl w-full bg-[var(--layer2)] text-[var(--text-muted)] border-none focus:ring-2 focus:ring-[var(--nice-blue)] outline-none mb-8"
+                                        className="p-4.5 font-semibold border rounded-xl w-full bg-[var(--layer2)] text-[var(--text-muted)]
+                                    border-none focus:ring-2 focus:ring-[var(--nice-blue)] outline-none mb-8"
                                         onChange={(e) => setEmail(e.target.value)}
                                     />
                                     {popup && (

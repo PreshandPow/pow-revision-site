@@ -226,7 +226,9 @@ export default function FlashcardsMainPage() {
                         onClick={() => {
                             setShowCreateFlashcardModal(true);
                         }}
-                        className="flex items-center justify-center gap-2 bg-[var(--nice-blue)] text-white px-4 py-2 rounded-lg font-semibold text-sm hover:opacity-90 transition-all shadow-sm w-fit cursor-pointer">
+                        className="flex items-center justify-center gap-2 bg-[var(--nice-blue)] text-white px-4 py-2
+                        rounded-lg font-semibold text-sm hover:opacity-90 transition-all shadow-sm w-fit cursor-pointer"
+                    >
                         <Plus size={18} />
                         New Deck
                     </button>
@@ -245,14 +247,27 @@ export default function FlashcardsMainPage() {
                                 className={`group relative aspect-[16/10] cursor-pointer ${activeDropdown === deck.id ? 'z-[100]' : 'z-10 hover:z-20'}`}
                             >
                                 {deck.folder_id && (
-                                    <div className="absolute -top-3.5 left-4 px-3 h-5 bg-[var(--layer3)] rounded-t-lg group-hover:bg-[var(--nice-blue)] transition-colors duration-300 flex items-center justify-center gap-1.5 text-[9px] font-bold uppercase tracking-wider text-[var(--text-muted)] group-hover:text-white z-0">
+                                    <div
+                                        className="absolute -top-3.5 left-4 px-3 h-5 bg-[var(--layer3)] rounded-t-lg
+                                        group-hover:bg-[var(--nice-blue)] transition-colors duration-300 flex items-center
+                                        justify-center gap-1.5 text-[9px] font-bold uppercase tracking-wider text-[var(--text-muted)] group-hover:text-white z-0"
+                                    >
                                         <Folder size={10} fill="currentColor" fillOpacity={0.2} />
                                         <span className="max-w-[120px] truncate">{getParentFolderName(deck.folder_id)}</span>
                                     </div>
                                 )}
-                                <div className="absolute -bottom-2 inset-x-4 h-full bg-[var(--layer3)] border border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-1" />
-                                <div className="absolute -bottom-1 inset-x-2 h-full bg-[var(--layer2)] border border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-0.5" />
-                                <div className="relative h-full p-4 sm:p-5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-xl group-hover:border-[var(--nice-blue)] transition-colors shadow-sm z-10 flex flex-col justify-between">
+                                <div
+                                    className="absolute -bottom-2 inset-x-4 h-full bg-[var(--layer3)] border
+                                    border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-1"
+                                />
+                                <div
+                                    className="absolute -bottom-1 inset-x-2 h-full bg-[var(--layer2)] border
+                                    border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-0.5"
+                                />
+                                <div
+                                    className="relative h-full p-4 sm:p-5 bg-[var(--layer1)] border border-[var(--layer3)]
+                                    rounded-xl group-hover:border-[var(--nice-blue)] transition-colors shadow-sm z-10 flex flex-col justify-between"
+                                >
                                     <div className="flex justify-between items-start mb-2 relative dropdown-container">
                                         <div className="p-2 bg-purple-500/10 rounded-lg text-purple-400">
                                             <CreditCard size={18} />
@@ -279,12 +294,12 @@ export default function FlashcardsMainPage() {
                                                     item={deck}
                                                     itemType='flashcard'
                                                     setActiveDropdown={setActiveDropdown}
-                                                    setShowRenameNoteModal={setShowRenameItemModal}
+                                                    setShowRenameItemModal={setShowRenameItemModal}
                                                     setItemName={setItemNameInput}
                                                     setSelectedItem={setSelectedItem}
                                                     setShowMoveItemModal={setShowMoveItemModal}
-                                                    handleDuplicateNote={handleDuplicateConfirm}
-                                                    setNoteToDelete={setItemToDelete}
+                                                    handleDuplicateItem={handleDuplicateConfirm}
+                                                    setItemToDelete={setItemToDelete}
                                                 />
                                             )}
                                         </AnimatePresence>
@@ -321,7 +336,7 @@ export default function FlashcardsMainPage() {
                             itemType='flashcard'
                             deleteItemModalRef={deleteModalRef}
                             handleDeleteConfirm={handleDeleteConfirm}
-                            setNoteToDelete={setItemToDelete}
+                            setItemToDelete={setItemToDelete}
                         />
                     )}
 

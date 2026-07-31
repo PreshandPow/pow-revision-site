@@ -17,10 +17,11 @@ import UseDeleteItemModal from "../../../components/deleteItemModal";
 import UseItemOptionDropdown from "../../../components/itemOptionsDropdown";
 import CreateModal from '../../../components/CreateModal';
 import CreateFolderModal from '../../../components/createFolderModal';
+import CreateFlashcardModal from '../../../components/createFlashcardModal';
 
 // Hooks
 import { useRenameItem, useMoveItem, useDeleteItem, useDuplicateItem } from "../../hooks/useItemActions";
-import { createNoteAction, createFolderAction } from "../../hooks/createItemActions";
+import { createNoteAction, createFolderAction, createFlashcardAction } from "../../hooks/createItemActions";
 
 // ─── 1. SUPABASE CLIENT ───────────────────────────────────────────────────────
 export function createClient() {
@@ -54,6 +55,7 @@ export default function MaterialsPage() {
     const [activeTaskModal, setActiveTaskModal] = useState(null);
     const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
     const [newFolderName, setNewFolderName] = useState('');
+    const [showCreateFlashcardModal, setShowCreateFlashcardModal] = useState(false);
 
     // Refs
     const renameModalRef = useRef(null);
@@ -237,6 +239,17 @@ export default function MaterialsPage() {
         setNewFolderName('');
     };
 
+    const handleCreateFlashcardInRoot = async (deckData) => {
+        const loadingToast = toast.loading('Creating deck...', toastStyle);
+        const newDeck = await createFlashcardAction(deckData, null, router);
+        toast.dismiss(loadingToast);
+
+        if (newDeck) {
+            setShowCreateFlashcardModal(false);
+            setFlashcards(prev => [newDeck, ...prev]);
+        }
+    };
+
     // ─── 6. RENDER ──────────────────────────────────────────────────────────────
     if (loading) return (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--layer1)] backdrop-blur-xl p-6">
@@ -295,7 +308,10 @@ export default function MaterialsPage() {
                 <div className="mb-12">
                     <h2 className="text-xs font-black uppercase tracking-widest text-[var(--text-muted)] mb-5">Folders</h2>
                     {folders.length === 0 ? (
-                        <div className="col-span-full py-10 flex flex-col items-center justify-center border-2 border-dashed border-[var(--layer3)] rounded-2xl bg-[var(--layer1)]/30 text-center">
+                        <div
+                            className="col-span-full py-10 flex flex-col items-center justify-center border-2 border-dashed
+                            border-[var(--layer3)] rounded-2xl bg-[var(--layer1)]/30 text-center"
+                        >
                             <p className="text-sm font-medium text-[var(--text-muted)]">No Folders yet.</p>
                         </div>
                     ) : (
@@ -343,12 +359,12 @@ export default function MaterialsPage() {
                                                             item={folder}
                                                             itemType='folder'
                                                             setActiveDropdown={setActiveDropdown}
-                                                            setShowRenameNoteModal={setShowRenameItemModal}
+                                                            setShowRenameItemModal={setShowRenameItemModal}
                                                             setItemName={setItemNameInput}
                                                             setSelectedItem={setSelectedItem}
                                                             setShowMoveItemModal={setShowMoveItemModal}
-                                                            handleDuplicateNote={handleDuplicateConfirm}
-                                                            setNoteToDelete={setItemToDelete}
+                                                            handleDuplicateItem={handleDuplicateConfirm}
+                                                            setItemToDelete={setItemToDelete}
                                                         />
                                                     )}
                                                 </AnimatePresence>
@@ -386,7 +402,10 @@ export default function MaterialsPage() {
                 <div className="mb-12">
                     <h2 className="text-xs font-black uppercase tracking-widest text-[var(--text-muted)] mb-5">Notes</h2>
                     {notes.length === 0 ? (
-                        <div className="col-span-full py-10 flex flex-col items-center justify-center border-2 border-dashed border-[var(--layer3)] rounded-2xl bg-[var(--layer1)]/30 text-center">
+                        <div
+                            className="col-span-full py-10 flex flex-col items-center justify-center border-2 border-dashed
+                            border-[var(--layer3)] rounded-2xl bg-[var(--layer1)]/30 text-center"
+                        >
                             <p className="text-sm font-medium text-[var(--text-muted)]">No notes yet.</p>
                         </div>
                     ) : (
@@ -401,7 +420,11 @@ export default function MaterialsPage() {
                                         cursor-pointer ${activeDropdown === note.id ? 'z-[100]' : 'z-10 hover:z-20'}`}
                                     >
                                         {note.folder_id && (
-                                            <div className="absolute -top-3.5 left-4 px-3 h-5 bg-[var(--layer3)] rounded-t-lg group-hover:bg-[var(--nice-blue)] transition-colors duration-300 flex items-center justify-center gap-1.5 text-[9px] font-bold uppercase tracking-wider text-[var(--text-muted)] group-hover:text-white z-0">
+                                            <div
+                                            className="absolute -top-3.5 left-4 px-3 h-5 bg-[var(--layer3)] rounded-t-lg
+                                            group-hover:bg-[var(--nice-blue)] transition-colors duration-300 flex items-center
+                                            justify-center gap-1.5 text-[9px] font-bold uppercase tracking-wider text-[var(--text-muted)] group-hover:text-white z-0"
+                                        >
                                                 <Folder size={10} fill="currentColor" fillOpacity={0.2} />
                                                 <span className="max-w-[120px] truncate">{getParentFolderName(note.folder_id)}</span>
                                             </div>
@@ -411,7 +434,10 @@ export default function MaterialsPage() {
                                             to-[var(--layer2)] border-b border-l border-[var(--layer3)] rounded-bl-xl z-20
                                             group-hover:border-[var(--nice-blue)] group-hover:from-[var(--nice-blue)]/10 transition-all duration-300" />
 
-                                        <div className="relative z-10 bg-[var(--layer2)] border border-[var(--layer3)] rounded-xl p-4 flex flex-col h-full min-h-[100px] max-h-[200px] shadow-sm group-hover:border-[var(--nice-blue)] group-hover:shadow-md transition-all duration-300">
+                                        <div
+                                            className="relative z-10 bg-[var(--layer2)] border border-[var(--layer3)] rounded-xl
+                                            p-4 flex flex-col h-full min-h-[100px] max-h-[200px] shadow-sm group-hover:border-[var(--nice-blue)] group-hover:shadow-md transition-all duration-300"
+                                        >
                                             <div className="flex items-start justify-between mb-2 pr-6 relative dropdown-container">
                                                 <div className="p-2 bg-[var(--nice-blue)]/10 rounded-lg text-[var(--nice-blue)]">
                                                     <FileText size={20} />
@@ -432,12 +458,12 @@ export default function MaterialsPage() {
                                                             item={note}
                                                             itemType='note'
                                                             setActiveDropdown={setActiveDropdown}
-                                                            setShowRenameNoteModal={setShowRenameItemModal}
+                                                            setShowRenameItemModal={setShowRenameItemModal}
                                                             setItemName={setItemNameInput}
                                                             setSelectedItem={setSelectedItem}
                                                             setShowMoveItemModal={setShowMoveItemModal}
-                                                            handleDuplicateNote={handleDuplicateConfirm}
-                                                            setNoteToDelete={setItemToDelete}
+                                                            handleDuplicateItem={handleDuplicateConfirm}
+                                                            setItemToDelete={setItemToDelete}
                                                         />
                                                     )}
                                                 </AnimatePresence>
@@ -482,7 +508,10 @@ export default function MaterialsPage() {
                 <div className="mb-12">
                     <h2 className="text-xs font-black uppercase tracking-widest text-[var(--text-muted)] mb-5">Flashcards</h2>
                     {flashcards.length === 0 ? (
-                        <div className="col-span-full py-10 flex flex-col items-center justify-center border-2 border-dashed border-[var(--layer3)] rounded-2xl bg-[var(--layer1)]/30 text-center">
+                        <div
+                            className="col-span-full py-10 flex flex-col items-center justify-center border-2 border-dashed
+                            border-[var(--layer3)] rounded-2xl bg-[var(--layer1)]/30 text-center"
+                        >
                             <p className="text-sm font-medium text-[var(--text-muted)]">No flashcard decks yet.</p>
                         </div>
                     ) : (
@@ -496,15 +525,28 @@ export default function MaterialsPage() {
                                         className={`w-[85vw] sm:w-[320px] shrink-0 snap-start group relative cursor-pointer aspect-[16/10] ${activeDropdown === deck.id ? 'z-[100]' : 'z-10 hover:z-20'}`}
                                     >
                                         {deck.folder_id && (
-                                            <div className="absolute -top-3.5 left-4 px-3 h-5 bg-[var(--layer3)] rounded-t-lg group-hover:bg-[var(--nice-blue)] transition-colors duration-300 flex items-center justify-center gap-1.5 text-[9px] font-bold uppercase tracking-wider text-[var(--text-muted)] group-hover:text-white z-0">
+                                            <div
+                                            className="absolute -top-3.5 left-4 px-3 h-5 bg-[var(--layer3)] rounded-t-lg
+                                            group-hover:bg-[var(--nice-blue)] transition-colors duration-300 flex items-center
+                                            justify-center gap-1.5 text-[9px] font-bold uppercase tracking-wider text-[var(--text-muted)] group-hover:text-white z-0"
+                                        >
                                                 <Folder size={10} fill="currentColor" fillOpacity={0.2} />
                                                 <span className="max-w-[120px] truncate">{getParentFolderName(deck.folder_id)}</span>
                                             </div>
                                         )}
-                                        <div className="absolute -bottom-2 inset-x-4 h-full bg-[var(--layer3)] border border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-1 z-0" />
-                                        <div className="absolute -bottom-1 inset-x-2 h-full bg-[var(--layer2)] border border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-0.5 z-0" />
+                                        <div
+                                            className="absolute -bottom-2 inset-x-4 h-full bg-[var(--layer3)] border
+                                            border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-1 z-0"
+                                        />
+                                        <div
+                                            className="absolute -bottom-1 inset-x-2 h-full bg-[var(--layer2)] border
+                                            border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-0.5 z-0"
+                                        />
 
-                                        <div className="relative z-10 h-full p-4 sm:p-5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-xl group-hover:border-[var(--nice-blue)] transition-colors shadow-sm flex flex-col justify-between">
+                                        <div
+                                            className="relative z-10 h-full p-4 sm:p-5 bg-[var(--layer1)] border border-[var(--layer3)]
+                                            rounded-xl group-hover:border-[var(--nice-blue)] transition-colors shadow-sm flex flex-col justify-between"
+                                        >
                                             <div className={`flex justify-between items-start mb-2 relative dropdown-container ${activeDropdown === deck.id ? 'z-[100]' : 'z-10'}`}>
                                                 <div className="p-2 bg-purple-500/10 rounded-lg text-purple-400">
                                                     <CreditCard size={18} />
@@ -531,12 +573,12 @@ export default function MaterialsPage() {
                                                             item={deck}
                                                             itemType='flashcard'
                                                             setActiveDropdown={setActiveDropdown}
-                                                            setShowRenameNoteModal={setShowRenameItemModal}
+                                                            setShowRenameItemModal={setShowRenameItemModal}
                                                             setItemName={setItemNameInput}
                                                             setSelectedItem={setSelectedItem}
                                                             setShowMoveItemModal={setShowMoveItemModal}
-                                                            handleDuplicateNote={handleDuplicateConfirm}
-                                                            setNoteToDelete={setItemToDelete}
+                                                            handleDuplicateItem={handleDuplicateConfirm}
+                                                            setItemToDelete={setItemToDelete}
                                                         />
                                                     )}
                                                 </AnimatePresence>
@@ -580,7 +622,7 @@ export default function MaterialsPage() {
                             itemType={getItemType(itemToDelete)}
                             deleteItemModalRef={deleteModalRef}
                             handleDeleteConfirm={handleDeleteConfirm}
-                            setNoteToDelete={setItemToDelete}
+                            setItemToDelete={setItemToDelete}
                         />
                     )}
 
@@ -616,6 +658,7 @@ export default function MaterialsPage() {
                             handleCreateNote={handleCreateNoteInRoot}
                             handleCreateFolder={handleCreateFolderInRoot}
                             setShowCreateFolderModal={setShowCreateFolderModal}
+                            setShowCreateFlashcardModal={setShowCreateFlashcardModal}
                         />
                     )}
 
@@ -626,6 +669,13 @@ export default function MaterialsPage() {
                             folderName={newFolderName}
                             setFolderName={setNewFolderName}
                             handleCreateFolder={handleCreateFolderInRoot}
+                        />
+                    )}
+
+                    {showCreateFlashcardModal && (
+                        <CreateFlashcardModal
+                            setShowCreateFlashcardModal={setShowCreateFlashcardModal}
+                            handleSaveDeck={handleCreateFlashcardInRoot}
                         />
                     )}
                 </AnimatePresence>

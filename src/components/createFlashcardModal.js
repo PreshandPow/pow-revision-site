@@ -552,7 +552,8 @@ export default function CreateFlashcardModal({ setShowCreateFlashcardModal, hand
                                 e.preventDefault();
                                 setShowCreateFlashcardModal(false);
                             }}
-                            className="p-2 hover:bg-[var(--layer3)] rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] transition-colors cursor-pointer"
+                            className="p-2 hover:bg-[var(--layer3)] rounded-lg text-[var(--text-muted)]
+                            hover:text-[var(--text)] transition-colors cursor-pointer"
                         >
                             <X size={19} />
                         </button>

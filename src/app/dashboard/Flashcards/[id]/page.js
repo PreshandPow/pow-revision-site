@@ -18,6 +18,9 @@ import {
 
 // ─── MODAL IMPORTS ───────────────────────────────────────────────────────
 import UseItemOptionDropdown from '../../../../components/itemOptionsDropdown';
+import UseDeleteItemModal from '../../../../components/deleteItemModal';
+import RenameItemModal from "../../../../components/RenameItemModal";
+import MoveItemModal from "../../../../components/MoveItemModal";
 
 // ─── HOOK IMPORTS ───────────────────────────────────────────────────────
 import { useRenameItem, useMoveItem, useDeleteItem, useDuplicateItem } from '../../../hooks/useItemActions';
@@ -38,6 +41,7 @@ export default function FlashcardStudyPage() {
     // ─── 1. REAL DATA STATES ───────────────────────────────────────────────────
     const [deck, setDeck] = useState(null);
     const [cards, setCards] = useState([]);
+    const [folders, setFolders] = useState([]);
 
     // ─── 2. UI STATES ──────────────────────────────────────────────────────────
     const [currentCardIndex, setCurrentCardIndex] = useState(0);
@@ -66,23 +70,22 @@ export default function FlashcardStudyPage() {
 
         const fetchDeckData = async () => {
             try {
-                const { data: deckData, error: deckError } = await supabase
-                    .from('flashcard_decks')
-                    .select('*')
-                    .eq('id', id)
-                    .single();
+                const { data: { user } } = await supabase.auth.getUser();
 
-                if (deckError) throw deckError;
-                const { data: cardsData, error: cardsError } = await supabase
-                    .from('flashcards')
-                    .select('*')
-                    .eq('deck_id', id)
-                    .order('order_index', { ascending: true });
+                const [deckResponse, cardsResponse, foldersResponse] = await Promise.all([
+                    supabase.from('flashcard_decks').select('*').eq('id', id).single(),
+                    supabase.from('flashcards').select('*').eq('deck_id', id).order('order_index', { ascending: true }),
+                    user
+                        ? supabase.from('folders').select('*').eq('user_id', user.id).order('updated_at', { ascending: false })
+                        : Promise.resolve({ data: [] }),
+                ]);
 
-                if (cardsError) throw cardsError;
+                if (deckResponse.error) throw deckResponse.error;
+                if (cardsResponse.error) throw cardsResponse.error;
 
-                setDeck(deckData);
-                setCards(cardsData || []);
+                setDeck(deckResponse.data);
+                setCards(cardsResponse.data || []);
+                setFolders(foldersResponse.data || []);
 
             } catch (error) {
                 console.error("Error fetching flashcard data:", error);
@@ -119,27 +122,71 @@ export default function FlashcardStudyPage() {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [cards.length, cardToEdit]);
 
-    // ─── 5. CLOSE DROPDOWN ON OUTSIDE CLICK ────────────────────────────────────
+    // ─── 5. RENAME DECK FEATURE ───────────────────────────────────────────────────
+    const [showRenameItemModal, setShowRenameItemModal] = useState(false);
+    const [itemName, setItemName] = useState('Untitled Deck');
+    const renameModalRef = useRef(null);
+
+    const { rename, isRenaming } = useRenameItem();
+
+    const handleDeckRename = async (newName) => {
+        const success = await rename('flashcard', selectedItem.id, newName);
+
+        if (success) {
+            setDeck(prev => ({ ...prev, name: newName }));
+            setSelectedItem(null);
+        }
+    };
+
+    // ─── 6. MOVE DECK FEATURE ─────────────────────────────────────────────────────
+    const [showMoveItemModal, setShowMoveItemModal] = useState(false);
+    const itemToMoveRef = useRef(null);
+
+    const { moveItem, isMoving } = useMoveItem();
+
+    const handleDeckMove = async (destinationId) => {
+        const loadingToast = toast.loading('Moving flashcard deck...', toastStyle);
+        const success = await moveItem('flashcard', selectedItem.id, destinationId);
+        toast.dismiss(loadingToast);
+
+        if (success) {
+            setShowMoveItemModal(false);
+            setDeck(prev => ({ ...prev, folder_id: destinationId === 'root' ? null : destinationId }));
+            toast.success('Deck moved successfully', toastStyle);
+            setSelectedItem(null);
+        }
+    };
+
+    // ─── 7. CLOSE DROPDOWN/MODALS ON OUTSIDE CLICK ─────────────────────────────
     useEffect(() => {
         const handleClickOutside = (e) => {
             if (!e.target.closest('.dropdown-container')) setActiveDropdown(null);
+            if (renameModalRef.current && !renameModalRef.current.contains(e.target)) {
+                setShowRenameItemModal(false);
+            }
+            if (itemToMoveRef.current && !itemToMoveRef.current.contains(e.target)) {
+                setShowMoveItemModal(false);
+            }
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // ─── 6. RENAME DECK FEATURE ───────────────────────────────────────────────────
-    const [showRenameItemModal, setShowRenameItemModal] = useState(false);
-    const [itemName, setItemName] = useState('Untitled Deck');
-    const showRenameDeckModalRef = useRef(null);
-
-    // ─── 7. MOVE DECK FEATURE ─────────────────────────────────────────────────────
-    const [showMoveItemModal, setShowMoveItemModal] = useState(false);
-    const itemToMoveRef = useRef(null);
-
     // ─── 8. DELETE DECK FEATURE ───────────────────────────────────────────────────
-    const [deckToDelete, setDeckToDelete] = useState(null);
-    const deleteDeckModalRef = useRef(null);
+    const [itemToDelete, setItemToDelete] = useState(null);
+    const deleteModalRef = useRef(null);
+
+    const { deleteItem, issDeleting } = useDeleteItem();
+
+    const handleDeleteConfirm = async () => {
+        const loadingToast = toast.loading('Deleting flashcard deck...', toastStyle);
+        const success = await deleteItem('flashcard', itemToDelete.id);
+        toast.dismiss(loadingToast);
+
+        if (success) {
+            router.push('/dashboard/Flashcards')
+        }
+    };
 
     // ─── 9. DUPLICATE DECK FEATURE ────────────────────────────────────────────────
     const { duplicateItem, isDuplicating } = useDuplicateItem();
@@ -167,7 +214,8 @@ export default function FlashcardStudyPage() {
                 >
                     <button
                         onClick={() => setCardToEdit(null)}
-                        className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full border border-[var(--layer3)] text-[var(--text-muted)] hover:text-white hover:bg-[var(--layer3)] transition-colors cursor-pointer"
+                        className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full border
+                        border-[var(--layer3)] text-[var(--text-muted)] hover:text-white hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                     >
                         <X size={16} />
                     </button>
@@ -196,10 +244,12 @@ export default function FlashcardStudyPage() {
                     <div className="flex flex-col md:flex-row gap-8 items-center flex-1">
                         <div className="flex-1 w-full flex items-center gap-4">
                             <div className="flex flex-col gap-2 shrink-0">
-                                <button className="flex items-center gap-2 px-3 py-1.5 border border-[var(--layer3)] rounded-lg text-xs font-bold text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer">
+                                <button className="flex items-center gap-2 px-3 py-1.5 border border-[var(--layer3)] rounded-lg text-xs font-bold
+                                    text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer">
                                     <ImageIcon size={14} /> Image
                                 </button>
-                                <button className="flex items-center gap-2 px-3 py-1.5 border border-[var(--layer3)] rounded-lg text-xs font-bold text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer">
+                                <button className="flex items-center gap-2 px-3 py-1.5 border border-[var(--layer3)] rounded-lg text-xs font-bold
+                                    text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer">
                                     <Mic size={14} /> Record
                                 </button>
                             </div>
@@ -217,10 +267,12 @@ export default function FlashcardStudyPage() {
                                 className="w-full bg-transparent border-b-2 border-white/20 pb-2 text-lg text-white focus:outline-none focus:border-white transition-colors"
                             />
                             <div className="flex flex-col gap-2 shrink-0">
-                                <button className="flex items-center gap-2 px-3 py-1.5 border border-[var(--layer3)] rounded-lg text-xs font-bold text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer">
+                                <button className="flex items-center gap-2 px-3 py-1.5 border border-[var(--layer3)] rounded-lg text-xs font-bold
+                                    text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer">
                                     <ImageIcon size={14} /> Image
                                 </button>
-                                <button className="flex items-center gap-2 px-3 py-1.5 border border-[var(--layer3)] rounded-lg text-xs font-bold text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer">
+                                <button className="flex items-center gap-2 px-3 py-1.5 border border-[var(--layer3)] rounded-lg text-xs font-bold
+                                    text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer">
                                     <Mic size={14} /> Record
                                 </button>
                             </div>
@@ -292,12 +344,12 @@ export default function FlashcardStudyPage() {
                                 item={deck}
                                 itemType='flashcard'
                                 setActiveDropdown={setActiveDropdown}
-                                setShowRenameNoteModal={setShowRenameItemModal}
+                                setShowRenameItemModal={setShowRenameItemModal}
                                 setItemName={setItemName}
                                 setShowMoveItemModal={setShowMoveItemModal}
                                 setSelectedItem={setSelectedItem}
-                                handleDuplicateNote={handleDuplicateDeck}
-                                setNoteToDelete={setDeckToDelete}
+                                handleDuplicateItem={handleDuplicateDeck}
+                                setItemToDelete={setItemToDelete}
                             />
                         )}
                     </AnimatePresence>
@@ -316,7 +368,11 @@ export default function FlashcardStudyPage() {
                     { name: 'Knowt Play', icon: Gamepad2, color: 'text-blue-500', bg: 'bg-blue-500/10' },
                     { name: 'Podcast', icon: Headphones, color: 'text-purple-400', bg: 'bg-purple-400/10', hasAdd: true },
                 ].map((mode, i) => (
-                    <button key={i} className="flex items-center justify-between p-3 rounded-2xl bg-[var(--layer2)] border border-[var(--layer3)] hover:border-[var(--nice-blue)] hover:shadow-[0_0_15px_rgba(var(--blue-rgb),0.1)] transition-all group cursor-pointer">
+                    <button
+                        key={i}
+                        className="flex items-center justify-between p-3 rounded-2xl bg-[var(--layer2)] border
+                        border-[var(--layer3)] hover:border-[var(--nice-blue)] hover:shadow-[0_0_15px_rgba(var(--blue-rgb),0.1)] transition-all group cursor-pointer"
+                    >
                         <div className="flex items-center gap-3">
                             <div className={`p-1.5 rounded-lg ${mode.bg} ${mode.color}`}>
                                 <mode.icon size={18} />
@@ -372,7 +428,8 @@ export default function FlashcardStudyPage() {
                     <div className="flex items-center gap-4">
                         <button
                             onClick={() => { setIsFlipped(false); setCurrentCardIndex(prev => Math.max(0, prev - 1)); }}
-                            className="w-10 h-10 rounded-full bg-[var(--layer2)] border border-[var(--layer3)] flex items-center justify-center hover:bg-[var(--layer3)] text-[var(--nice-blue)] transition-colors cursor-pointer"
+                            className="w-10 h-10 rounded-full bg-[var(--layer2)] border border-[var(--layer3)] flex items-center
+                            justify-center hover:bg-[var(--layer3)] text-[var(--nice-blue)] transition-colors cursor-pointer"
                         >
                             <ChevronLeft size={20} />
                         </button>
@@ -381,17 +438,22 @@ export default function FlashcardStudyPage() {
                         </span>
                         <button
                             onClick={() => { setIsFlipped(false); setCurrentCardIndex(prev => Math.min(cards.length - 1, prev + 1)); }}
-                            className="w-10 h-10 rounded-full bg-[var(--layer2)] border border-[var(--layer3)] flex items-center justify-center hover:bg-[var(--layer3)] text-[var(--nice-blue)] transition-colors cursor-pointer"
+                            className="w-10 h-10 rounded-full bg-[var(--layer2)] border border-[var(--layer3)] flex items-center
+                            justify-center hover:bg-[var(--layer3)] text-[var(--nice-blue)] transition-colors cursor-pointer"
                         >
                             <ChevronRight size={20} />
                         </button>
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <button className="w-10 h-10 rounded-xl bg-[var(--layer2)] border border-[var(--layer3)] flex items-center justify-center hover:bg-[var(--layer3)] text-white transition-colors cursor-pointer"><Star size={18} /></button>
-                        <button className="w-10 h-10 rounded-xl bg-[var(--layer2)] border border-[var(--layer3)] flex items-center justify-center hover:bg-[var(--layer3)] text-white transition-colors cursor-pointer"><Shuffle size={18} /></button>
-                        <button className="w-10 h-10 rounded-xl bg-[var(--layer2)] border border-[var(--layer3)] flex items-center justify-center hover:bg-[var(--layer3)] text-white transition-colors cursor-pointer"><Settings size={18} /></button>
-                        <button className="w-10 h-10 rounded-xl bg-[var(--layer2)] border border-[var(--layer3)] flex items-center justify-center hover:bg-[var(--layer3)] text-white transition-colors cursor-pointer"><Maximize size={18} /></button>
+                        <button className="w-10 h-10 rounded-xl bg-[var(--layer2)] border border-[var(--layer3)] flex items-center justify-center
+                        hover:bg-[var(--layer3)] text-white transition-colors cursor-pointer"><Star size={18} /></button>
+                        <button className="w-10 h-10 rounded-xl bg-[var(--layer2)] border border-[var(--layer3)] flex items-center justify-center
+                        hover:bg-[var(--layer3)] text-white transition-colors cursor-pointer"><Shuffle size={18} /></button>
+                        <button className="w-10 h-10 rounded-xl bg-[var(--layer2)] border border-[var(--layer3)] flex items-center justify-center
+                        hover:bg-[var(--layer3)] text-white transition-colors cursor-pointer"><Settings size={18} /></button>
+                        <button className="w-10 h-10 rounded-xl bg-[var(--layer2)] border border-[var(--layer3)] flex items-center justify-center
+                        hover:bg-[var(--layer3)] text-white transition-colors cursor-pointer"><Maximize size={18} /></button>
                     </div>
                 </div>
             </div>
@@ -409,7 +471,12 @@ export default function FlashcardStudyPage() {
 
                     <div className="flex items-center justify-between mb-4">
                         <span className="text-xs font-bold text-[var(--text-muted)]">Last updated today</span>
-                        <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[var(--layer3)] text-xs font-bold text-white hover:bg-[var(--layer3)] cursor-pointer"><Undo size={14} /> Update</button>
+                        <button
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[var(--layer3)]
+                            text-xs font-bold text-white hover:bg-[var(--layer3)] cursor-pointer"
+                        >
+                            <Undo size={14} /> Update
+                        </button>
                     </div>
 
                     <div className="overflow-x-auto">
@@ -480,7 +547,8 @@ export default function FlashcardStudyPage() {
                             placeholder="Search terms/definitions"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-[var(--layer2)] border border-[var(--layer3)] rounded-full pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:border-[var(--nice-blue)] transition-colors"
+                            className="w-full bg-[var(--layer2)] border border-[var(--layer3)] rounded-full pl-10 pr-4 py-2
+                            text-sm text-white focus:outline-none focus:border-[var(--nice-blue)] transition-colors"
                         />
                     </div>
                 </div>
@@ -489,7 +557,10 @@ export default function FlashcardStudyPage() {
                     <button className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-black font-bold text-sm hover:opacity-90 transition-opacity cursor-pointer">
                         View all ({cards.length})
                     </button>
-                    <button className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-[var(--layer3)] text-white font-bold text-sm hover:bg-[var(--layer3)] transition-colors cursor-pointer">
+                    <button
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-[var(--layer3)] text-white
+                        font-bold text-sm hover:bg-[var(--layer3)] transition-colors cursor-pointer"
+                    >
                         <Star size={16} /> Star these {cards.length}
                     </button>
                 </div>
@@ -503,9 +574,12 @@ export default function FlashcardStudyPage() {
                                     {index + 1}
                                 </span>
                                 <div className="flex items-center gap-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button className="w-8 h-8 rounded-full border border-[var(--layer3)] flex items-center justify-center text-white hover:bg-[var(--layer3)] transition-colors cursor-pointer"><Volume2 size={14} /></button>
-                                    <button onClick={() => setCardToEdit(card)} className="w-8 h-8 rounded-full border border-[var(--layer3)] flex items-center justify-center text-white hover:bg-[var(--layer3)] transition-colors cursor-pointer"><Edit size={14} /></button>
-                                    <button className="w-8 h-8 rounded-full border border-[var(--layer3)] flex items-center justify-center text-white hover:bg-[var(--layer3)] transition-colors cursor-pointer"><Star size={14} /></button>
+                                    <button className="w-8 h-8 rounded-full border border-[var(--layer3)] flex items-center justify-center text-white
+                                    hover:bg-[var(--layer3)] transition-colors cursor-pointer"><Volume2 size={14} /></button>
+                                    <button onClick={() => setCardToEdit(card)} className="w-8 h-8 rounded-full border border-[var(--layer3)] flex items-center justify-center text-white
+                                    hover:bg-[var(--layer3)] transition-colors cursor-pointer"><Edit size={14} /></button>
+                                    <button className="w-8 h-8 rounded-full border border-[var(--layer3)] flex items-center justify-center text-white
+                                    hover:bg-[var(--layer3)] transition-colors cursor-pointer"><Star size={14} /></button>
                                     <span className="ml-2 px-3 py-1 bg-pink-500/10 text-pink-400 border border-pink-500/20 rounded-full text-xs font-bold flex items-center gap-1.5">
                                         <div className="w-2 h-2 rounded-full border border-pink-400" /> New cards
                                     </span>
@@ -528,9 +602,39 @@ export default function FlashcardStudyPage() {
                 </div>
             </div>
 
-            {/* Portaled Modals */}
+            {/* ─── MODALS ──────────────────────────────────────────────────────────── */}
             <AnimatePresence>
-                {cardToEdit && <EditCardModal />}
+                {itemToDelete && (
+                    <UseDeleteItemModal
+                        item={deck}
+                        itemType='flashcard'
+                        deleteItemModalRef={deleteModalRef}
+                        handleDeleteConfirm={handleDeleteConfirm}
+                        setItemToDelete={setItemToDelete}
+                    />
+                )}
+                {showRenameItemModal && (
+                    <RenameItemModal
+                        renameModalRef={renameModalRef}
+                        currentName={itemName}
+                        handleRename={handleDeckRename}
+                        setItemName={setItemName}
+                        setShowRenameItemModal={setShowRenameItemModal}
+                    />
+                )}
+                {showMoveItemModal && selectedItem && (
+                    <MoveItemModal
+                        moveModalRef={itemToMoveRef}
+                        folders={folders}
+                        currentItem={selectedItem}
+                        onMove={handleDeckMove}
+                        onClose={() => {
+                            setShowMoveItemModal(false);
+                            setSelectedItem(null);
+                        }}
+                        itemType='flashcard'
+                    />
+                )}
             </AnimatePresence>
 
         </div>

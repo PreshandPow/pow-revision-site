@@ -316,14 +316,23 @@ export default function NotePage() {
 
     // ─── 11. RENDER ────────────────────────────────────────────────────────────────
     if (loading || !editor) return (
-        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--layer1)] backdrop-blur-xl p-6">
-            <div className="w-16 h-16 mb-8 rounded-2xl bg-[var(--nice-blue)] animate-pulse shadow-[0_0_40px_rgba(var(--blue-rgb),0.3)] flex items-center justify-center">
+        <div
+            className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--layer1)]
+            backdrop-blur-xl p-6"
+        >
+            <div
+                className="w-16 h-16 mb-8 rounded-2xl bg-[var(--nice-blue)] animate-pulse
+                shadow-[0_0_40px_rgba(var(--blue-rgb),0.3)] flex items-center justify-center"
+            >
                 <svg className="animate-spin" width="40" height="40" viewBox="0 0 32 32" fill="none">
                     <circle cx="16" cy="16" r="12" stroke="rgba(255,255,255,0.2)" strokeWidth="3" />
                     <path d="M16 4 A12 12 0 0 1 28 16" stroke="white" strokeWidth="3" strokeLinecap="round" />
                 </svg>
             </div>
-            <h1 className="font-brand text-[var(--text)] text-2xl md:text-3xl font-bold tracking-tight text-center max-w-md leading-tight">
+            <h1
+                className="font-brand text-[var(--text)] text-2xl md:text-3xl font-bold tracking-tight
+                text-center max-w-md leading-tight"
+            >
                 Getting the <span className="text-[var(--nice-blue)]">Note</span> ready for you
             </h1>
             <p className="mt-4 text-[var(--text-muted)] font-medium animate-bounce">Fetching your data...</p>
@@ -334,37 +343,60 @@ export default function NotePage() {
         <main className="min-h-screen bg-[var(--layer2)] flex flex-col" onKeyDown={handleWrapperKeyDown}>
 
             {/* Top Navbar */}
-            <ul className="sticky top-0 z-10 bg-[var(--layer1)] border-b border-[var(--layer3)] px-4 md:px-10 py-1.5 flex items-center justify-between gap-4">
+            <ul
+                className="sticky top-0 z-10 bg-[var(--layer1)] border-b border-[var(--layer3)] px-4 md:px-10
+                py-1.5 flex items-center justify-between gap-4"
+            >
                 <li>
-                    <button onClick={() => router.push('/dashboard/Notes')}
-                            className="flex items-center gap-2 text-[var(--text-muted)] hover:text-[var(--text)] transition-colors cursor-pointer font-semibold text-sm">
+                    <button
+                        onClick={() => router.push('/dashboard/Notes')}
+                        className="flex items-center gap-2 text-[var(--text-muted)] hover:text-[var(--text)]
+                        transition-colors cursor-pointer font-semibold text-sm"
+                    >
                         <ArrowLeft size={16} /> Notes
                     </button>
                 </li>
                 <li>
-                    <Link href="/" className="font-brand font-black tracking-tighter z-20 text-2xl text-[var(--nice-blue)]">POW</Link>
+                    <Link
+                        href="/"
+                        className="font-brand font-black tracking-tighter z-20 text-2xl text-[var(--nice-blue)]"
+                    >
+                        POW
+                    </Link>
                 </li>
                 <li className="md:relative group">
-                    <div className="absolute top-8 bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
+                    <div
+                        className="absolute top-8 bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3
+                        py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50"
+                    >
                         <span className="text-xs font-bold text-[var(--text)]">Toggle Autosave</span>
                         <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>
                         <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Shift</span>
                         <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">A</span>
                     </div>
-                    <button className="text-sm font-semibold text-[var(--text-muted)] hover:text-[var(--text)] transition-colors cursor-pointer whitespace-nowrap"
-                            onClick={handleAutosaveToggle}>
+                    <button
+                        className="text-sm font-semibold text-[var(--text-muted)] hover:text-[var(--text)]
+                        transition-colors cursor-pointer whitespace-nowrap"
+                        onClick={handleAutosaveToggle}
+                    >
                         {isAutosave ? 'Autosave On' : 'Autosave Off'}
                     </button>
                 </li>
                 {!isAutosave && hasChanged && (
                     <div className="md:relative group">
-                        <div className="absolute top-8 bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
+                        <div
+                            className="absolute top-8 bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3
+                            py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50"
+                        >
                             <span className="text-xs font-bold text-[var(--text)]">Save</span>
                             <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>
                             <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">S</span>
                         </div>
-                        <button onClick={() => save(title, editor.getHTML(), tags)}
-                                className="text-sm font-bold bg-[var(--nice-blue)] text-white px-3 py-1.5 rounded-lg cursor-pointer hover:scale-95 transition-transform">
+                        <button
+                            onClick={() => save(title, editor.getHTML(), tags)}
+                            className="text-sm font-bold bg-[var(--nice-blue)] text-white px-3 py-1.5 rounded-lg
+                            cursor-pointer hover:scale-95 transition-transform"
+                        >
                             Save
                         </button>
                     </div>
@@ -382,8 +414,14 @@ export default function NotePage() {
             <div className="flex-1 w-full max-w-3xl mx-auto px-4 md:px-0 py-10 flex flex-col gap-6">
 
                 {/* Title Input */}
-                <input type="text" value={title} onChange={handleTitleChange} placeholder="Untitled"
-                       className="w-full bg-transparent text-3xl md:text-4xl font-main text-[var(--text)] placeholder:text-[var(--layer3)] outline-none border-none resize-none"/>
+                <input
+                    type="text"
+                    value={title}
+                    onChange={handleTitleChange}
+                    placeholder="Untitled"
+                    className="w-full bg-transparent text-3xl md:text-4xl font-main text-[var(--text)]
+                    placeholder:text-[var(--layer3)] outline-none border-none resize-none"
+                />
 
                 {/* Toolbar */}
                 <div className="sticky top-[60px] z-[60] pb-2">
@@ -394,15 +432,29 @@ export default function NotePage() {
                 <div className="flex flex-wrap items-center gap-2">
                     <Tag size={14} className="text-[var(--text-muted)]" />
                     {tags.map(tag => (
-                        <span key={tag} className="flex items-center gap-1 text-xs font-semibold bg-[var(--layer1)] border border-[var(--layer3)] text-[var(--text-muted)] px-2 py-1 rounded-lg">
+                        <span
+                            key={tag}
+                            className="flex items-center gap-1 text-xs font-semibold bg-[var(--layer1)] border
+                            border-[var(--layer3)] text-[var(--text-muted)] px-2 py-1 rounded-lg"
+                        >
                             {tag}
-                            <button onClick={() => handleRemoveTag(tag)} className="cursor-pointer hover:text-red-400 transition-colors">
+                            <button
+                                onClick={() => handleRemoveTag(tag)}
+                                className="cursor-pointer hover:text-red-400 transition-colors"
+                            >
                                 <X size={10} />
                             </button>
                         </span>
                     ))}
-                    <input type="text" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={handleAddTag}
-                           placeholder="Add tag..." className="bg-transparent text-xs font-semibold text-[var(--text-muted)] placeholder:text-[var(--nice-blue)] outline-none border-none w-24" />
+                    <input
+                        type="text"
+                        value={tagInput}
+                        onChange={(e) => setTagInput(e.target.value)}
+                        onKeyDown={handleAddTag}
+                        placeholder="Add tag..."
+                        className="bg-transparent text-xs font-semibold text-[var(--text-muted)]
+                        placeholder:text-[var(--nice-blue)] outline-none border-none w-24"
+                    />
                 </div>
 
                 <div className="h-[1px] bg-[var(--nice-blue)]" />
@@ -434,13 +486,18 @@ export default function NotePage() {
                                     e.preventDefault()
                                     setIsCanvasInsertModalOpen(!isCanvasInsertModalOpen);
                                 }}
-                                className="text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--nice-blue)] rounded cursor-pointer transition-all p-1.5"
+                                className="text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--nice-blue)]
+                                rounded cursor-pointer transition-all p-1.5"
                             >
-                                <Plus size={16} strokeWidth={2.5}/>
+                                <Plus size={16} strokeWidth={2.5} />
                             </button>
 
                             {isCanvasInsertModalOpen && (
-                                <div ref={insertModalRef} onMouseLeave={() => setIsCanvasInsertModalOpen(false)} className="absolute top-0 left-8 z-50">
+                                <div
+                                    ref={insertModalRef}
+                                    onMouseLeave={() => setIsCanvasInsertModalOpen(false)}
+                                    className="absolute top-0 left-8 z-50"
+                                >
                                     <CanvasInsertModal
                                         editor={editor}
                                         hoveredPos={hoveredPos}
@@ -459,13 +516,18 @@ export default function NotePage() {
                                     e.preventDefault()
                                     setIsCanvasLayoutModalOpen(!isCanvasLayoutModalOpen);
                                 }}
-                                className="text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--nice-blue)] rounded cursor-pointer transition-all p-1.5"
+                                className="text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--nice-blue)]
+                                rounded cursor-pointer transition-all p-1.5"
                             >
-                                <GripVertical size={16} strokeWidth={2.5}/>
+                                <GripVertical size={16} strokeWidth={2.5} />
                             </button>
 
                             {isCanvasLayoutModalOpen && (
-                                <div ref={layoutModalRef} onMouseLeave={() => setIsCanvasLayoutModalOpen(false)} className="absolute top-0 left-8 z-50">
+                                <div
+                                    ref={layoutModalRef}
+                                    onMouseLeave={() => setIsCanvasLayoutModalOpen(false)}
+                                    className="absolute top-0 left-8 z-50"
+                                >
                                     <CanvasLayoutModal
                                         editor={editor}
                                         hoveredPos={hoveredPos}

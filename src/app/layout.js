@@ -32,30 +32,37 @@ export const metadata = {
 export default function RootLayout({ children }) {
     return (
         // 1. ADDED suppressHydrationWarning (Required by next-themes)
-        <html lang="en" className={`${inter.variable} ${outfit.variable}`} suppressHydrationWarning>
-        <body>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <html
+            lang="en"
+            className={`${inter.variable} ${outfit.variable}`}
+            suppressHydrationWarning
+        >
+            <body>
+                <ThemeProvider
+                    attribute="class"
+                    defaultTheme="system"
+                    enableSystem
+                >
+                    <NextTopLoader
+                        color="var(--nice-blue)"
+                        initialPosition={0.08}
+                        crawlSpeed={200}
+                        height={3}
+                        crawl={true}
+                        showSpinner={false}
+                        easing="ease"
+                        speed={200}
+                        shadow="0 0 10px var(--nice-blue), 0 0 5px var(--nice-blue)"
+                    />
 
-            <NextTopLoader
-                color="var(--nice-blue)"
-                initialPosition={0.08}
-                crawlSpeed={200}
-                height={3}
-                crawl={true}
-                showSpinner={false}
-                easing="ease"
-                speed={200}
-                shadow="0 0 10px var(--nice-blue), 0 0 5px var(--nice-blue)"
-            />
+                    {children}
 
-            {children}
-
-            <Toaster
-                position="top-center"
-                containerStyle={{ zIndex: 99999 }}
-            />
-        </ThemeProvider>
-        </body>
+                    <Toaster
+                        position="top-center"
+                        containerStyle={{ zIndex: 99999 }}
+                    />
+                </ThemeProvider>
+            </body>
         </html>
     );
 }

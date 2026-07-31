@@ -24,7 +24,8 @@ export default function CanvasLayoutModal({ editor, hoveredPos, toast, toastStyl
 
                 {/* Clear Formatting */}
                 <button
-                    className="flex items-center gap-3 w-full p-2 hover:bg-[var(--layer3)] hover:text-[var(--nice-blue)] rounded-md transition-colors cursor-pointer text-sm"
+                    className="flex items-center gap-3 w-full p-2 hover:bg-[var(--layer3)] hover:text-[var(--nice-blue)]
+                    rounded-md transition-colors cursor-pointer text-sm"
                     onPointerDown={(e) => {
                         e.preventDefault();
                         const hovered = getHoveredNode();
@@ -44,7 +45,8 @@ export default function CanvasLayoutModal({ editor, hoveredPos, toast, toastStyl
 
                 {/* Copy to Clipboard */}
                 <button
-                    className="flex items-center gap-3 w-full p-2 hover:bg-[var(--layer3)] hover:text-[var(--nice-blue)] rounded-md transition-colors text-sm cursor-pointer"
+                    className="flex items-center gap-3 w-full p-2 hover:bg-[var(--layer3)] hover:text-[var(--nice-blue)]
+                    rounded-md transition-colors text-sm cursor-pointer"
                     onPointerDown={(e) => {
                         e.preventDefault();
                         const hovered = getHoveredNode();
@@ -61,7 +63,8 @@ export default function CanvasLayoutModal({ editor, hoveredPos, toast, toastStyl
 
                 {/* Duplicate Block */}
                 <button
-                    className="flex items-center gap-3 w-full p-2 hover:bg-[var(--layer3)] hover:text-[var(--nice-blue)] rounded-md transition-colors text-sm cursor-pointer"
+                    className="flex items-center gap-3 w-full p-2 hover:bg-[var(--layer3)] hover:text-[var(--nice-blue)]
+                    rounded-md transition-colors text-sm cursor-pointer"
                     onPointerDown={(e) => {
                         e.preventDefault();
                         const hovered = getHoveredNode();
@@ -82,7 +85,8 @@ export default function CanvasLayoutModal({ editor, hoveredPos, toast, toastStyl
 
                 {/* Delete Block */}
                 <button
-                    className="flex items-center gap-3 w-full p-2 hover:bg-red-500/10 text-red-400 hover:text-red-300 rounded-md transition-colors text-sm cursor-pointer"
+                    className="flex items-center gap-3 w-full p-2 hover:bg-red-500/10 text-red-400 hover:text-red-300
+                    rounded-md transition-colors text-sm cursor-pointer"
                     onPointerDown={(e) => {
                         e.preventDefault();
                         const hovered = getHoveredNode();

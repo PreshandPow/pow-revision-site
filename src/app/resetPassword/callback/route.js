@@ -27,7 +27,7 @@ export async function GET(request) {
         if (!error) {
             // ─── 4. SUCCESSFUL REDIRECT ───────────────────────────────────────────
             return NextResponse.redirect(`${actualOrigin}/resetPassword`)
-        }   else {
+        } else {
             console.error("Auth exchange error:", error)
         }
     }

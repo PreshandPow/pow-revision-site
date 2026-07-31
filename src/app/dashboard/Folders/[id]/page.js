@@ -17,10 +17,11 @@ import UseDeleteItemModal from "../../../../components/deleteItemModal";
 import UseItemOptionDropdown from "../../../../components/itemOptionsDropdown";
 import CreateModal from '../../../../components/CreateModal';
 import CreateFolderModal from "../../../../components/createFolderModal";
+import CreateFlashcardModal from "../../../../components/createFlashcardModal";
 
 // Hooks
 import { useRenameItem, useMoveItem, useDeleteItem, useDuplicateItem } from "../../../hooks/useItemActions";
-import { createNoteAction, createFolderAction } from "../../../hooks/createItemActions";
+import { createNoteAction, createFolderAction, createFlashcardAction } from "../../../hooks/createItemActions";
 
 // ─── 1. SUPABASE CLIENT ───────────────────────────────────────────────────────
 export function createClient() {
@@ -57,6 +58,7 @@ export default function FolderContentPage() {
     const [activeTaskModal, setActiveTaskModal] = useState(null);
     const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
     const [newFolderName, setNewFolderName] = useState('');
+    const [showCreateFlashcardModal, setShowCreateFlashcardModal] = useState(false);
 
     // Refs
     const renameModalRef = useRef(null);
@@ -170,17 +172,26 @@ export default function FolderContentPage() {
 
     // ─── 5. SMART ACTION HANDLERS ───────────────────────────────────────────────
 
+    // Notes have `.title`, folders have `.parent_folder_id`, flashcard decks have neither.
+    const getItemType = (item) => {
+        if (!item) return null;
+        if (item.title !== undefined) return 'note';
+        if (item.parent_folder_id !== undefined) return 'folder';
+        return 'flashcard';
+    };
+
     const handleRenameConfirm = async (newName) => {
-        const isNote = selectedItem.title !== undefined;
-        const itemType = isNote ? 'note' : 'folder';
+        const itemType = getItemType(selectedItem);
 
         const success = await rename(itemType, selectedItem.id, newName);
 
         if (success) {
             if (selectedItem.id === currentFolder?.id) {
                 setCurrentFolder({ ...currentFolder, name: newName });
-            } else if (isNote) {
+            } else if (itemType === 'note') {
                 setNotes(prev => prev.map(n => n.id === selectedItem.id ? { ...n, title: newName } : n));
+            } else if (itemType === 'flashcard') {
+                setFlashcards(prev => prev.map(f => f.id === selectedItem.id ? { ...f, name: newName } : f));
             } else {
                 setFolders(prev => prev.map(f => f.id === selectedItem.id ? { ...f, name: newName } : f));
             }
@@ -189,8 +200,7 @@ export default function FolderContentPage() {
     };
 
     const handleMoveConfirm = async (destinationId) => {
-        const isNote = selectedItem.title !== undefined;
-        const itemType = isNote ? 'note' : 'folder';
+        const itemType = getItemType(selectedItem);
 
         const loadingToast = toast.loading(`Moving ${itemType}...`, toastStyle);
         const success = await moveItem(itemType, selectedItem.id, destinationId);
@@ -198,8 +208,10 @@ export default function FolderContentPage() {
 
         if (success) {
             setShowMoveItemModal(false);
-            if (isNote) {
+            if (itemType === 'note') {
                 setNotes(prev => prev.filter(n => n.id !== selectedItem.id));
+            } else if (itemType === 'flashcard') {
+                setFlashcards(prev => prev.filter(f => f.id !== selectedItem.id));
             } else {
                 setFolders(prev => prev.filter(f => f.id !== selectedItem.id));
             }
@@ -209,16 +221,17 @@ export default function FolderContentPage() {
     };
 
     const handleDeleteConfirm = async () => {
-        const isNote = itemToDelete.title !== undefined;
-        const itemType = isNote ? 'note' : 'folder';
+        const itemType = getItemType(itemToDelete);
 
         const loadingToast = toast.loading(`Deleting ${itemType}...`, toastStyle);
         const success = await deleteItem(itemType, itemToDelete.id);
         toast.dismiss(loadingToast);
 
         if (success) {
-            if (isNote) {
+            if (itemType === 'note') {
                 setNotes(prev => prev.filter(n => n.id !== itemToDelete.id));
+            } else if (itemType === 'flashcard') {
+                setFlashcards(prev => prev.filter(f => f.id !== itemToDelete.id));
             } else {
                 setFolders(prev => prev.filter(f => f.id !== itemToDelete.id));
             }
@@ -227,16 +240,17 @@ export default function FolderContentPage() {
     };
 
     const handleDuplicateConfirm = async (itemToDuplicate) => {
-        const isNote = itemToDuplicate.title !== undefined;
-        const itemType = isNote ? 'note' : 'folder';
+        const itemType = getItemType(itemToDuplicate);
 
         const loadingToast = toast.loading(`Duplicating ${itemType}...`, toastStyle);
         const newItem = await duplicateItem(itemType, itemToDuplicate);
         toast.dismiss(loadingToast);
 
         if (newItem) {
-            if (isNote) {
+            if (itemType === 'note') {
                 setNotes(prev => [newItem, ...prev]);
+            } else if (itemType === 'flashcard') {
+                setFlashcards(prev => [newItem, ...prev]);
             } else {
                 setFolders(prev => [newItem, ...prev]);
             }
@@ -259,6 +273,17 @@ export default function FolderContentPage() {
         }
         setShowCreateFolderModal(false);
         setNewFolderName('');
+    };
+
+    const handleCreateFlashcardInFolder = async (deckData) => {
+        const loadingToast = toast.loading('Creating deck...', toastStyle);
+        const newDeck = await createFlashcardAction(deckData, id, router);
+        toast.dismiss(loadingToast);
+
+        if (newDeck) {
+            setShowCreateFlashcardModal(false);
+            setFlashcards(prev => [newDeck, ...prev]);
+        }
     };
 
     const formatDate = (date) => new Date(date).toLocaleDateString('en-GB', {
@@ -335,12 +360,12 @@ export default function FolderContentPage() {
                                         item={currentFolder}
                                         itemType='folder'
                                         setActiveDropdown={setActiveDropdown}
-                                        setShowRenameNoteModal={setShowRenameItemModal}
+                                        setShowRenameItemModal={setShowRenameItemModal}
                                         setItemName={setItemNameInput}
                                         setSelectedItem={setSelectedItem}
                                         setShowMoveItemModal={setShowMoveItemModal}
-                                        handleDuplicateNote={handleDuplicateConfirm}
-                                        setNoteToDelete={setItemToDelete}
+                                        handleDuplicateItem={handleDuplicateConfirm}
+                                        setItemToDelete={setItemToDelete}
                                     />
                                 )}
                             </AnimatePresence>
@@ -364,7 +389,10 @@ export default function FolderContentPage() {
                 <div className="mb-12">
                     <h2 className="text-xs font-black uppercase tracking-widest text-[var(--text-muted)] mb-5">Folders</h2>
                     {folders.length === 0 ? (
-                        <div className="col-span-full py-10 flex flex-col items-center justify-center border-2 border-dashed border-[var(--layer3)] rounded-2xl bg-[var(--layer1)]/30 text-center">
+                        <div
+                            className="col-span-full py-10 flex flex-col items-center justify-center border-2 border-dashed
+                            border-[var(--layer3)] rounded-2xl bg-[var(--layer1)]/30 text-center"
+                        >
                             <p className="text-sm font-medium text-[var(--text-muted)]">No folders in this folder yet.</p>
                         </div>
                     ) : (
@@ -405,12 +433,12 @@ export default function FolderContentPage() {
                                                         item={folder}
                                                         itemType='folder'
                                                         setActiveDropdown={setActiveDropdown}
-                                                        setShowRenameNoteModal={setShowRenameItemModal}
+                                                        setShowRenameItemModal={setShowRenameItemModal}
                                                         setItemName={setItemNameInput}
                                                         setSelectedItem={setSelectedItem}
                                                         setShowMoveItemModal={setShowMoveItemModal}
-                                                        handleDuplicateNote={handleDuplicateConfirm}
-                                                        setNoteToDelete={setItemToDelete}
+                                                        handleDuplicateItem={handleDuplicateConfirm}
+                                                        setItemToDelete={setItemToDelete}
                                                     />
                                                 )}
                                             </AnimatePresence>
@@ -442,7 +470,10 @@ export default function FolderContentPage() {
                 <div className="mb-12">
                     <h2 className="text-xs font-black uppercase tracking-widest text-[var(--text-muted)] mb-5">Notes</h2>
                     {notes.length === 0 ? (
-                        <div className="col-span-full py-10 flex flex-col items-center justify-center border-2 border-dashed border-[var(--layer3)] rounded-2xl bg-[var(--layer1)]/30 text-center">
+                        <div
+                            className="col-span-full py-10 flex flex-col items-center justify-center border-2 border-dashed
+                            border-[var(--layer3)] rounded-2xl bg-[var(--layer1)]/30 text-center"
+                        >
                             <p className="text-sm font-medium text-[var(--text-muted)]">No notes in this folder yet.</p>
                         </div>
                     ) : (
@@ -484,12 +515,12 @@ export default function FolderContentPage() {
                                                         item={note}
                                                         itemType='note'
                                                         setActiveDropdown={setActiveDropdown}
-                                                        setShowRenameNoteModal={setShowRenameItemModal}
+                                                        setShowRenameItemModal={setShowRenameItemModal}
                                                         setItemName={setItemNameInput}
                                                         setSelectedItem={setSelectedItem}
                                                         setShowMoveItemModal={setShowMoveItemModal}
-                                                        handleDuplicateNote={handleDuplicateConfirm}
-                                                        setNoteToDelete={setItemToDelete}
+                                                        handleDuplicateItem={handleDuplicateConfirm}
+                                                        setItemToDelete={setItemToDelete}
                                                     />
                                                 )}
                                             </AnimatePresence>
@@ -532,7 +563,10 @@ export default function FolderContentPage() {
                     </div>
 
                     {flashcards.length === 0 ? (
-                        <div className="col-span-full py-10 flex flex-col items-center justify-center border-2 border-dashed border-[var(--layer3)] rounded-2xl bg-[var(--layer1)]/30 text-center">
+                        <div
+                            className="col-span-full py-10 flex flex-col items-center justify-center border-2 border-dashed
+                            border-[var(--layer3)] rounded-2xl bg-[var(--layer1)]/30 text-center"
+                        >
                             <p className="text-sm font-medium text-[var(--text-muted)]">No flashcard decks in this folder yet.</p>
                         </div>
                     ) : (
@@ -544,10 +578,19 @@ export default function FolderContentPage() {
                                     onClick={() => router.push(`/dashboard/Flashcards/${deck.id}`)}
                                     className={`min-w-[85vw] sm:min-w-0 shrink-0 snap-center group relative cursor-pointer aspect-[16/10] ${activeDropdown === deck.id ? 'z-[100]' : 'z-10 hover:z-20'}`}
                                 >
-                                    <div className="absolute -bottom-2 inset-x-4 h-full bg-[var(--layer3)] border border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-1" />
-                                    <div className="absolute -bottom-1 inset-x-2 h-full bg-[var(--layer2)] border border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-0.5" />
+                                    <div
+                                        className="absolute -bottom-2 inset-x-4 h-full bg-[var(--layer3)] border
+                                        border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-1"
+                                    />
+                                    <div
+                                        className="absolute -bottom-1 inset-x-2 h-full bg-[var(--layer2)] border
+                                        border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-0.5"
+                                    />
 
-                                    <div className="relative h-full p-4 sm:p-5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-xl group-hover:border-[var(--nice-blue)] transition-colors shadow-sm z-10 flex flex-col justify-between">
+                                    <div
+                                        className="relative h-full p-4 sm:p-5 bg-[var(--layer1)] border border-[var(--layer3)]
+                                        rounded-xl group-hover:border-[var(--nice-blue)] transition-colors shadow-sm z-10 flex flex-col justify-between"
+                                    >
                                         <div className={`flex justify-between items-start mb-2 relative dropdown-container ${activeDropdown === deck.id ? 'z-[100]' : 'z-10'}`}>
                                             <div className="p-2 bg-purple-500/10 rounded-lg text-purple-400">
                                                 <CreditCard size={18} />
@@ -574,12 +617,12 @@ export default function FolderContentPage() {
                                                         item={deck}
                                                         itemType='flashcard'
                                                         setActiveDropdown={setActiveDropdown}
-                                                        setShowRenameNoteModal={setShowRenameItemModal}
+                                                        setShowRenameItemModal={setShowRenameItemModal}
                                                         setItemName={setItemNameInput}
                                                         setSelectedItem={setSelectedItem}
                                                         setShowMoveItemModal={setShowMoveItemModal}
-                                                        handleDuplicateNote={handleDuplicateConfirm}
-                                                        setNoteToDelete={setItemToDelete}
+                                                        handleDuplicateItem={handleDuplicateConfirm}
+                                                        setItemToDelete={setItemToDelete}
                                                     />
                                                 )}
                                             </AnimatePresence>
@@ -615,10 +658,10 @@ export default function FolderContentPage() {
                     {itemToDelete && (
                         <UseDeleteItemModal
                             item={itemToDelete}
-                            itemType={itemToDelete.title !== undefined ? 'note' : 'folder'}
+                            itemType={getItemType(itemToDelete)}
                             deleteItemModalRef={deleteModalRef}
                             handleDeleteConfirm={handleDeleteConfirm}
-                            setNoteToDelete={setItemToDelete}
+                            setItemToDelete={setItemToDelete}
                         />
                     )}
 
@@ -642,7 +685,7 @@ export default function FolderContentPage() {
                                 setShowMoveItemModal(false);
                                 setSelectedItem(null);
                             }}
-                            itemType={selectedItem.title !== undefined ? 'note' : 'folder'}
+                            itemType={getItemType(selectedItem)}
                         />
                     )}
                     {showCreateItemModal && (
@@ -653,6 +696,7 @@ export default function FolderContentPage() {
                             handleCreateNote={handleCreateNoteInFolder}
                             handleCreateFolder={handleCreateFolderInFolder}
                             setShowCreateFolderModal={setShowCreateFolderModal}
+                            setShowCreateFlashcardModal={setShowCreateFlashcardModal}
                         />
                     )}
                     {showCreateFolderModal && (
@@ -662,6 +706,12 @@ export default function FolderContentPage() {
                             folderName={newFolderName}
                             setFolderName={setNewFolderName}
                             handleCreateFolder={handleCreateFolderInFolder}
+                        />
+                    )}
+                    {showCreateFlashcardModal && (
+                        <CreateFlashcardModal
+                            setShowCreateFlashcardModal={setShowCreateFlashcardModal}
+                            handleSaveDeck={handleCreateFlashcardInFolder}
                         />
                     )}
                 </AnimatePresence>

@@ -90,7 +90,8 @@ export default function CreateModal({
             onClick={() => setOpenCreateModal(false)}
         >
             <motion.div
-                className="relative flex w-full h-full md:w-3/4 md:max-h-[70vh] bg-[var(--layer1)] md:rounded-3xl shadow-2xl border-0 md:border md:border-[var(--layer2)] overflow-hidden"
+                className="relative flex w-full h-full md:w-3/4 md:max-h-[70vh] bg-[var(--layer1)] md:rounded-3xl
+                shadow-2xl border-0 md:border md:border-[var(--layer2)] overflow-hidden"
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -98,12 +99,16 @@ export default function CreateModal({
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Sidebar Navigation */}
-                <div className="w-3/7 md:w-52 flex-shrink-0 bg-[var(--layer2)] border-r border-[var(--layer3)] flex flex-col p-4 gap-1">
+                <div
+                    className="w-3/7 md:w-52 flex-shrink-0 bg-[var(--layer2)] border-r border-[var(--layer3)]
+                    flex flex-col p-4 gap-1"
+                >
                     {SIDEBAR_ITEMS.map(item => (
                         <button
                             key={item.id}
                             onClick={() => setActiveTaskModal(item.id)}
-                            className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-semibold text-sm cursor-pointer transition-colors text-left
+                            className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-semibold text-sm
+                                cursor-pointer transition-colors text-left
                                 ${activeTaskModal === item.id
                                 ? 'bg-[var(--nice-blue)] text-white'
                                 : 'text-[var(--text-muted)] hover:bg-[var(--layer3)] hover:text-[var(--text)]'
@@ -126,7 +131,8 @@ export default function CreateModal({
                         </div>
                         <button
                             onClick={() => setOpenCreateModal(false)}
-                            className="w-9 h-9 rounded-full flex items-center justify-center bg-[var(--layer2)] hover:bg-[var(--layer3)] cursor-pointer transition-colors text-[var(--text)]"
+                            className="w-9 h-9 rounded-full flex items-center justify-center bg-[var(--layer2)]
+                            hover:bg-[var(--layer3)] cursor-pointer transition-colors text-[var(--text)]"
                         >
                             <X size={18} />
                         </button>

@@ -52,7 +52,7 @@ export default function CreateFolderModal({ createFolderModalRef, setShowCreateF
                     <button
                         onClick={handleCreateFolder}
                         disabled={!folderName.trim()}
-                        className={`w - full md:w-auto px-4 py-2 text-sm font-semibold rounded-lg bg-[var(--nice-blue)]
+                        className={`w-full md:w-auto px-4 py-2 text-sm font-semibold rounded-lg bg-[var(--nice-blue)]
                             text-white shadow-sm active:scale-95 transition-all duration-200
                             ${!folderName.trim() ? 'opacity-50 cursor-not-allowed ' : 'cursor-pointer hover:opacity-90'}`}
                     >

@@ -60,9 +60,9 @@ export default function NotesPage() {
     };
 
     // ─── 3. RENAME NOTE FEATURE ───────────────────────────────────────────────────
-    const [showRenameNoteModal, setShowRenameNoteModal] = useState(false);
-    const [noteName, setNoteName] = useState('Untitled Note');
-    const showRenameNoteModalRef = useRef(null);
+    const [showRenameItemModal, setShowRenameItemModal] = useState(false);
+    const [itemName, setItemName] = useState('Untitled Note');
+    const renameModalRef = useRef(null);
 
     const { rename, isRenaming } = useRenameItem();
 
@@ -75,7 +75,7 @@ export default function NotesPage() {
                     n.id === selectedItem.id ? { ...n, title: newName } : n
                 )
             );
-            selectedItem(null);
+            setSelectedItem(null);
         }
     };
 
@@ -99,19 +99,19 @@ export default function NotesPage() {
     }
 
     // ─── 5. DELETE NOTE FEATURE ───────────────────────────────────────────────────
-    const [noteToDelete, setNoteToDelete] = useState(null);
-    const deleteNoteModalRef = useRef(null);
+    const [itemToDelete, setItemToDelete] = useState(null);
+    const deleteModalRef = useRef(null);
 
     const { deleteItem, issDeleting } = useDeleteItem();
 
     const handleDeleteConfirm = async () => {
         const loadingToast = toast.loading('Deleting note...', toastStyle);
-        const success = await deleteItem('note', noteToDelete.id);
+        const success = await deleteItem('note', itemToDelete.id);
         toast.dismiss(loadingToast);
 
         if (success) {
-            setNotes(prev => prev.filter(n => n.id !== noteToDelete.id));
-            setNoteToDelete(null);
+            setNotes(prev => prev.filter(n => n.id !== itemToDelete.id));
+            setItemToDelete(null);
         }
     };
 
@@ -161,8 +161,8 @@ export default function NotesPage() {
 
     useEffect(() => {
         const handleClickOutside = (e) => {
-            if (showRenameNoteModalRef.current && !showRenameNoteModalRef.current.contains(e.target)) {
-                setShowRenameNoteModal(false);
+            if (renameModalRef.current && !renameModalRef.current.contains(e.target)) {
+                setShowRenameItemModal(false);
             }
             if (itemToMoveRef.current && !itemToMoveRef.current.contains(e.target)) {
                 setShowMoveItemModal(false);
@@ -229,7 +229,8 @@ export default function NotesPage() {
                     </div>
                     <button
                         onClick={handleCreateNote}
-                        className="flex items-center gap-2 bg-[var(--nice-blue)] text-white font-bold px-5 py-2.5 rounded-xl shadow-lg shadow-blue-500/20 hover:scale-95 transition-transform cursor-pointer"
+                        className="flex items-center gap-2 bg-[var(--nice-blue)] text-white font-bold px-5 py-2.5
+                        rounded-xl shadow-lg shadow-blue-500/20 hover:scale-95 transition-transform cursor-pointer"
                     >
                         <Plus size={18} />
                         New note
@@ -244,7 +245,8 @@ export default function NotesPage() {
                         <p className="text-[var(--text-muted)] text-sm">Create your first note to get started.</p>
                         <button
                             onClick={handleCreateNote}
-                            className="flex items-center gap-2 border border-[var(--layer3)] text-[var(--text)] font-bold px-5 py-2.5 rounded-xl hover:bg-[var(--layer1)] transition-colors cursor-pointer"
+                            className="flex items-center gap-2 border border-[var(--layer3)] text-[var(--text)]
+                            font-bold px-5 py-2.5 rounded-xl hover:bg-[var(--layer1)] transition-colors cursor-pointer"
                         >
                             <Plus size={16} />
                             Create note
@@ -263,7 +265,11 @@ export default function NotesPage() {
                                         ${activeDropdown === note.id ? 'z-[100] border-[var(--nice-blue)]' : 'z-10 hover:border-[var(--nice-blue)]'}`}
                             >
                                 {note.folder_id && (
-                                    <div className="absolute -top-3.5 left-4 px-3 h-5 bg-[var(--layer3)] rounded-t-lg group-hover:bg-[var(--nice-blue)] transition-colors duration-300 flex items-center justify-center gap-1.5 text-[9px] font-bold uppercase tracking-wider text-[var(--text-muted)] group-hover:text-white z-0">
+                                    <div
+                                        className="absolute -top-3.5 left-4 px-3 h-5 bg-[var(--layer3)] rounded-t-lg
+                                        group-hover:bg-[var(--nice-blue)] transition-colors duration-300 flex items-center
+                                        justify-center gap-1.5 text-[9px] font-bold uppercase tracking-wider text-[var(--text-muted)] group-hover:text-white z-0"
+                                    >
                                         <Folder size={10} fill="currentColor" fillOpacity={0.2} />
                                         <span className="max-w-[120px] truncate">{getParentFolderName(note.folder_id)}</span>
                                     </div>
@@ -286,11 +292,12 @@ export default function NotesPage() {
                                                 item={note}
                                                 itemType='note'
                                                 setActiveDropdown={setActiveDropdown}
-                                                setShowRenameNoteModal={setShowRenameNoteModal}
-                                                setItemName={setNoteName}
+                                                setShowRenameItemModal={setShowRenameItemModal}
+                                                setItemName={setItemName}
                                                 setShowMoveItemModal={setShowMoveItemModal}
-                                                handleDuplicateNote={handleDuplicateNote}
-                                                setNoteToDelete={setNoteToDelete}
+                                                setSelectedItem={setSelectedItem}
+                                                handleDuplicateItem={handleDuplicateNote}
+                                                setItemToDelete={setItemToDelete}
                                             />
                                         )}
                                     </AnimatePresence>
@@ -321,22 +328,22 @@ export default function NotesPage() {
 
                 {/* ─── MODALS ──────────────────────────────────────────────────────────── */}
                 <AnimatePresence>
-                    {noteToDelete && (
+                    {itemToDelete && (
                         <UseDeleteItemModal
                             item={selectedItem}
                             itemType='note'
-                            deleteItemModalRef={deleteNoteModalRef}
+                            deleteItemModalRef={deleteModalRef}
                             handleDeleteConfirm={handleDeleteConfirm}
-                            setNoteToDelete={setNoteToDelete}
+                            setItemToDelete={setItemToDelete}
                         />
                     )}
-                    {showRenameNoteModal && (
+                    {showRenameItemModal && (
                         <RenameItemModal
-                            renameModalRef={showRenameNoteModalRef}
-                            currentName={noteName}
+                            renameModalRef={renameModalRef}
+                            currentName={itemName}
                             handleRename={handleNoteRename}
-                            setItemName={setNoteName}
-                            setShowRenameItemModal={setShowRenameNoteModal}
+                            setItemName={setItemName}
+                            setShowRenameItemModal={setShowRenameItemModal}
                         />
                     )}
                     {showMoveItemModal && selectedItem && (

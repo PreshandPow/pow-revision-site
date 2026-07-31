@@ -39,7 +39,9 @@ function ImagePlaceholderView({ editor, getPos }) {
             as="div"
             contentEditable={false}
             onClick={handleClick}
-            className="pow-image-placeholder my-4 p-8 border-2 border-dashed border-[var(--layer3)] bg-[var(--layer1)] rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-[var(--layer3)] transition-all select-none group"
+            className="pow-image-placeholder my-4 p-8 border-2 border-dashed border-[var(--layer3)]
+            bg-[var(--layer1)] rounded-xl flex flex-col items-center justify-center cursor-pointer
+            hover:bg-[var(--layer3)] transition-all select-none group"
         >
             <div className="pointer-events-none flex flex-col items-center">
                 <svg
