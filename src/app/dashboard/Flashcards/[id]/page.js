@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+
+// ─── IMPORTS ───────────────────────────────────────────────────────
+import {useState, useEffect, useRef} from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useRouter } from 'next/navigation';
-import { createBrowserClient } from '@supabase/ssr'; // 👈 Add this
-import toast from 'react-hot-toast'; // 👈 Add this
+import { createBrowserClient } from '@supabase/ssr';
+import toast from 'react-hot-toast';
 import {
     ChevronRight, MoreHorizontal, Edit, Play, Brain, Settings,
     Gamepad2, Headphones, Shuffle, Search, Star, Volume2,
@@ -13,6 +15,12 @@ import {
     Code, Link, Subscript, Superscript, Undo, Redo, Image as ImageIcon, Mic, X,
     FileText
 } from 'lucide-react';
+
+// ─── MODAL IMPORTS ───────────────────────────────────────────────────────
+import UseItemOptionDropdown from '../../../../components/itemOptionsDropdown';
+
+// ─── HOOK IMPORTS ───────────────────────────────────────────────────────
+import { useRenameItem, useMoveItem, useDeleteItem, useDuplicateItem } from '../../../hooks/useItemActions';
 
 // ─── SUPABASE CLIENT ───────────────────────────────────────────────────────
 export function createClient() {
@@ -39,6 +47,18 @@ export default function FlashcardStudyPage() {
     const [showEditDeckModal, setShowEditDeckModal] = useState(false);
     const [cardToEdit, setCardToEdit] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [activeDropdown, setActiveDropdown] = useState(false);
+    const [selectedItem, setSelectedItem] = useState(null);
+
+    const toastStyle = {
+        style: {
+            border: '1px solid var(--nice-blue)',
+            padding: '16px',
+            color: 'var(--text)',
+            background: 'var(--layer2)',
+        },
+        iconTheme: { primary: 'var(--nice-blue)', secondary: '#FFFAEE' },
+    };
 
     // ─── 3. FETCH DATA ─────────────────────────────────────────────────────────
     useEffect(() => {
@@ -46,7 +66,6 @@ export default function FlashcardStudyPage() {
 
         const fetchDeckData = async () => {
             try {
-                // 1. Fetch the parent deck wrapper
                 const { data: deckData, error: deckError } = await supabase
                     .from('flashcard_decks')
                     .select('*')
@@ -54,8 +73,6 @@ export default function FlashcardStudyPage() {
                     .single();
 
                 if (deckError) throw deckError;
-
-                // 2. Fetch the individual flashcards for this deck, ordered correctly
                 const { data: cardsData, error: cardsError } = await supabase
                     .from('flashcards')
                     .select('*')
@@ -64,23 +81,13 @@ export default function FlashcardStudyPage() {
 
                 if (cardsError) throw cardsError;
 
-                // 3. Set the data to state so the UI can render
                 setDeck(deckData);
                 setCards(cardsData || []);
 
             } catch (error) {
                 console.error("Error fetching flashcard data:", error);
-                toast.error("Could not load flashcards.", {
-                    style: {
-                        border: '1px solid var(--nice-blue)',
-                        padding: '16px',
-                        color: 'var(--text)',
-                        background: 'var(--layer2)',
-                    },
-                    iconTheme: { primary: 'var(--nice-blue)', secondary: '#FFFAEE' },
-                });
+                toast.error("Could not load flashcards.", toastStyle);
 
-                // Kick the user back to the main flashcards page if the URL is invalid
                 router.replace('/dashboard/Flashcards');
             }
         };
@@ -91,11 +98,10 @@ export default function FlashcardStudyPage() {
     // ─── 4. KEYBOARD NAVIGATION LOGIC ──────────────────────────────────────────
     useEffect(() => {
         const handleKeyDown = (e) => {
-            // Disable shortcuts if user is typing in an input or modal, or if cards aren't loaded
             if (['INPUT', 'TEXTAREA'].includes(e.target.tagName) || e.target.isContentEditable || cardToEdit || cards.length === 0) return;
 
             if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
-                e.preventDefault(); // Prevent page scrolling
+                e.preventDefault();
             }
 
             if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'ArrowDown') {
@@ -113,7 +119,42 @@ export default function FlashcardStudyPage() {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [cards.length, cardToEdit]);
 
-    // ─── 5. EDIT CARD MODAL UI ─────────────────────────────────────────────────
+    // ─── 5. CLOSE DROPDOWN ON OUTSIDE CLICK ────────────────────────────────────
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (!e.target.closest('.dropdown-container')) setActiveDropdown(null);
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    // ─── 6. RENAME DECK FEATURE ───────────────────────────────────────────────────
+    const [showRenameItemModal, setShowRenameItemModal] = useState(false);
+    const [itemName, setItemName] = useState('Untitled Deck');
+    const showRenameDeckModalRef = useRef(null);
+
+    // ─── 7. MOVE DECK FEATURE ─────────────────────────────────────────────────────
+    const [showMoveItemModal, setShowMoveItemModal] = useState(false);
+    const itemToMoveRef = useRef(null);
+
+    // ─── 8. DELETE DECK FEATURE ───────────────────────────────────────────────────
+    const [deckToDelete, setDeckToDelete] = useState(null);
+    const deleteDeckModalRef = useRef(null);
+
+    // ─── 9. DUPLICATE DECK FEATURE ────────────────────────────────────────────────
+    const { duplicateItem, isDuplicating } = useDuplicateItem();
+    const handleDuplicateDeck = async (deck) => {
+        const loadingToast = toast.loading('Duplicating flashcard deck...', toastStyle);
+        const newNote = await duplicateItem('flashcard', deck);
+        toast.dismiss(loadingToast);
+
+        if (newNote) {
+            setDeck(prev => [newNote, ...prev]);
+            toast.success('Note duplicated', toastStyle);
+        }
+    };
+
+    // ─── 10. EDIT CARD MODAL UI ────────────────────────────────────────────────
     const EditCardModal = () => {
         if (!cardToEdit) return null;
         return (
@@ -216,7 +257,8 @@ export default function FlashcardStudyPage() {
                     <span className="text-white">{deck.name || deck.title}</span>
                 </div>
 
-                <div className="bg-[var(--layer2)] border border-[var(--layer3)] rounded-2xl p-5 flex items-center justify-between shadow-sm">
+                <div className={`bg-[var(--layer2)] border border-[var(--layer3)] rounded-2xl p-5 flex items-center
+                justify-between shadow-sm relative dropdown-container ${activeDropdown === deck.id ? 'z-[100]' : 'z-10'}`}>
                     <div>
                         <h1 className="text-2xl font-bold text-white mb-1">{deck.name || deck.title}</h1>
                         <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-muted)]">
@@ -231,14 +273,34 @@ export default function FlashcardStudyPage() {
                     <div className="flex items-center gap-3">
                         <button
                             onClick={() => setShowEditDeckModal(true)}
-                            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[var(--layer3)] text-sm font-bold text-white hover:bg-[var(--layer3)] transition-colors cursor-pointer"
+                            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[var(--layer3)]
+                            text-sm font-bold text-white hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                         >
                             <Edit size={16} /> Edit flashcards
                         </button>
-                        <button className="w-10 h-10 flex items-center justify-center rounded-full border border-[var(--layer3)] hover:bg-[var(--layer3)] text-white transition-colors cursor-pointer">
+                        <button
+                            onClick={() => setActiveDropdown(activeDropdown === deck.id ? null : deck.id)}
+                            className="w-10 h-10 flex items-center justify-center rounded-full border
+                            border-[var(--layer3)] hover:bg-[var(--layer3)] text-white transition-colors cursor-pointer"
+                        >
                             <MoreHorizontal size={18} />
                         </button>
                     </div>
+                    <AnimatePresence>
+                        {activeDropdown === deck.id && (
+                            <UseItemOptionDropdown
+                                item={deck}
+                                itemType='flashcard'
+                                setActiveDropdown={setActiveDropdown}
+                                setShowRenameNoteModal={setShowRenameItemModal}
+                                setItemName={setItemName}
+                                setShowMoveItemModal={setShowMoveItemModal}
+                                setSelectedItem={setSelectedItem}
+                                handleDuplicateNote={handleDuplicateDeck}
+                                setNoteToDelete={setDeckToDelete}
+                            />
+                        )}
+                    </AnimatePresence>
                 </div>
             </div>
 
@@ -338,7 +400,7 @@ export default function FlashcardStudyPage() {
             <div className="max-w-5xl mx-auto px-4 mt-16 space-y-6">
                 <div className="bg-[var(--layer2)] border border-[var(--layer3)] rounded-3xl p-6">
                     <div className="flex flex-wrap gap-2 mb-6 border-b border-[var(--layer3)] pb-4">
-                        {['All Modes', 'Learn', 'Practice Test', 'Matching', 'Spaced Repetition', 'Call with Kai'].map((tab, i) => (
+                        {['All Modes', 'Learn', 'Practice Test', 'Matching', 'Spaced Repetition', 'Call With POW Bot'].map((tab, i) => (
                             <button key={i} className={`px-4 py-2 rounded-full text-sm font-bold border transition-colors cursor-pointer ${i === 0 ? 'bg-white text-black border-white' : 'bg-transparent border-[var(--layer3)] text-[var(--text-muted)] hover:text-white'}`}>
                                 {tab}
                             </button>
