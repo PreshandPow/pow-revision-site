@@ -288,7 +288,7 @@ export default function Dashboard() {
             {/* Header */}
             <div className="mb-8">
                 <h1 className="text-3xl font-bold text-[var(--text)]">Hey, {username}!</h1>
-                <p className="text-[var(--vanilla-cream)] mt-1">Here's what's happening on your POW dashboard.</p>
+                <p className="text-[var(--text-muted)] mt-1">Here's what's happening on your POW dashboard.</p>
             </div>
 
             {/* Quick Actions */}
