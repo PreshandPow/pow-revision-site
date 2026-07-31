@@ -3,7 +3,7 @@
 import { Trash2 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
-export default function UseDeleteItemModal({ item, itemType, deleteItemModalRef, handleDeleteConfirm, setNoteToDelete }) {
+export default function UseDeleteItemModal({ item, itemType, deleteItemModalRef, handleDeleteConfirm, setItemToDelete }) {
     return (
         <div ref={deleteItemModalRef} className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 md:p-6">
             <motion.div
@@ -23,7 +23,7 @@ export default function UseDeleteItemModal({ item, itemType, deleteItemModalRef,
                     </p>
                 </div>
                 <div className="px-6 py-4 bg-[var(--layer2)]/50 border-t border-[var(--layer3)] flex items-center justify-end gap-3">
-                    <button onClick={() => setNoteToDelete(null)} className="px-4 py-2 text-sm font-semibold
+                    <button onClick={() => setItemToDelete(null)} className="px-4 py-2 text-sm font-semibold
                     rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer">
                         Cancel
                     </button>

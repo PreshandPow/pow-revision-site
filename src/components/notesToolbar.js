@@ -341,7 +341,10 @@ export default function NotesToolbar({ editor, onInsertImage }) {
 
             {/* alignments */}
             <li className="md:relative group" ref={alignmentsDropdownRef}>
-                <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
+                <div
+                    className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5
+                    bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50"
+                >
                     <span className="text-xs font-bold text-[var(--text)]">Alignments</span>
                 </div>
                 <button
@@ -394,7 +397,10 @@ export default function NotesToolbar({ editor, onInsertImage }) {
 
             {/* bold tool */}
             <li className="md:relative group">
-                <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
+                <div
+                    className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5
+                    bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50"
+                >
                     <span className="text-xs font-bold text-[var(--text)]">Bold</span>
                     <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>
                     <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">B</span>
@@ -414,7 +420,10 @@ export default function NotesToolbar({ editor, onInsertImage }) {
 
             {/* italic tool */}
             <li className="md:relative group">
-                <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
+                <div
+                    className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5
+                    bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50"
+                >
                     <span className="text-xs font-bold text-[var(--text)]">Italic</span>
                     <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>
                     <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">I</span>
@@ -432,7 +441,10 @@ export default function NotesToolbar({ editor, onInsertImage }) {
 
             {/* underline tool */}
             <li className="md:relative group">
-                <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
+                <div
+                    className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5
+                    bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50"
+                >
                     <span className="text-xs font-bold text-[var(--text)]">Underline</span>
                     <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>
                     <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">U</span>
@@ -450,7 +462,10 @@ export default function NotesToolbar({ editor, onInsertImage }) {
 
             {/* strikethrough tool */}
             <li className="md:relative group">
-                <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
+                <div
+                    className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5
+                    bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50"
+                >
                     <span className="text-xs font-bold text-[var(--text)]">Strikethrough</span>
                     <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>
                     <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Shift</span>
@@ -469,7 +484,10 @@ export default function NotesToolbar({ editor, onInsertImage }) {
 
             {/* highlighter tool */}
             <li className={'relative group'} ref={highlighterDropdownRef}>
-                <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
+                <div
+                    className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5
+                    bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50"
+                >
                     <span className="text-xs font-bold text-[var(--text)]">Highlighter</span>
                     <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">Ctrl</span>
                     <span className="text-[10px] bg-[var(--layer2)] px-1.5 py-0.5 rounded border border-[var(--layer3)] text-[var(--text-muted)] font-mono">H</span>
@@ -502,7 +520,10 @@ export default function NotesToolbar({ editor, onInsertImage }) {
 
             {/* Colour palette tool */}
             <li className={'relative group'} ref={textColorDropdownRef}>
-                <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
+                <div
+                    className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5
+                    bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50"
+                >
                     <span className="text-xs font-bold text-[var(--text)]">Colour Palette</span>
                 </div>
                 <button
@@ -540,7 +561,10 @@ export default function NotesToolbar({ editor, onInsertImage }) {
 
             {/* Eraser / Clear Formatting tool */}
             <li className="md:relative group">
-                <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
+                <div
+                    className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5
+                    bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50"
+                >
                     <span className="text-xs font-bold text-[var(--text)]">Clear Formatting</span>
                 </div>
                 <button
@@ -560,7 +584,10 @@ export default function NotesToolbar({ editor, onInsertImage }) {
 
             {/* image tool */}
             <li className="md:relative group">
-                <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
+                <div
+                    className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5
+                    bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50"
+                >
                     <span className="text-xs font-bold text-[var(--text)]">Add Image</span>
                 </div>
                 <button
@@ -575,7 +602,10 @@ export default function NotesToolbar({ editor, onInsertImage }) {
 
             {/* undo tool */}
             <li className="md:relative group">
-                <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
+                <div
+                    className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5
+                    bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50"
+                >
                     <span className="text-xs font-bold text-[var(--text)]">Undo</span>
                 </div>
                 <button
@@ -590,7 +620,10 @@ export default function NotesToolbar({ editor, onInsertImage }) {
 
             {/* redo tool */}
             <li className="md:relative group">
-                <div className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50">
+                <div
+                    className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5
+                    bg-[var(--layer1)] border border-[var(--layer3)] rounded-lg shadow-lg whitespace-nowrap z-50"
+                >
                     <span className="text-xs font-bold text-[var(--text)]">Redo</span>
                 </div>
                 <button

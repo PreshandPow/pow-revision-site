@@ -5,9 +5,9 @@ import { Copy, Edit2, ExternalLink, FolderOutput, Trash2 } from "lucide-react";
 
 export default function UseItemOptionDropdown({
                                                   item, itemType, setActiveDropdown,
-                                                  setShowRenameNoteModal, setItemName,
-                                                  setShowMoveItemModal, handleDuplicateNote,
-                                                  setNoteToDelete, setSelectedItem
+                                                  setShowRenameItemModal, setItemName,
+                                                  setShowMoveItemModal, handleDuplicateItem,
+                                                  setItemToDelete, setSelectedItem
                                               }) {
     const targetUrl = `/dashboard/${itemType === 'folder' ? 'Folders' : itemType === 'flashcard' ? 'Flashcards' : 'Notes'}/${item?.id}`;
 
@@ -31,7 +31,7 @@ export default function UseItemOptionDropdown({
             <button
                 onClick={(e) => {
                     e.stopPropagation();
-                    setShowRenameNoteModal(true);
+                    setShowRenameItemModal(true);
                     setSelectedItem(item);
 
                     if (itemType === 'note') setItemName(item.title);
@@ -60,7 +60,7 @@ export default function UseItemOptionDropdown({
             <button
                 onClick={(e) => {
                     e.stopPropagation();
-                    handleDuplicateNote(item);
+                    handleDuplicateItem(item);
                     setActiveDropdown(null);
                 }}
                 className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer2)] transition-colors cursor-pointer"
@@ -73,7 +73,7 @@ export default function UseItemOptionDropdown({
             <button
                 onClick={(e) => {
                     e.stopPropagation();
-                    setNoteToDelete(item);
+                    setItemToDelete(item);
                     setActiveDropdown(null);
                 }}
                 className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"

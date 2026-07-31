@@ -67,7 +67,7 @@ export default function FolderContentPage() {
 
     // ─── 3. RENAME FOLDER FEATURE ─────────────────────────────────────────────────
     const [showRenameItemModal, setShowRenameItemModal] = useState(false);
-    const showRenameFolderModalRef = useRef(null);
+    const renameModalRef = useRef(null);
 
     const { rename, isRenaming } = useRenameItem();
 
@@ -87,7 +87,7 @@ export default function FolderContentPage() {
 
     // ─── 4. MOVE FOLDER FEATURE ───────────────────────────────────────────────────
     const [showMoveItemModal, setShowMoveItemModal] = useState(false);
-    const folderToMoveRef = useRef(null);
+    const moveModalRef = useRef(null);
 
     const { moveItem, isMoving } = useMoveItem();
 
@@ -105,19 +105,19 @@ export default function FolderContentPage() {
     };
 
     // ─── 5. DELETE FOLDER FEATURE ─────────────────────────────────────────────────
-    const [folderToDelete, setFolderToDelete] = useState(null);
-    const deleteFolderModalRef = useRef(null);
+    const [itemToDelete, setItemToDelete] = useState(null);
+    const deleteModalRef = useRef(null);
 
     const { deleteItem, isDeleting } = useDeleteItem();
 
     const handleDeleteConfirm = async () => {
         const loadingToast = toast.loading('Deleting folder...', toastStyle);
-        const success = await deleteItem('folder', folderToDelete.id);
+        const success = await deleteItem('folder', itemToDelete.id);
         toast.dismiss(loadingToast);
 
         if (success) {
-            setFolders(prev => prev.filter(f => f.id !== folderToDelete.id));
-            setFolderToDelete(null);
+            setFolders(prev => prev.filter(f => f.id !== itemToDelete.id));
+            setItemToDelete(null);
         }
     };
 
@@ -161,10 +161,10 @@ export default function FolderContentPage() {
                 setShowCreateFolderModal(false);
             }
             if (!e.target.closest('.dropdown-container')) setActiveDropdown(null);
-            if (showRenameFolderModalRef.current && !showRenameFolderModalRef.current.contains(e.target)) {
+            if (renameModalRef.current && !renameModalRef.current.contains(e.target)) {
                 setShowRenameItemModal(false);
             }
-            if (folderToMoveRef.current && !folderToMoveRef.current.contains(e.target)) {
+            if (moveModalRef.current && !moveModalRef.current.contains(e.target)) {
                 setShowMoveItemModal(false);
             }
         };
@@ -275,12 +275,12 @@ export default function FolderContentPage() {
                                                 item={folder}
                                                 itemType='folder'
                                                 setActiveDropdown={setActiveDropdown}
-                                                setShowRenameNoteModal={setShowRenameItemModal}
+                                                setShowRenameItemModal={setShowRenameItemModal}
                                                 setItemName={setNewFolderName}
                                                 setShowMoveItemModal={setShowMoveItemModal}
                                                 setSelectedItem={setSelectedItem}
-                                                handleDuplicateNote={handleDuplicateFolder}
-                                                setNoteToDelete={setFolderToDelete}
+                                                handleDuplicateItem={handleDuplicateFolder}
+                                                setItemToDelete={setItemToDelete}
                                             />
                                         )}
                                     </AnimatePresence>
@@ -309,18 +309,18 @@ export default function FolderContentPage() {
 
                 {/* ─── MODALS ──────────────────────────────────────────────────────────── */}
                 <AnimatePresence>
-                    {folderToDelete && (
+                    {itemToDelete && (
                         <UseDeleteItemModal
-                            item={folderToDelete}
+                            item={itemToDelete}
                             itemType='folder'
-                            deleteItemModalRef={deleteFolderModalRef}
+                            deleteItemModalRef={deleteModalRef}
                             handleDeleteConfirm={handleDeleteConfirm}
-                            setNoteToDelete={setFolderToDelete}
+                            setItemToDelete={setItemToDelete}
                         />
                     )}
                     {showRenameItemModal && selectedItem && (
                         <RenameItemModal
-                            renameModalRef={showRenameFolderModalRef}
+                            renameModalRef={renameModalRef}
                             currentName={newFolderName}
                             handleRename={handleFolderRename}
                             setItemName={setNewFolderName}
@@ -329,7 +329,7 @@ export default function FolderContentPage() {
                     )}
                     {showMoveItemModal && selectedItem && (
                         <MoveItemModal
-                            moveModalRef={folderToMoveRef}
+                            moveModalRef={moveModalRef}
                             folders={folders}
                             currentItem={selectedItem}
                             onMove={handleMove}

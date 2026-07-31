@@ -131,7 +131,8 @@ export default function ColorPickerDropdown({ activeColor, setActiveColor, onApp
                                 setSliderHue(parseColorToHue(colour));
                                 setActiveColor(colour);
                             }}
-                            className="w-6 h-6 rounded-md border border-[var(--layer3)] shadow-sm cursor-pointer hover:scale-110 transition-transform"
+                            className="w-6 h-6 rounded-md border border-[var(--layer3)] shadow-sm cursor-pointer
+                            hover:scale-110 transition-transform"
                             style={{ backgroundColor: colour }}
                             title={colour}
                         />
@@ -147,13 +148,15 @@ export default function ColorPickerDropdown({ activeColor, setActiveColor, onApp
                     handleBoxDrag(e);
                     setIsDraggingBox(true);
                 }}
-                className="w-full h-32 rounded-md relative overflow-hidden border border-[var(--layer3)] cursor-pointer touch-none"
+                className="w-full h-32 rounded-md relative overflow-hidden border border-[var(--layer3)] cursor-pointer
+                touch-none"
                 style={{ backgroundColor: `hsl(${sliderHue}, 100%, 50%)` }}
             >
                 <div className="absolute inset-0 bg-gradient-to-r from-white to-transparent pointer-events-none" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent pointer-events-none" />
                 <div
-                    className="absolute w-[36px] h-[36px] rounded-full border-[5px] border-white shadow-[0_0_2px_rgba(0,0,0,0.5)] pointer-events-none"
+                    className="absolute w-[36px] h-[36px] rounded-full border-[5px] border-white
+                    shadow-[0_0_2px_rgba(0,0,0,0.5)] pointer-events-none"
                     style={{
                         left: `${boxSat}%`,
                         top: `${100 - boxVal}%`,
@@ -187,7 +190,8 @@ export default function ColorPickerDropdown({ activeColor, setActiveColor, onApp
                 value={activeColor || ''}
                 type="text"
                 placeholder="Enter hex..."
-                className="w-full text-xl p-1.5 border border-[var(--layer3)] rounded outline-none text-[var(--text)] bg-[var(--layer1)] font-main uppercase"
+                className="w-full text-xl p-1.5 border border-[var(--layer3)] rounded outline-none text-[var(--text)]
+                bg-[var(--layer1)] font-main uppercase"
             />
 
             {/* Apply Button */}
@@ -201,8 +205,10 @@ export default function ColorPickerDropdown({ activeColor, setActiveColor, onApp
                     addColourToHistory(activeColor);
                     onApplyColor();
                 }}
-                className="w-full bg-[var(--nice-blue)] text-white border border-[var(--layer3)] rounded-sm px-2 py-1.5 shadow font-semibold cursor-pointer hover:scale-[0.98] transition-transform"
-                type="button">
+                className="w-full bg-[var(--nice-blue)] text-white border border-[var(--layer3)] rounded-sm px-2 py-1.5
+                shadow font-semibold cursor-pointer hover:scale-[0.98] transition-transform"
+                type="button"
+            >
                 Pick Colour
             </button>
         </div>

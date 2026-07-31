@@ -127,14 +127,18 @@ export default function Home() {
                         Ace all your tests by creating interactive flashcards and notes with your own personal assistant.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <button className="cursor-pointer bg-[var(--nice-blue)] text-white px-10 py-4 rounded-2xl
-                                        font-bold text-lg hover:scale-105 transition-transform shadow-xl"
-                                onClick={() => session ? router.push('/dashboard') : setAuthMode('login')}>
+                        <button
+                            className="cursor-pointer bg-[var(--nice-blue)] text-white px-10 py-4 rounded-2xl
+                            font-bold text-lg hover:scale-105 transition-transform shadow-xl"
+                            onClick={() => session ? router.push('/dashboard') : setAuthMode('login')}
+                        >
                             Get started for free
                         </button>
-                        <button className="cursor-pointer bg-[var(--layer2)] text-[var(--text)] border
-                                        border-[var(--layer3)] px-10 py-4 rounded-2xl font-bold text-lg hover:bg-[var(--layer3)] transition-colors"
-                                onClick={() => session ? router.push('/dashboard') : setAuthMode('login')}>
+                        <button
+                            className="cursor-pointer bg-[var(--layer2)] text-[var(--text)] border border-[var(--layer3)]
+                            px-10 py-4 rounded-2xl font-bold text-lg hover:bg-[var(--layer3)] transition-colors"
+                            onClick={() => session ? router.push('/dashboard') : setAuthMode('login')}
+                        >
                             See how it works
                         </button>
                     </div>
@@ -147,7 +151,10 @@ export default function Home() {
                         Explore our <span className="text-[var(--nice-blue)]">Features</span>
                     </h2>
                     <motion.div style={{ x }} ref={scrollRef} className="flex gap-8 md:gap-16 px-[7.5vw]">
-                        <div className="card-animation min-w-[85vw] md:min-w-[900px] h-[550px] md:h-[600px] rounded-[3.5rem] bg-[hsl(154,61%,81%)] shadow-2xl flex flex-col overflow-hidden snap-center">
+                        <div
+                            className="card-animation min-w-[85vw] md:min-w-[900px] h-[550px] md:h-[600px] rounded-[3.5rem]
+                            bg-[hsl(154,61%,81%)] shadow-2xl flex flex-col overflow-hidden snap-center"
+                        >
                             <div className="p-8 text-center">
                                 <h3 className="text-2xl font-bold text-gray-800">Create Organised Notes</h3>
                             </div>
@@ -179,7 +186,10 @@ export default function Home() {
                                 </div>
                             </div>
                         </div>
-                        <div className="card-animation min-w-[85vw] md:min-w-[900px] h-[550px] md:h-[600px] rounded-[3.5rem] bg-[hsl(245,67%,49%)] shadow-2xl flex flex-col overflow-hidden snap-center">
+                        <div
+                            className="card-animation min-w-[85vw] md:min-w-[900px] h-[550px] md:h-[600px] rounded-[3.5rem]
+                            bg-[hsl(245,67%,49%)] shadow-2xl flex flex-col overflow-hidden snap-center"
+                        >
                             <div className="p-10 text-center">
                                 <h3 className="text-3xl md:text-4xl font-black text-white">Flashcards</h3>
                             </div>
@@ -190,7 +200,10 @@ export default function Home() {
                                 </div>
                             </div>
                         </div>
-                        <div className="card-animation min-w-[85vw] md:min-w-[900px] h-[550px] md:h-[600px] rounded-[3.5rem] bg-[hsl(32,95%,86%)] shadow-2xl flex flex-col overflow-hidden snap-center">
+                        <div
+                            className="card-animation min-w-[85vw] md:min-w-[900px] h-[550px] md:h-[600px] rounded-[3.5rem]
+                            bg-[hsl(32,95%,86%)] shadow-2xl flex flex-col overflow-hidden snap-center"
+                        >
                             <div className="p-6 md:p-8 text-center shrink-0">
                                 <h3 className="text-2xl md:text-3xl font-bold text-gray-900">POWER bot AI</h3>
                             </div>
@@ -213,7 +226,10 @@ export default function Home() {
                                 </div>
                             </div>
                         </div>
-                        <div className="card-animation min-w-[85vw] md:min-w-[900px] h-[550px] md:h-[600px] rounded-[3.5rem] bg-[var(--layer3)] shadow-2xl flex flex-col overflow-hidden snap-center">
+                        <div
+                            className="card-animation min-w-[85vw] md:min-w-[900px] h-[550px] md:h-[600px] rounded-[3.5rem]
+                            bg-[var(--layer3)] shadow-2xl flex flex-col overflow-hidden snap-center"
+                        >
                             <div className="p-10 text-center">
                                 <h3 className="text-3xl md:text-4xl font-black text-gray-800">Visual Organization</h3>
                             </div>

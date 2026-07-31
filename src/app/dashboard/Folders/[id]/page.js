@@ -360,12 +360,12 @@ export default function FolderContentPage() {
                                         item={currentFolder}
                                         itemType='folder'
                                         setActiveDropdown={setActiveDropdown}
-                                        setShowRenameNoteModal={setShowRenameItemModal}
+                                        setShowRenameItemModal={setShowRenameItemModal}
                                         setItemName={setItemNameInput}
                                         setSelectedItem={setSelectedItem}
                                         setShowMoveItemModal={setShowMoveItemModal}
-                                        handleDuplicateNote={handleDuplicateConfirm}
-                                        setNoteToDelete={setItemToDelete}
+                                        handleDuplicateItem={handleDuplicateConfirm}
+                                        setItemToDelete={setItemToDelete}
                                     />
                                 )}
                             </AnimatePresence>
@@ -389,7 +389,10 @@ export default function FolderContentPage() {
                 <div className="mb-12">
                     <h2 className="text-xs font-black uppercase tracking-widest text-[var(--text-muted)] mb-5">Folders</h2>
                     {folders.length === 0 ? (
-                        <div className="col-span-full py-10 flex flex-col items-center justify-center border-2 border-dashed border-[var(--layer3)] rounded-2xl bg-[var(--layer1)]/30 text-center">
+                        <div
+                            className="col-span-full py-10 flex flex-col items-center justify-center border-2 border-dashed
+                            border-[var(--layer3)] rounded-2xl bg-[var(--layer1)]/30 text-center"
+                        >
                             <p className="text-sm font-medium text-[var(--text-muted)]">No folders in this folder yet.</p>
                         </div>
                     ) : (
@@ -430,12 +433,12 @@ export default function FolderContentPage() {
                                                         item={folder}
                                                         itemType='folder'
                                                         setActiveDropdown={setActiveDropdown}
-                                                        setShowRenameNoteModal={setShowRenameItemModal}
+                                                        setShowRenameItemModal={setShowRenameItemModal}
                                                         setItemName={setItemNameInput}
                                                         setSelectedItem={setSelectedItem}
                                                         setShowMoveItemModal={setShowMoveItemModal}
-                                                        handleDuplicateNote={handleDuplicateConfirm}
-                                                        setNoteToDelete={setItemToDelete}
+                                                        handleDuplicateItem={handleDuplicateConfirm}
+                                                        setItemToDelete={setItemToDelete}
                                                     />
                                                 )}
                                             </AnimatePresence>
@@ -467,7 +470,10 @@ export default function FolderContentPage() {
                 <div className="mb-12">
                     <h2 className="text-xs font-black uppercase tracking-widest text-[var(--text-muted)] mb-5">Notes</h2>
                     {notes.length === 0 ? (
-                        <div className="col-span-full py-10 flex flex-col items-center justify-center border-2 border-dashed border-[var(--layer3)] rounded-2xl bg-[var(--layer1)]/30 text-center">
+                        <div
+                            className="col-span-full py-10 flex flex-col items-center justify-center border-2 border-dashed
+                            border-[var(--layer3)] rounded-2xl bg-[var(--layer1)]/30 text-center"
+                        >
                             <p className="text-sm font-medium text-[var(--text-muted)]">No notes in this folder yet.</p>
                         </div>
                     ) : (
@@ -509,12 +515,12 @@ export default function FolderContentPage() {
                                                         item={note}
                                                         itemType='note'
                                                         setActiveDropdown={setActiveDropdown}
-                                                        setShowRenameNoteModal={setShowRenameItemModal}
+                                                        setShowRenameItemModal={setShowRenameItemModal}
                                                         setItemName={setItemNameInput}
                                                         setSelectedItem={setSelectedItem}
                                                         setShowMoveItemModal={setShowMoveItemModal}
-                                                        handleDuplicateNote={handleDuplicateConfirm}
-                                                        setNoteToDelete={setItemToDelete}
+                                                        handleDuplicateItem={handleDuplicateConfirm}
+                                                        setItemToDelete={setItemToDelete}
                                                     />
                                                 )}
                                             </AnimatePresence>
@@ -557,7 +563,10 @@ export default function FolderContentPage() {
                     </div>
 
                     {flashcards.length === 0 ? (
-                        <div className="col-span-full py-10 flex flex-col items-center justify-center border-2 border-dashed border-[var(--layer3)] rounded-2xl bg-[var(--layer1)]/30 text-center">
+                        <div
+                            className="col-span-full py-10 flex flex-col items-center justify-center border-2 border-dashed
+                            border-[var(--layer3)] rounded-2xl bg-[var(--layer1)]/30 text-center"
+                        >
                             <p className="text-sm font-medium text-[var(--text-muted)]">No flashcard decks in this folder yet.</p>
                         </div>
                     ) : (
@@ -569,10 +578,19 @@ export default function FolderContentPage() {
                                     onClick={() => router.push(`/dashboard/Flashcards/${deck.id}`)}
                                     className={`min-w-[85vw] sm:min-w-0 shrink-0 snap-center group relative cursor-pointer aspect-[16/10] ${activeDropdown === deck.id ? 'z-[100]' : 'z-10 hover:z-20'}`}
                                 >
-                                    <div className="absolute -bottom-2 inset-x-4 h-full bg-[var(--layer3)] border border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-1" />
-                                    <div className="absolute -bottom-1 inset-x-2 h-full bg-[var(--layer2)] border border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-0.5" />
+                                    <div
+                                        className="absolute -bottom-2 inset-x-4 h-full bg-[var(--layer3)] border
+                                        border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-1"
+                                    />
+                                    <div
+                                        className="absolute -bottom-1 inset-x-2 h-full bg-[var(--layer2)] border
+                                        border-[var(--layer3)] rounded-xl shadow-sm transition-transform group-hover:translate-y-0.5"
+                                    />
 
-                                    <div className="relative h-full p-4 sm:p-5 bg-[var(--layer1)] border border-[var(--layer3)] rounded-xl group-hover:border-[var(--nice-blue)] transition-colors shadow-sm z-10 flex flex-col justify-between">
+                                    <div
+                                        className="relative h-full p-4 sm:p-5 bg-[var(--layer1)] border border-[var(--layer3)]
+                                        rounded-xl group-hover:border-[var(--nice-blue)] transition-colors shadow-sm z-10 flex flex-col justify-between"
+                                    >
                                         <div className={`flex justify-between items-start mb-2 relative dropdown-container ${activeDropdown === deck.id ? 'z-[100]' : 'z-10'}`}>
                                             <div className="p-2 bg-purple-500/10 rounded-lg text-purple-400">
                                                 <CreditCard size={18} />
@@ -599,12 +617,12 @@ export default function FolderContentPage() {
                                                         item={deck}
                                                         itemType='flashcard'
                                                         setActiveDropdown={setActiveDropdown}
-                                                        setShowRenameNoteModal={setShowRenameItemModal}
+                                                        setShowRenameItemModal={setShowRenameItemModal}
                                                         setItemName={setItemNameInput}
                                                         setSelectedItem={setSelectedItem}
                                                         setShowMoveItemModal={setShowMoveItemModal}
-                                                        handleDuplicateNote={handleDuplicateConfirm}
-                                                        setNoteToDelete={setItemToDelete}
+                                                        handleDuplicateItem={handleDuplicateConfirm}
+                                                        setItemToDelete={setItemToDelete}
                                                     />
                                                 )}
                                             </AnimatePresence>
@@ -643,7 +661,7 @@ export default function FolderContentPage() {
                             itemType={getItemType(itemToDelete)}
                             deleteItemModalRef={deleteModalRef}
                             handleDeleteConfirm={handleDeleteConfirm}
-                            setNoteToDelete={setItemToDelete}
+                            setItemToDelete={setItemToDelete}
                         />
                     )}
 

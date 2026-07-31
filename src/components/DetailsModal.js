@@ -30,18 +30,21 @@ export default function DetailsModal({
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20 backdrop-blur-md p-0 md:p-6">
             <motion.div
-                className="relative flex flex-col items-center justify-center w-full h-full md:w-3/4 md:max-h-[70vh] bg-[var(--layer1)] md:rounded-3xl shadow-2xl border-0 md:border md:border-[var(--layer2)] p-6 md:p-12 overflow-y-auto"
+                className="relative flex flex-col items-center justify-center w-full h-full md:w-3/4 md:max-h-[70vh]
+                bg-[var(--layer1)] md:rounded-3xl shadow-2xl border-0 md:border md:border-[var(--layer2)] p-6 md:p-12
+                overflow-y-auto"
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
                 transition={{ duration: 0.3, ease: 'easeOut' }}
             >
-                <form
-                    onSubmit={onSubmit}
-                >
+                <form onSubmit={onSubmit}>
                     {/* Header Section */}
                     <div className="text-center mb-10 w-full max-w-lg mt-10 md:mt-0">
-                        <h1 className="text-3xl md:text-5xl mb-4 font-brand text-[var(--text)] font-black tracking-tight leading-tight">
+                        <h1
+                            className="text-3xl md:text-5xl mb-4 font-brand text-[var(--text)] font-black
+                            tracking-tight leading-tight"
+                        >
                             Finish setting up your profile.
                         </h1>
                         <p className="text-lg md:text-xl font-medium text-[var(--text-muted)]">
@@ -63,14 +66,19 @@ export default function DetailsModal({
                                                 key={url}
                                                 type="button"
                                                 onClick={() => setAvatarUrl(url)}
-                                                className={`relative w-16 h-16 rounded-full overflow-hidden transition-all duration-200 cursor-pointer outline-none
-                                                hover:scale-110 hover:ring-4 hover:ring-blue-500/50
+                                                className={`relative w-16 h-16 rounded-full overflow-hidden transition-all
+                                                duration-200 cursor-pointer outline-none hover:scale-110
+                                                hover:ring-4 hover:ring-blue-500/50
                                                 ${isSelected
                                                     ? 'scale-110 ring-4 ring-blue-500 shadow-lg'
                                                     : 'scale-100 opacity-70 hover:opacity-100'
                                                 }`}
                                             >
-                                                <img src={url} alt={`Avatar ${idx}`} className="w-full h-full object-cover" />
+                                                <img
+                                                    src={url}
+                                                    alt={`Avatar ${idx}`}
+                                                    className="w-full h-full object-cover"
+                                                />
                                             </button>
                                         );
                                     })}
@@ -89,9 +97,16 @@ export default function DetailsModal({
                                             placeholder="DD"
                                             value={day || ''}
                                             onChange={(e) => setDay(e.target.value)}
-                                            className="cursor-pointer w-full bg-[var(--layer2)] text-center p-4 md:p-5 pr-6 rounded-xl font-bold text-lg text-[var(--text)] appearance-none outline-none focus:ring-2 focus:ring-[var(--nice-blue)] transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none hover:bg-[var(--layer3)]"
+                                            className="cursor-pointer w-full bg-[var(--layer2)] text-center p-4 md:p-5
+                                            pr-6 rounded-xl font-bold text-lg text-[var(--text)] appearance-none
+                                            outline-none focus:ring-2 focus:ring-[var(--nice-blue)] transition-all
+                                            [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none
+                                            [&::-webkit-inner-spin-button]:appearance-none hover:bg-[var(--layer3)]"
                                         />
-                                        <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] pointer-events-none" />
+                                        <ChevronDown
+                                            size={16}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] pointer-events-none"
+                                        />
                                     </div>
                                     <div className="relative w-full">
                                         <input
@@ -99,9 +114,16 @@ export default function DetailsModal({
                                             placeholder="MM"
                                             value={month || ''}
                                             onChange={(e) => setMonth(e.target.value)}
-                                            className="cursor-pointer w-full bg-[var(--layer2)] text-center p-4 md:p-5 pr-6 rounded-xl font-bold text-lg text-[var(--text)] appearance-none outline-none focus:ring-2 focus:ring-[var(--nice-blue)] transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none hover:bg-[var(--layer3)]"
+                                            className="cursor-pointer w-full bg-[var(--layer2)] text-center p-4 md:p-5
+                                            pr-6 rounded-xl font-bold text-lg text-[var(--text)] appearance-none
+                                            outline-none focus:ring-2 focus:ring-[var(--nice-blue)] transition-all
+                                            [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none
+                                            [&::-webkit-inner-spin-button]:appearance-none hover:bg-[var(--layer3)]"
                                         />
-                                        <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] pointer-events-none" />
+                                        <ChevronDown
+                                            size={16}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] pointer-events-none"
+                                        />
                                     </div>
                                     <div className="relative w-full">
                                         <input
@@ -109,9 +131,16 @@ export default function DetailsModal({
                                             placeholder="YYYY"
                                             value={year || ''}
                                             onChange={(e) => setYear(e.target.value)}
-                                            className="cursor-pointer w-full bg-[var(--layer2)] text-center p-4 md:p-5 pr-6 rounded-xl font-bold text-lg text-[var(--text)] appearance-none outline-none focus:ring-2 focus:ring-[var(--nice-blue)] transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none hover:bg-[var(--layer3)]"
+                                            className="cursor-pointer w-full bg-[var(--layer2)] text-center p-4 md:p-5
+                                            pr-6 rounded-xl font-bold text-lg text-[var(--text)] appearance-none
+                                            outline-none focus:ring-2 focus:ring-[var(--nice-blue)] transition-all
+                                            [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none
+                                            [&::-webkit-inner-spin-button]:appearance-none hover:bg-[var(--layer3)]"
                                         />
-                                        <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] pointer-events-none" />
+                                        <ChevronDown
+                                            size={16}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] pointer-events-none"
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -120,10 +149,9 @@ export default function DetailsModal({
                         {/* Submit Button */}
                         <button
                             type={'submit'}
-                            className={`cursor - pointer w-full py-4 px-8 mt-4 bg-[var(--nice-blue)] text-white font-bold
+                            className={`cursor-pointer w-full py-4 px-8 mt-4 bg-[var(--nice-blue)] text-white font-bold
                                 text-lg rounded-full shadow-lg shadow-blue-500/20 hover:scale-[0.98] transition-transform
                                 ${isFormComplete ? 'bg-[var(--nice-blue)] hover:scale-[0.98] cursor-pointer' : 'bg-gray-400 opacity-50 cursor-not-allowed'}`}
-
                         >
                             Save & Continue
                         </button>

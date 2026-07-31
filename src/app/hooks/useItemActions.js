@@ -53,7 +53,7 @@ export function useRenameItem() {
 export function useMoveItem() {
     const supabase = createClient();
     const [isMoving, setIsMoving] = useState(false);
-    const moveItem = async(itemType, itemId, destinationId) => {
+    const moveItem = async (itemType, itemId, destinationId) => {
         setIsMoving(true);
         console.log("DEBUG MOVE ITEM:", { itemType, itemId, destinationId });
 
@@ -79,7 +79,7 @@ export function useMoveItem() {
                     .eq('id', itemId)
 
                 if (error) throw error;
-            }   else {
+            } else {
                 const { error } = await supabase
                     .from(tableName)
                     .update({ [tableRow]: destinationId })
@@ -93,25 +93,25 @@ export function useMoveItem() {
             console.error('SUPABASE ERROR', error);
             toast.error(`Failed to move your ${itemType}`);
             return false;
-        }   finally {
+        } finally {
             setIsMoving(false);
         }
     };
     return { moveItem, isMoving };
 }
 
-export function useDeleteItem () {
+export function useDeleteItem() {
     const supabase = createClient();
     const [isDeleting, setIsDeleting] = useState(false);
 
-    const deleteItem = async(itemType, itemId) => {
+    const deleteItem = async (itemType, itemId) => {
         setIsDeleting(true);
         console.log("DEBUG MOVE ITEM:", { itemType, itemId });
         try {
             let tableName = '';
-            if (itemType === 'note') tableName= 'notes';
-            if (itemType === 'folder') tableName= 'folders';
-            if (itemType === 'flashcard') tableName= 'flashcard_decks';
+            if (itemType === 'note') tableName = 'notes';
+            if (itemType === 'folder') tableName = 'folders';
+            if (itemType === 'flashcard') tableName = 'flashcard_decks';
             const { error } = await supabase
                 .from(tableName)
                 .delete()
@@ -124,14 +124,14 @@ export function useDeleteItem () {
             console.error('SUPABASE ERROR', error);
             toast.error(`Failed to delete your ${itemType}`);
             return false;
-        }   finally {
+        } finally {
             setIsDeleting(false);
         }
     };
     return { deleteItem, isDeleting };
 }
 
-export function useDuplicateItem () {
+export function useDuplicateItem() {
     const supabase = createClient();
     const [isDuplicating, setIsDuplicating] = useState(false);
 

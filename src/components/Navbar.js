@@ -97,7 +97,10 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
 
     // ─── 5. RENDER ──────────────────────────────────────────────────────────────
     return (
-        <nav className="sticky top-0 z-50 flex flex-col gap-6 w-full bg-[var(--layer1)] p-4 md:p-6 shadow-sm border-b border-[var(--layer3)] mb-4">
+        <nav
+            className="sticky top-0 z-50 flex flex-col gap-6 w-full bg-[var(--layer1)] p-4 md:p-6 shadow-sm
+            border-b border-[var(--layer3)] mb-4"
+        >
             <div className="flex items-center justify-between w-full max-w-7xl mx-auto">
 
                 {/* Mobile Menu Toggle */}
@@ -110,7 +113,10 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
                 </button>
 
                 {/* Logo */}
-                <Link href="/" className="font-brand font-black tracking-tighter z-20 text-3xl lg:text-5xl text-[var(--nice-blue)]">
+                <Link
+                    href="/"
+                    className="font-brand font-black tracking-tighter z-20 text-3xl lg:text-5xl text-[var(--nice-blue)]"
+                >
                     POW
                 </Link>
 
@@ -118,12 +124,15 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
                 <ul className="hidden min-[1200px]:flex items-center gap-3 [1200px]:gap-4 font-semibold">
                     <li>
                         <button
-                            className="flex items-center gap-3 p-2 [1000px]:p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group"
+                            className="flex items-center gap-3 p-2 [1000px]:p-3 hover:bg-[var(--layer3)] rounded-xl
+                            cursor-pointer transition-all group"
                             onClick={() => {
                                 if (session) {
                                     router.push(`/dashboard/Materials`);
-                                    setIsNavOpen(false)
-                                }}}>
+                                    setIsNavOpen(false);
+                                }
+                            }}
+                        >
                             <span className="text-xl">🗃️</span>
                             <span className="text-[var(--text)]">Materials</span>
                         </button>
@@ -131,7 +140,8 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
                     <li>
                         <Link
                             href={'/dashboard/Folders'}
-                            className="flex items-center gap-3 p-2 [1200px]:p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group"
+                            className="flex items-center gap-3 p-2 [1200px]:p-3 hover:bg-[var(--layer3)] rounded-xl
+                            cursor-pointer transition-all group"
                         >
                             <span className="text-xl w-6 text-center">
                                 <span className="inline group-hover:hidden">📁</span>
@@ -143,7 +153,9 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
                     <li>
                         <Link
                             href={'/dashboard/Notes'}
-                            className="flex items-center gap-3 p-2 [1200px]:p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group">
+                            className="flex items-center gap-3 p-2 [1200px]:p-3 hover:bg-[var(--layer3)] rounded-xl
+                            cursor-pointer transition-all group"
+                        >
                             <span className="text-xl">📖</span>
                             <span className="text-[var(--text)]">Notes</span>
                         </Link>
@@ -151,7 +163,9 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
                     <li>
                         <Link
                             href={'/dashboard/Flashcards'}
-                            className="flex items-center gap-3 p-2 [1200px]:p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group">
+                            className="flex items-center gap-3 p-2 [1200px]:p-3 hover:bg-[var(--layer3)] rounded-xl
+                            cursor-pointer transition-all group"
+                        >
                             <span className="text-xl">📝</span>
                             <span className="text-[var(--text)]">Flashcards</span>
                         </Link>
@@ -159,7 +173,9 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
                     <li>
                         <Link
                             href={'/dashboard/Folders'}
-                            className="flex items-center gap-3 p-2 [1200px]:p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group">
+                            className="flex items-center gap-3 p-2 [1200px]:p-3 hover:bg-[var(--layer3)] rounded-xl
+                            cursor-pointer transition-all group"
+                        >
                             <span className="text-xl">🗑️</span>
                             <span className="text-[var(--text)]">Trash</span>
                         </Link>
@@ -167,7 +183,9 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
                     <li>
                         <Link
                             href={'/dashboard/Folders'}
-                            className="flex items-center gap-3 p-2 [1200px]:p-3 hover:bg-[var(--layer3)] rounded-xl cursor-pointer transition-all group">
+                            className="flex items-center gap-3 p-2 [1200px]:p-3 hover:bg-[var(--layer3)] rounded-xl
+                            cursor-pointer transition-all group"
+                        >
                             <span className="text-xl">❓</span>
                             <span className="text-[var(--text)]">Support</span>
                         </Link>
@@ -216,19 +234,29 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
                                         />
                                     )
                                 ) : (
-                                    <div className="w-[48px] h-[48px] bg-white rounded-full shadow-md border border-[var(--layer3)] flex items-center justify-center">
-                                    <span className="text-[var(--nice-blue)] text-xs font-black">
-                                        {userProfile?.username?.charAt(0).toUpperCase() || "P"}
-                                    </span>
+                                    <div
+                                        className="w-[48px] h-[48px] bg-white rounded-full shadow-md border
+                                        border-[var(--layer3)] flex items-center justify-center"
+                                    >
+                                        <span className="text-[var(--nice-blue)] text-xs font-black">
+                                            {userProfile?.username?.charAt(0).toUpperCase() || "P"}
+                                        </span>
                                     </div>
                                 )}
                             </button>
 
                             {/* Dropdown Menu */}
-                            <div className={`absolute right-0 top-full pt-2 w-80 md:w-96 transition-all duration-200 z-50 ${isDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible translate-y-2'}`}>
-                                <div className="bg-[var(--layer2)] rounded-xl shadow-lg border border-[var(--layer1)] flex flex-col overflow-hidden">
+                            <div
+                                className={`absolute right-0 top-full pt-2 w-80 md:w-96 transition-all duration-200 z-50
+                                ${isDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible translate-y-2'}`}
+                            >
+                                <div
+                                    className="bg-[var(--layer2)] rounded-xl shadow-lg border border-[var(--layer1)]
+                                    flex flex-col overflow-hidden"
+                                >
                                     <div
-                                        className="px-4 py-4 text-left font-bold flex gap-8 text-[var(--text)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
+                                        className="px-4 py-4 text-left font-bold flex gap-8 text-[var(--text)]
+                                        hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                                         onClick={() => {
                                             console.log('opening profile page')
                                         }}
@@ -252,10 +280,13 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
                                                 />
                                             )
                                         ) : (
-                                            <div className="w-[48px] h-[48px] bg-white rounded-full shadow-md border border-[var(--layer3)] flex items-center justify-center">
-                                    <span className="text-[var(--nice-blue)] text-xs font-black">
-                                        {userProfile?.username?.charAt(0).toUpperCase() || "N/A"}
-                                    </span>
+                                            <div
+                                                className="w-[48px] h-[48px] bg-white rounded-full shadow-md border
+                                                border-[var(--layer3)] flex items-center justify-center"
+                                            >
+                                                <span className="text-[var(--nice-blue)] text-xs font-black">
+                                                    {userProfile?.username?.charAt(0).toUpperCase() || "N/A"}
+                                                </span>
                                             </div>
                                         )}
                                         <div>
@@ -264,53 +295,58 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
                                         </div>
                                     </div>
 
-                                    <div className="h-[1px] bg-[var(--layer3)] w-full"></div>
+                                    <div className="h-[1px] bg-[var(--layer3)] w-full" />
 
                                     <button
-                                        className="flex flex-row gap-4 px-5 py-4 text-left font-bold text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
+                                        className="flex flex-row gap-4 px-5 py-4 text-left font-bold text-[var(--text-muted)]
+                                        hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                                         onClick={() => {
                                             console.log('Navigate to profile');
                                         }}
                                     >
-                                        <UserCircle className="w-5 h-5 text-[var(--text-muted)] hover:text-[var(--text)] shrink-0"/>
+                                        <UserCircle className="w-5 h-5 text-[var(--text-muted)] hover:text-[var(--text)] shrink-0" />
                                         <span>Profile</span>
                                     </button>
 
                                     <button
                                         onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                                        className="px-5 py-4 text-left font-bold text-[var(--text)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
+                                        className="px-5 py-4 text-left font-bold text-[var(--text)] hover:text-[var(--text)]
+                                        hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                                         aria-label="Toggle theme"
                                     >
                                         {mounted ? (theme === 'light' ? '☀️ Dark Mode' : '🌙 Light Mode') : '☀️ Dark Mode'}
                                     </button>
 
                                     <button
-                                        className="flex flex-row gap-4 whitespace-nowrap px-5 py-4 text-left font-bold text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
+                                        className="flex flex-row gap-4 whitespace-nowrap px-5 py-4 text-left font-bold
+                                        text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                                         onClick={() => {
                                             console.log('Navigate to settings');
                                         }}
                                     >
-                                        <Settings className="w-5 h-5 text-[var(--text-muted)] shrink-0"/>
+                                        <Settings className="w-5 h-5 text-[var(--text-muted)] shrink-0" />
                                         <span>Settings</span>
                                     </button>
 
                                     <button
-                                        className="flex flex-row gap-4 px-5 py-4 text-left font-bold text-yellow-600 hover:text-yellow-400 hover:bg-[var(--layer3)] transition-colors cursor-pointer"
+                                        className="flex flex-row gap-4 px-5 py-4 text-left font-bold text-yellow-600
+                                        hover:text-yellow-400 hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                                         onClick={() => {
                                             console.log('Handle upgrade');
                                         }}
                                     >
-                                        <Sparkles className="w-5 h-5 text-yellow-400 shrink-0"/>
+                                        <Sparkles className="w-5 h-5 text-yellow-400 shrink-0" />
                                         <span>Upgrade</span>
                                     </button>
 
-                                    <div className="h-[1px] bg-[var(--layer3)] w-full"></div>
+                                    <div className="h-[1px] bg-[var(--layer3)] w-full" />
 
                                     <button
-                                        className="flex flex-row gap-4 px-5 py-4 text-left font-bold text-red-400 hover:text-red-600 transition-colors cursor-pointer hover:bg-[var(--layer3)]"
+                                        className="flex flex-row gap-4 px-5 py-4 text-left font-bold text-red-400
+                                        hover:text-red-600 transition-colors cursor-pointer hover:bg-[var(--layer3)]"
                                         onClick={handleSignOut}
                                     >
-                                        <LogOut className="w-5 h-5 text-red-600 shrink-0"/>
+                                        <LogOut className="w-5 h-5 text-red-600 shrink-0" />
                                         <span>Log out</span>
                                     </button>
                                 </div>
@@ -319,13 +355,17 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
                     ) : (
                         <div className="flex gap-2">
                             <button
-                                className="text-[var(--text)] cursor-pointer font-bold px-4 py-2 hover:bg-[var(--layer2)] rounded-xl transition-colors text-sm"
-                                onClick={() => setAuthMode('login')}>
+                                className="text-[var(--text)] cursor-pointer font-bold px-4 py-2 hover:bg-[var(--layer2)]
+                                rounded-xl transition-colors text-sm"
+                                onClick={() => setAuthMode('login')}
+                            >
                                 Log in
                             </button>
                             <button
-                                className="bg-[var(--nice-blue)] cursor-pointer text-white px-5 py-2 rounded-xl font-bold text-sm shadow-lg shadow-blue-500/20 hover:scale-105 transition-transform"
-                                onClick={() => setAuthMode('signup')}>
+                                className="bg-[var(--nice-blue)] cursor-pointer text-white px-5 py-2 rounded-xl font-bold
+                                text-sm shadow-lg shadow-blue-500/20 hover:scale-105 transition-transform"
+                                onClick={() => setAuthMode('signup')}
+                            >
                                 Sign up
                             </button>
                         </div>
@@ -339,7 +379,8 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
                 <input
                     type="text"
                     placeholder="Flashcard sets, textbooks, questions"
-                    className="w-full bg-[var(--layer2)] py-3 pl-12 pr-4 rounded-xl border border-transparent focus:border-[var(--nice-blue)] outline-none transition-all text-[var(--text)]"
+                    className="w-full bg-[var(--layer2)] py-3 pl-12 pr-4 rounded-xl border border-transparent
+                    focus:border-[var(--nice-blue)] outline-none transition-all text-[var(--text)]"
                     onChange={(e) => setSearchInput(e.target.value)}
                 />
             </div>

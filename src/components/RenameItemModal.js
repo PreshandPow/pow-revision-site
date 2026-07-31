@@ -25,13 +25,17 @@ export default function RenameItemModal({ renameModalRef, currentName, handleRen
                         defaultValue={currentName}
                         onChange={(e) => setNewName(e.target.value)}
                         autoFocus
-                        className="w-full px-4 py-2.5 rounded-lg bg-[var(--layer2)] text-[var(--text)] border border-[var(--layer3)] outline-none focus:border-[var(--nice-blue)]"
+                        className="w-full px-4 py-2.5 rounded-lg bg-[var(--layer2)] text-[var(--text)] border
+                        border-[var(--layer3)] outline-none focus:border-[var(--nice-blue)]"
                     />
                 </div>
                 <div className="px-6 py-4 bg-[var(--layer2)]/50 border-t border-[var(--layer3)] flex justify-end gap-3">
-                    <button onClick={() => {
-                        setShowRenameItemModal(false);
-                    }} className="px-4 py-2 text-sm font-semibold text-[var(--text-muted)] hover:text-[var(--text)] cursor-pointer">
+                    <button
+                        onClick={() => {
+                            setShowRenameItemModal(false);
+                        }}
+                        className="px-4 py-2 text-sm font-semibold text-[var(--text-muted)] hover:text-[var(--text)] cursor-pointer"
+                    >
                         Cancel
                     </button>
                     <button
@@ -41,8 +45,8 @@ export default function RenameItemModal({ renameModalRef, currentName, handleRen
                             handleRename(newName);
                         }}
                         disabled={!newName.trim() || currentName.trim() === newName.trim()}
-                        className={`px-4 py-2 text-sm font-semibold bg-[var(--nice-blue)] text-[var(--text)] rounded-lg cursor-pointer
-                            hover:transform hover:scale-105 transition-transform duration-200
+                        className={`px-4 py-2 text-sm font-semibold bg-[var(--nice-blue)] text-[var(--text)] rounded-lg
+                            cursor-pointer hover:transform hover:scale-105 transition-transform duration-200
                             ${!newName.trim() || currentName.trim() === newName.trim() ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:opacity-90'}`}
                     >
                         Save Changes

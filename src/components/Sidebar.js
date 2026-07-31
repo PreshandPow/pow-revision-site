@@ -77,7 +77,10 @@ export default function Sidebar({
                 aria-hidden={!isNavOpen}
             >
                 <header className="flex items-center justify-between mb-8">
-                    <Link href="/" className="font-brand tracking-tighter text-5xl font-black text-[var(--nice-blue)]">
+                    <Link
+                        href="/"
+                        className="font-brand tracking-tighter text-5xl font-black text-[var(--nice-blue)]"
+                    >
                         POW
                     </Link>
                     <button
@@ -145,14 +148,17 @@ export default function Sidebar({
                                     }
                                 }}
                                 className="flex items-center gap-4 w-full p-3 hover:bg-[var(--layer2)] rounded-xl
-                                cursor-pointer transition-all group">
+                                cursor-pointer transition-all group"
+                            >
                                 <span className="text-xl">📝</span>
                                 <span className="font-bold text-[var(--text)]">Flashcards</span>
                             </Link>
                         </li>
                         <li>
-                            <button className="flex items-center gap-4 w-full p-3 hover:bg-[var(--layer2)] rounded-xl
-                            cursor-pointer transition-all group">
+                            <button
+                                className="flex items-center gap-4 w-full p-3 hover:bg-[var(--layer2)] rounded-xl
+                                cursor-pointer transition-all group"
+                            >
                                 <span className="text-xl">🗑️</span>
                                 <span className="font-bold text-[var(--text)]">Trash</span>
                             </button>
@@ -188,22 +194,34 @@ export default function Sidebar({
                                                 hover:bg-[var(--layer2)] rounded-lg transition-colors group text-left"
                                             >
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-lgl">{mounted ? (theme === 'light' ? '☀️' : '🌙') : '☀️'}</span>
-                                                    <span className="font-semibold text-sm text-[var(--text-muted)]
-                                                    group-hover:text-[var(--text)] transition-colors">Appearance</span>
+                                                    <span className="text-lg">{mounted ? (theme === 'light' ? '☀️' : '🌙') : '☀️'}</span>
+                                                    <span
+                                                        className="font-semibold text-sm text-[var(--text-muted)]
+                                                        group-hover:text-[var(--text)] transition-colors"
+                                                    >
+                                                        Appearance
+                                                    </span>
                                                 </div>
-                                                <span className="text-[10px] font-black uppercase tracking-widest
-                                                text-[var(--text-muted)] bg-[var(--layer3)] px-2 py-0.5 ml-1 rounded shadow-sm">
+                                                <span
+                                                    className="text-[10px] font-black uppercase tracking-widest
+                                                    text-[var(--text-muted)] bg-[var(--layer3)] px-2 py-0.5 ml-1 rounded shadow-sm"
+                                                >
                                                     {theme}
                                                 </span>
                                             </button>
                                         </li>
                                         <li>
-                                            <button className="cursor-pointer flex items-center gap-2 w-full p-3
-                                            hover:bg-[var(--layer2)] rounded-lg transition-colors group text-left">
+                                            <button
+                                                className="cursor-pointer flex items-center gap-2 w-full p-3
+                                                hover:bg-[var(--layer2)] rounded-lg transition-colors group text-left"
+                                            >
                                                 <span className="text-lg transition-all">❓</span>
-                                                <span className="font-semibold text-[var(--text-muted)] text-sm
-                                                group-hover:text-[var(--text)] transition-colors">Support Center</span>
+                                                <span
+                                                    className="font-semibold text-[var(--text-muted)] text-sm
+                                                    group-hover:text-[var(--text)] transition-colors"
+                                                >
+                                                    Support Center
+                                                </span>
                                             </button>
                                         </li>
                                     </ul>
