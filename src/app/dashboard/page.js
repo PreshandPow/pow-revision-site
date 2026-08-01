@@ -246,6 +246,18 @@ export default function Dashboard() {
         setShowCreateFolderModal(false);
     };
 
+    const handleCreateFlashcardDeck = async (deckData) => {
+        const loadingToast = toast.loading('Creating deck...');
+
+        const newDeck = await createFlashcardAction(deckData, null, router);
+
+        toast.dismiss(loadingToast);
+
+        if (newDeck) {
+            router.push(`/dashboard/Flashcards/${flashcards.id}`);
+        }
+    };
+
     // ─── 7. RENDER ────────────────────────────────────────────────────────────────
     if (loading) return (
         <div
@@ -494,7 +506,7 @@ export default function Dashboard() {
                     </div>
                 )}
 
-                {flashcards ? (
+                {!flashcards ? (
                     <div
                         className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5
                         hover:border-[var(--nice-blue)] transition-colors"
@@ -508,7 +520,9 @@ export default function Dashboard() {
                         <div className="flex justify-between items-center mt-4 pt-3 border-t border-[var(--layer3)]">
                             <span className="text-xs text-[var(--text-muted)]">—</span>
                             <button
-                                onClick={}
+                                onClick={() => {
+                                    setShowCreateFlashcardModal(true);
+                                }}
                                 className="cursor-pointer text-sm font-bold border border-[var(--layer3)] rounded-xl px-4 py-2
                                 hover:bg-[var(--layer2)] transition-colors text-[var(--text)]"
                             >
@@ -518,7 +532,7 @@ export default function Dashboard() {
                     </div>
                 ) : (
                     <div
-                        onClick={() => router.push(`/dashboard/flashcards/${flashcards.id}`)}
+                        onClick={() => router.push(`/dashboard/Flashcards/${flashcards.id}`)}
                         className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5 cursor-pointer
                         hover:border-[var(--nice-blue)] transition-colors"
                     >
