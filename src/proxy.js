@@ -33,7 +33,9 @@ export async function proxy(request) {
 
     if (user && pathname === '/') {
         console.log('sending to dashboard')
-        return NextResponse.redirect(new URL('/dashboard', request.url))
+        const returnResponse =  NextResponse.redirect(new URL('/dashboard', request.url))
+        response.cookies.getAll().forEach(cookie => returnResponse.cookies.set(cookie))
+        return returnResponse
     }
 
     if (!user && pathname.startsWith('/dashboard')) {
