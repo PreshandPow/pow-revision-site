@@ -215,7 +215,7 @@ export default function FlashcardStudyPage() {
                     <button
                         onClick={() => setCardToEdit(null)}
                         className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full border
-                        border-[var(--layer3)] text-[var(--text-muted)] hover:text-white hover:bg-[var(--layer3)] transition-colors cursor-pointer"
+                        border-[var(--layer3)] text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                     >
                         <X size={16} />
                     </button>
@@ -223,20 +223,20 @@ export default function FlashcardStudyPage() {
                     {/* Toolbar */}
                     <div className="flex justify-center mb-12 mt-2">
                         <div className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[var(--layer3)] bg-[var(--layer1)]/50 text-[var(--text-muted)]">
-                            <Type size={16} className="cursor-pointer hover:text-white" />
+                            <Type size={16} className="cursor-pointer hover:text-[var(--text)]" />
                             <div className="w-px h-4 bg-[var(--layer3)] mx-1" />
-                            <Bold size={16} className="cursor-pointer hover:text-white" />
-                            <Italic size={16} className="cursor-pointer hover:text-white" />
-                            <Underline size={16} className="cursor-pointer hover:text-white" />
-                            <Strikethrough size={16} className="cursor-pointer hover:text-white" />
-                            <PaintBucket size={16} className="cursor-pointer hover:text-white" />
-                            <Code size={16} className="cursor-pointer hover:text-white" />
-                            <Link size={16} className="cursor-pointer hover:text-white" />
-                            <Subscript size={16} className="cursor-pointer hover:text-white" />
-                            <Superscript size={16} className="cursor-pointer hover:text-white" />
+                            <Bold size={16} className="cursor-pointer hover:text-[var(--text)]" />
+                            <Italic size={16} className="cursor-pointer hover:text-[var(--text)]" />
+                            <Underline size={16} className="cursor-pointer hover:text-[var(--text)]" />
+                            <Strikethrough size={16} className="cursor-pointer hover:text-[var(--text)]" />
+                            <PaintBucket size={16} className="cursor-pointer hover:text-[var(--text)]" />
+                            <Code size={16} className="cursor-pointer hover:text-[var(--text)]" />
+                            <Link size={16} className="cursor-pointer hover:text-[var(--text)]" />
+                            <Subscript size={16} className="cursor-pointer hover:text-[var(--text)]" />
+                            <Superscript size={16} className="cursor-pointer hover:text-[var(--text)]" />
                             <div className="w-px h-4 bg-[var(--layer3)] mx-1" />
-                            <Undo size={16} className="cursor-pointer hover:text-white" />
-                            <Redo size={16} className="cursor-pointer hover:text-white" />
+                            <Undo size={16} className="cursor-pointer hover:text-[var(--text)]" />
+                            <Redo size={16} className="cursor-pointer hover:text-[var(--text)]" />
                         </div>
                     </div>
 
@@ -256,7 +256,8 @@ export default function FlashcardStudyPage() {
                             <input
                                 type="text"
                                 defaultValue={cardToEdit.term}
-                                className="w-full bg-transparent border-b-2 border-white/20 pb-2 text-lg text-white focus:outline-none focus:border-white transition-colors"
+                                className="w-full bg-transparent border-b-2 border-[var(--text)]/20 pb-2 text-lg
+                                text-[var(--text-muted)] focus:outline-none focus:border-[var(--text)] transition-colors"
                             />
                         </div>
 
@@ -264,7 +265,8 @@ export default function FlashcardStudyPage() {
                             <input
                                 type="text"
                                 defaultValue={cardToEdit.definition}
-                                className="w-full bg-transparent border-b-2 border-white/20 pb-2 text-lg text-white focus:outline-none focus:border-white transition-colors"
+                                className="w-full bg-transparent border-b-2 border-[var(--text)]/20 pb-2 text-lg
+                                text-[var(--text-muted)] focus:outline-none focus:border-[var(--text)] transition-colors"
                             />
                             <div className="flex flex-col gap-2 shrink-0">
                                 <button className="flex items-center gap-2 px-3 py-1.5 border border-[var(--layer3)] rounded-lg text-xs font-bold
@@ -286,7 +288,7 @@ export default function FlashcardStudyPage() {
     // ─── GUARD: Wait until data is loaded ──────────────────────────────────────
     if (!deck || cards.length === 0) {
         return (
-            <div className="min-h-screen bg-[#0A0A0A] flex flex-col items-center justify-center text-white">
+            <div className="min-h-screen bg-[var(--layer1)] flex flex-col items-center justify-center text-[var(--text)]">
                 <div className="w-10 h-10 border-4 border-[var(--layer3)] border-t-[var(--nice-blue)] rounded-full animate-spin mb-4" />
                 <p className="text-[var(--text-muted)] font-bold tracking-widest uppercase text-xs">Loading Deck...</p>
             </div>
@@ -294,28 +296,28 @@ export default function FlashcardStudyPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#0A0A0A] text-[var(--text)] font-sans pb-32">
+        <div className="min-h-screen bg-[var(--layer1)] text-[var(--text)] font-sans pb-32">
 
             <div className="max-w-5xl mx-auto pt-6 px-4">
                 <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-muted)] mb-4">
-                    <span onClick={() => router.push('/dashboard/Flashcards')} className="hover:text-white cursor-pointer transition-colors">Decks</span>
+                    <span onClick={() => router.push('/dashboard/Flashcards')} className="hover:text-[var(--text-muted)] cursor-pointer transition-colors">Decks</span>
                     <ChevronRight size={14} />
                     {deck.folderName && (
                         <>
-                            <span className="hover:text-white cursor-pointer transition-colors">{deck.folderName}</span>
+                            <span className="hover:text-[var(--text-muted)] cursor-pointer transition-colors">{deck.folderName}</span>
                             <ChevronRight size={14} />
                         </>
                     )}
-                    <span className="text-white">{deck.name || deck.title}</span>
+                    <span className="text-[var(--text-muted)]">{deck.name || deck.title}</span>
                 </div>
 
                 <div className={`bg-[var(--layer2)] border border-[var(--layer3)] rounded-2xl p-5 flex items-center
                 justify-between shadow-sm relative dropdown-container ${activeDropdown === deck.id ? 'z-[100]' : 'z-10'}`}>
                     <div>
-                        <h1 className="text-2xl font-bold text-white mb-1">{deck.name || deck.title}</h1>
+                        <h1 className="text-2xl font-bold text-[var(--text-muted)] mb-1">{deck.name || deck.title}</h1>
                         <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-muted)]">
                             <span>{(deck.rating || 0.0).toFixed(1)}</span>
-                            <div className="flex items-center text-gray-500">
+                            <div className="flex items-center text-[var(--text-muted)]">
                                 {[...Array(5)].map((_, i) => <Star key={i} size={12} fill="currentColor" />)}
                             </div>
                             <span>({deck.reviews || 0})</span>
@@ -326,14 +328,14 @@ export default function FlashcardStudyPage() {
                         <button
                             onClick={() => setShowEditDeckModal(true)}
                             className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[var(--layer3)]
-                            text-sm font-bold text-white hover:bg-[var(--layer3)] transition-colors cursor-pointer"
+                            text-sm font-bold text-[var(--text-muted)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                         >
                             <Edit size={16} /> Edit flashcards
                         </button>
                         <button
                             onClick={() => setActiveDropdown(activeDropdown === deck.id ? null : deck.id)}
                             className="w-10 h-10 flex items-center justify-center rounded-full border
-                            border-[var(--layer3)] hover:bg-[var(--layer3)] text-white transition-colors cursor-pointer"
+                            border-[var(--layer3)] hover:bg-[var(--layer3)] text-[var(--text-muted)] transition-colors cursor-pointer"
                         >
                             <MoreHorizontal size={18} />
                         </button>
@@ -377,10 +379,10 @@ export default function FlashcardStudyPage() {
                             <div className={`p-1.5 rounded-lg ${mode.bg} ${mode.color}`}>
                                 <mode.icon size={18} />
                             </div>
-                            <span className="text-sm font-bold text-white group-hover:text-[var(--nice-blue)] transition-colors">{mode.name}</span>
+                            <span className="text-sm font-bold text-[var(--text-muted)] group-hover:text-[var(--nice-blue)] transition-colors">{mode.name}</span>
                         </div>
                         {mode.hasAdd ? (
-                            <span className="text-[10px] font-bold px-2 py-1 bg-[var(--layer3)] rounded-full text-white">Add +</span>
+                            <span className="text-[10px] font-bold px-2 py-1 bg-[var(--layer3)] rounded-full text-[var(--text-muted)]">Add +</span>
                         ) : (
                             <ArrowRightIcon size={16} className="text-[var(--text-muted)] group-hover:text-[var(--nice-blue)] group-hover:translate-x-1 transition-all" />
                         )}
@@ -401,17 +403,17 @@ export default function FlashcardStudyPage() {
                         <div className="absolute inset-0 bg-[var(--layer2)] border border-[var(--layer3)] rounded-2xl shadow-lg flex items-center justify-center p-8" style={{ backfaceVisibility: 'hidden' }}>
 
                             <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
-                                <button className="px-3 py-1.5 rounded-full border border-[var(--layer3)] text-xs font-bold text-white hover:bg-[var(--layer3)] transition-colors">Get a hint</button>
-                                <button className="w-8 h-8 rounded-full border border-[var(--layer3)] flex items-center justify-center text-white hover:bg-[var(--layer3)] transition-colors"><Volume2 size={14} /></button>
-                                <button onClick={(e) => { e.stopPropagation(); setCardToEdit(cards[currentCardIndex]); }} className="w-8 h-8 rounded-full border border-[var(--layer3)] flex items-center justify-center text-white hover:bg-[var(--layer3)] transition-colors"><Edit size={14} /></button>
-                                <button className="w-8 h-8 rounded-full border border-[var(--layer3)] flex items-center justify-center text-white hover:bg-[var(--layer3)] transition-colors"><Star size={14} /></button>
+                                <button className="px-3 py-1.5 rounded-full border border-[var(--layer3)] text-xs font-bold text-[var(--text)] hover:bg-[var(--layer3)] transition-colors">Get a hint</button>
+                                <button className="w-8 h-8 rounded-full border border-[var(--layer3)] flex items-center justify-center text-[var(--text)] hover:bg-[var(--layer3)] transition-colors"><Volume2 size={14} /></button>
+                                <button onClick={(e) => { e.stopPropagation(); setCardToEdit(cards[currentCardIndex]); }} className="w-8 h-8 rounded-full border border-[var(--layer3)] flex items-center justify-center text-[var(--text)] hover:bg-[var(--layer3)] transition-colors"><Edit size={14} /></button>
+                                <button className="w-8 h-8 rounded-full border border-[var(--layer3)] flex items-center justify-center text-[var(--text)] hover:bg-[var(--layer3)] transition-colors"><Star size={14} /></button>
                             </div>
 
-                            <h2 className="text-3xl sm:text-4xl font-bold text-white text-center break-words max-w-2xl" dangerouslySetInnerHTML={{ __html: cards[currentCardIndex].term }} />
+                            <h2 className="text-3xl sm:text-4xl font-bold text-[var(--text)] text-center break-words max-w-2xl" dangerouslySetInnerHTML={{ __html: cards[currentCardIndex].term }} />
                         </div>
 
                         <div className="absolute inset-0 bg-[var(--layer2)] border border-[var(--nice-blue)] rounded-2xl shadow-lg flex items-center justify-center p-8" style={{ backfaceVisibility: 'hidden', transform: 'rotateX(180deg)' }}>
-                            <h2 className="text-3xl sm:text-4xl font-bold text-white text-center break-words max-w-2xl" dangerouslySetInnerHTML={{ __html: cards[currentCardIndex].definition }} />
+                            <h2 className="text-3xl sm:text-4xl font-bold text-[var(--text)] text-center break-words max-w-2xl" dangerouslySetInnerHTML={{ __html: cards[currentCardIndex].definition }} />
                         </div>
                     </motion.div>
                 </div>
@@ -419,7 +421,7 @@ export default function FlashcardStudyPage() {
                 {/* Viewer Controls */}
                 <div className="flex items-center justify-between mt-4">
                     <div className="flex items-center gap-3">
-                        <span className="text-sm font-bold text-white">Card Sorting</span>
+                        <span className="text-sm font-bold text-[var(--text)]">Card Sorting</span>
                         <div className="w-10 h-6 bg-[var(--layer3)] rounded-full relative cursor-pointer">
                             <div className="w-4 h-4 bg-[var(--text-muted)] rounded-full absolute left-1 top-1" />
                         </div>
@@ -433,7 +435,7 @@ export default function FlashcardStudyPage() {
                         >
                             <ChevronLeft size={20} />
                         </button>
-                        <span className="font-bold text-white w-12 text-center">
+                        <span className="font-bold text-[var(--text)] w-12 text-center">
                             {currentCardIndex + 1}/{cards.length}
                         </span>
                         <button
@@ -447,13 +449,13 @@ export default function FlashcardStudyPage() {
 
                     <div className="flex items-center gap-2">
                         <button className="w-10 h-10 rounded-xl bg-[var(--layer2)] border border-[var(--layer3)] flex items-center justify-center
-                        hover:bg-[var(--layer3)] text-white transition-colors cursor-pointer"><Star size={18} /></button>
+                        hover:bg-[var(--layer3)] text-[var(--text)] transition-colors cursor-pointer"><Star size={18} /></button>
                         <button className="w-10 h-10 rounded-xl bg-[var(--layer2)] border border-[var(--layer3)] flex items-center justify-center
-                        hover:bg-[var(--layer3)] text-white transition-colors cursor-pointer"><Shuffle size={18} /></button>
+                        hover:bg-[var(--layer3)] text-[var(--text)] transition-colors cursor-pointer"><Shuffle size={18} /></button>
                         <button className="w-10 h-10 rounded-xl bg-[var(--layer2)] border border-[var(--layer3)] flex items-center justify-center
-                        hover:bg-[var(--layer3)] text-white transition-colors cursor-pointer"><Settings size={18} /></button>
+                        hover:bg-[var(--layer3)] text-[var(--text)] transition-colors cursor-pointer"><Settings size={18} /></button>
                         <button className="w-10 h-10 rounded-xl bg-[var(--layer2)] border border-[var(--layer3)] flex items-center justify-center
-                        hover:bg-[var(--layer3)] text-white transition-colors cursor-pointer"><Maximize size={18} /></button>
+                        hover:bg-[var(--layer3)] text-[var(--text)] transition-colors cursor-pointer"><Maximize size={18} /></button>
                     </div>
                 </div>
             </div>
@@ -463,7 +465,7 @@ export default function FlashcardStudyPage() {
                 <div className="bg-[var(--layer2)] border border-[var(--layer3)] rounded-3xl p-6">
                     <div className="flex flex-wrap gap-2 mb-6 border-b border-[var(--layer3)] pb-4">
                         {['All Modes', 'Learn', 'Practice Test', 'Matching', 'Spaced Repetition', 'Call With POW Bot'].map((tab, i) => (
-                            <button key={i} className={`px-4 py-2 rounded-full text-sm font-bold border transition-colors cursor-pointer ${i === 0 ? 'bg-white text-black border-white' : 'bg-transparent border-[var(--layer3)] text-[var(--text-muted)] hover:text-white'}`}>
+                            <button key={i} className={`px-4 py-2 rounded-full text-sm font-bold border transition-colors cursor-pointer ${i === 0 ? 'bg-[var(--text)] text-[var(--layer1)] border-[var(--text)]' : 'bg-transparent border-[var(--layer3)] text-[var(--text-muted)] hover:text-[var(--text)]'}`}>
                                 {tab}
                             </button>
                         ))}
@@ -473,14 +475,14 @@ export default function FlashcardStudyPage() {
                         <span className="text-xs font-bold text-[var(--text-muted)]">Last updated today</span>
                         <button
                             className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[var(--layer3)]
-                            text-xs font-bold text-white hover:bg-[var(--layer3)] cursor-pointer"
+                            text-xs font-bold text-[var(--text)] hover:bg-[var(--layer3)] cursor-pointer"
                         >
                             <Undo size={14} /> Update
                         </button>
                     </div>
 
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left text-sm font-bold text-white min-w-[600px]">
+                        <table className="w-full text-left text-sm font-bold text-[var(--text)] min-w-[600px]">
                             <thead>
                             <tr className="text-[var(--text-muted)] border-b border-[var(--layer3)]">
                                 <th className="pb-3 font-medium">Mastery</th>
@@ -507,8 +509,8 @@ export default function FlashcardStudyPage() {
 
                 <div className="bg-[var(--layer2)] border border-[var(--layer3)] rounded-3xl p-6">
                     <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-xl font-bold text-white">Studying Progress</h2>
-                        <span className="px-3 py-1 bg-[var(--layer3)] rounded-full text-sm font-bold text-white">0%</span>
+                        <h2 className="text-xl font-bold text-[var(--text)]">Studying Progress</h2>
+                        <span className="px-3 py-1 bg-[var(--layer3)] rounded-full text-sm font-bold text-[var(--text)]">0%</span>
                     </div>
 
                     <div className="space-y-3">
@@ -524,9 +526,9 @@ export default function FlashcardStudyPage() {
                                         <div className={`w-4 h-4 rounded-full border-2 ${stat.circle}`} />
                                         <span className={`font-bold ${stat.color}`}>{stat.name}</span>
                                     </div>
-                                    <span className="font-bold text-white">{stat.count}</span>
+                                    <span className="font-bold text-[var(--text)]">{stat.count}</span>
                                 </div>
-                                <button className="px-5 py-3 rounded-xl border border-[var(--layer3)] text-sm font-bold text-white hover:bg-[var(--layer3)] transition-colors cursor-pointer">
+                                <button className="px-5 py-3 rounded-xl border border-[var(--layer3)] text-sm font-bold text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer">
                                     Study
                                 </button>
                             </div>
@@ -538,7 +540,7 @@ export default function FlashcardStudyPage() {
             {/* Terms List Section */}
             <div className="max-w-5xl mx-auto px-4 mt-16">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                    <h2 className="text-xl font-bold text-white">{cards.length} Terms</h2>
+                    <h2 className="text-xl font-bold text-[var(--text)]">{cards.length} Terms</h2>
 
                     <div className="relative w-full sm:w-80">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" size={16} />
@@ -548,17 +550,17 @@ export default function FlashcardStudyPage() {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full bg-[var(--layer2)] border border-[var(--layer3)] rounded-full pl-10 pr-4 py-2
-                            text-sm text-white focus:outline-none focus:border-[var(--nice-blue)] transition-colors"
+                            text-sm text-[var(--text)] focus:outline-none focus:border-[var(--nice-blue)] transition-colors"
                         />
                     </div>
                 </div>
 
                 <div className="flex items-center justify-between mb-6">
-                    <button className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-black font-bold text-sm hover:opacity-90 transition-opacity cursor-pointer">
+                    <button className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[var(--text)] text-[var(--layer1)] font-bold text-sm hover:opacity-90 transition-opacity cursor-pointer">
                         View all ({cards.length})
                     </button>
                     <button
-                        className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-[var(--layer3)] text-white
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-[var(--layer3)] text-[var(--text)]
                         font-bold text-sm hover:bg-[var(--layer3)] transition-colors cursor-pointer"
                     >
                         <Star size={16} /> Star these {cards.length}
@@ -568,17 +570,17 @@ export default function FlashcardStudyPage() {
                 {/* List */}
                 <div className="space-y-4">
                     {cards.filter(c => c.term.toLowerCase().includes(searchQuery.toLowerCase()) || c.definition.toLowerCase().includes(searchQuery.toLowerCase())).map((card, index) => (
-                        <div key={card.id} className="bg-[var(--layer2)] border border-[var(--layer3)] rounded-2xl p-5 flex flex-col group hover:border-gray-500 transition-colors">
+                        <div key={card.id} className="bg-[var(--layer2)] border border-[var(--layer3)] rounded-2xl p-5 flex flex-col group hover:border-[var(--nice-blue)] transition-colors">
                             <div className="flex items-center justify-between mb-4">
-                                <span className="w-8 h-8 rounded-full bg-[var(--layer3)] flex items-center justify-center font-bold text-white text-sm">
+                                <span className="w-8 h-8 rounded-full bg-[var(--layer3)] flex items-center justify-center font-bold text-[var(--text)] text-sm">
                                     {index + 1}
                                 </span>
                                 <div className="flex items-center gap-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button className="w-8 h-8 rounded-full border border-[var(--layer3)] flex items-center justify-center text-white
+                                    <button className="w-8 h-8 rounded-full border border-[var(--layer3)] flex items-center justify-center text-[var(--text)]
                                     hover:bg-[var(--layer3)] transition-colors cursor-pointer"><Volume2 size={14} /></button>
-                                    <button onClick={() => setCardToEdit(card)} className="w-8 h-8 rounded-full border border-[var(--layer3)] flex items-center justify-center text-white
+                                    <button onClick={() => setCardToEdit(card)} className="w-8 h-8 rounded-full border border-[var(--layer3)] flex items-center justify-center text-[var(--text)]
                                     hover:bg-[var(--layer3)] transition-colors cursor-pointer"><Edit size={14} /></button>
-                                    <button className="w-8 h-8 rounded-full border border-[var(--layer3)] flex items-center justify-center text-white
+                                    <button className="w-8 h-8 rounded-full border border-[var(--layer3)] flex items-center justify-center text-[var(--text)]
                                     hover:bg-[var(--layer3)] transition-colors cursor-pointer"><Star size={14} /></button>
                                     <span className="ml-2 px-3 py-1 bg-pink-500/10 text-pink-400 border border-pink-500/20 rounded-full text-xs font-bold flex items-center gap-1.5">
                                         <div className="w-2 h-2 rounded-full border border-pink-400" /> New cards
@@ -589,11 +591,11 @@ export default function FlashcardStudyPage() {
                             <div className="flex flex-col md:flex-row gap-6">
                                 {/* Using dangerouslySetInnerHTML allows the rich-text Tiptap tags (bold, italic, etc) to render correctly! */}
                                 <div
-                                    className="flex-1 text-white font-bold text-lg md:border-r border-[var(--layer3)] md:pr-6 whitespace-pre-wrap"
+                                    className="flex-1 text-[var(--text)] font-bold text-lg md:border-r border-[var(--layer3)] md:pr-6 whitespace-pre-wrap"
                                     dangerouslySetInnerHTML={{ __html: card.term }}
                                 />
                                 <div
-                                    className="flex-1 text-white font-bold text-lg whitespace-pre-wrap"
+                                    className="flex-1 text-[var(--text)] font-bold text-lg whitespace-pre-wrap"
                                     dangerouslySetInnerHTML={{ __html: card.definition }}
                                 />
                             </div>

@@ -241,7 +241,7 @@ export default function Dashboard() {
             .select()
             .single();
 
-        if (error) { toast.error('Could not create note', toastStyle); return; }
+        if (error) { toast.error('Could not create folder', toastStyle); return; }
         router.push(`/dashboard/Folders/${folder.id}`);
         setShowCreateFolderModal(false);
     };
