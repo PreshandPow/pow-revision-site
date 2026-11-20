@@ -565,6 +565,7 @@ export default function Dashboard() {
                     setActiveTaskModal={setActiveTaskModal}
                     handleCreateNote={handleCreateNote}
                     setShowCreateFolderModal={setShowCreateFolderModal}
+                    setShowCreateFlashcardModal={setShowCreateFlashcardModal}
                 />
             )}
 
