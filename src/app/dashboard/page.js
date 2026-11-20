@@ -9,6 +9,7 @@ import toast from 'react-hot-toast';
 import DetailsModal from '../../components/DetailsModal';
 import CreateModal from "../../components/CreateModal";
 import CreateFolderModal from "../../components/createFolderModal";
+import CreateFlashcardModal from "../../components/createFlashcardModal";
 
 // hook imports
 import { createNoteAction, createFolderAction, createFlashcardAction } from "../hooks/createItemActions";
@@ -84,6 +85,7 @@ export default function Dashboard() {
     const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
     const [folderName, setFolderName] = useState('Untitled Folder');
     const createFolderModalRef = useRef(null);
+    const [showCreateFlashcardModal, setShowCreateFlashcardModal] = useState(null);
 
     // ─── 5. DATA FETCHING & UI EFFECTS ────────────────────────────────────────────
     useEffect(() => {
@@ -105,10 +107,19 @@ export default function Dashboard() {
                     .limit(1)
                     .maybeSingle();
 
+                const { data: recentFlashcard } = await supabase
+                    .from('flashcard_decks')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .order('updated_at', { ascending: false })
+                    .limit(1)
+                    .maybeSingle();
+
                 setUsername(profile?.username);
                 setAge(profile?.date_of_birth);
                 setAvatarUrl(profile?.avatar_url);
                 setNotes(recentNote);
+                setFlashcards(recentFlashcard);
 
                 if (error) {
                     console.error(error);
@@ -230,9 +241,21 @@ export default function Dashboard() {
             .select()
             .single();
 
-        if (error) { toast.error('Could not create note', toastStyle); return; }
+        if (error) { toast.error('Could not create folder', toastStyle); return; }
         router.push(`/dashboard/Folders/${folder.id}`);
         setShowCreateFolderModal(false);
+    };
+
+    const handleCreateFlashcardDeck = async (deckData) => {
+        const loadingToast = toast.loading('Creating deck...');
+
+        const newDeck = await createFlashcardAction(deckData, null, router);
+
+        toast.dismiss(loadingToast);
+
+        if (newDeck) {
+            router.push(`/dashboard/Flashcards/${flashcards.id}`);
+        }
     };
 
     // ─── 7. RENDER ────────────────────────────────────────────────────────────────
@@ -288,7 +311,7 @@ export default function Dashboard() {
             {/* Header */}
             <div className="mb-8">
                 <h1 className="text-3xl font-bold text-[var(--text)]">Hey, {username}!</h1>
-                <p className="text-[var(--vanilla-cream)] mt-1">Here's what's happening on your POW dashboard.</p>
+                <p className="text-[var(--text-muted)] mt-1">Here's what's happening on your POW dashboard.</p>
             </div>
 
             {/* Quick Actions */}
@@ -483,7 +506,7 @@ export default function Dashboard() {
                     </div>
                 )}
 
-                {flashcards.length === 0 ? (
+                {!flashcards ? (
                     <div
                         className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5
                         hover:border-[var(--nice-blue)] transition-colors"
@@ -497,6 +520,9 @@ export default function Dashboard() {
                         <div className="flex justify-between items-center mt-4 pt-3 border-t border-[var(--layer3)]">
                             <span className="text-xs text-[var(--text-muted)]">—</span>
                             <button
+                                onClick={() => {
+                                    setShowCreateFlashcardModal(true);
+                                }}
                                 className="cursor-pointer text-sm font-bold border border-[var(--layer3)] rounded-xl px-4 py-2
                                 hover:bg-[var(--layer2)] transition-colors text-[var(--text)]"
                             >
@@ -506,7 +532,7 @@ export default function Dashboard() {
                     </div>
                 ) : (
                     <div
-                        onClick={() => router.push(`/dashboard/flashcards/${flashcards.id}`)}
+                        onClick={() => router.push(`/dashboard/Flashcards/${flashcards.id}`)}
                         className="bg-[var(--layer1)] border border-[var(--layer3)] rounded-2xl p-5 cursor-pointer
                         hover:border-[var(--nice-blue)] transition-colors"
                     >
@@ -514,8 +540,8 @@ export default function Dashboard() {
                             <div className="w-2 h-2 rounded-full bg-blue-500" />
                             <span className="text-xs font-bold text-[var(--text-muted)]">Most recent flashcard set</span>
                         </div>
-                        <p className="font-bold text-[var(--text)] mb-1 truncate">{flashcards.title || 'Untitled'}</p>
-                        <p className="text-sm text-[var(--text-muted)]">{flashcards.card_count ?? 0} cards</p>
+                        <p className="font-bold text-[var(--text)] mb-1 truncate">{flashcards?.name || 'Untitled'}</p>
+                        <p className="text-sm text-[var(--text-muted)]">{flashcards?.card_count ?? 0} cards</p>
                         <div className="flex justify-between items-center mt-4 pt-3 border-t border-[var(--layer3)]">
                             <span className="text-xs text-[var(--text-muted)]">
                                 {new Date(flashcards.updated_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
@@ -549,6 +575,13 @@ export default function Dashboard() {
                     folderName={folderName}
                     setFolderName={setFolderName}
                     handleCreateFolder={handleCreateFolder}
+                />
+            )}
+
+            {showCreateFlashcardModal && (
+                <CreateFlashcardModal
+                    setShowCreateFlashcardModal={setShowCreateFlashcardModal}
+                    handleSaveDeck={handleCreateFlashcardDeck}
                 />
             )}
         </main>
