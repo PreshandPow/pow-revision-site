@@ -15,18 +15,18 @@ import {
     Code, Link, Subscript, Superscript, Undo, Redo, Image as ImageIcon, Mic, X,
     FileText
 } from 'lucide-react';
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from '@tiptap/starter-kit'
-
+import { useEditor, EditorContent } from '@tiptap/react';
+import NotesToolbar from '@/components/notesToolbar';
+import { extensions, editorClasses } from '@/lib/tiptap/tiptapExports';
 
 // ─── MODAL IMPORTS ───────────────────────────────────────────────────────
-import UseItemOptionDropdown from '../../../../components/itemOptionsDropdown';
-import UseDeleteItemModal from '../../../../components/deleteItemModal';
-import RenameItemModal from "../../../../components/RenameItemModal";
-import MoveItemModal from "../../../../components/MoveItemModal";
+import UseItemOptionDropdown from '@/components/itemOptionsDropdown';
+import UseDeleteItemModal from '@/components/deleteItemModal';
+import RenameItemModal from "@/components/RenameItemModal";
+import MoveItemModal from "@/components/MoveItemModal";
 
 // ─── HOOK IMPORTS ───────────────────────────────────────────────────────
-import { useRenameItem, useMoveItem, useDeleteItem, useDuplicateItem } from '../../../hooks/useItemActions';
+import { useRenameItem, useMoveItem, useDeleteItem, useDuplicateItem } from '@/app/hooks/useItemActions';
 
 // ─── SUPABASE CLIENT ───────────────────────────────────────────────────────
 export function createClient() {
@@ -40,19 +40,40 @@ export function createClient() {
 function EditCardModal({ cardToEdit, cardToEditRef, onClose, onSave }) {
     const [term, setTerm] = useState(cardToEdit?.term ?? '');
     const [definition, setDefinition] = useState(cardToEdit?.definition ?? '');
+    const [activeEditorType, setActiveEditorType] = useState('term');
+
     const termEditor = useEditor({
-        extensions: [StarterKit],
-        content: cardToEdit?.term,
+        extensions,
+        content: cardToEdit.term,
         immediatelyRender: false,
+        shouldRerenderOnTransaction: true,
         onUpdate: ({ editor }) => setTerm(editor.getHTML()),
+        onFocus: () => setActiveEditorType('term'),
+        editorProps: {
+            attributes: {
+                class: editorClasses,
+            },
+        },
     });
+
     const definitionEditor = useEditor({
-        extensions: [StarterKit],
-        content: cardToEdit?.definition ?? '',
+        extensions,
+        content: cardToEdit.definition,
         immediatelyRender: false,
+        shouldRerenderOnTransaction: true,
         onUpdate: ({ editor }) => setDefinition(editor.getHTML()),
+        onFocus: () => setActiveEditorType('definition'),
+        editorProps: {
+            attributes: {
+                class: editorClasses,
+            },
+        },
     });
     const hasChanges = term !== cardToEdit?.term || definition !== cardToEdit?.definition;
+    const activeEditor = activeEditorType === 'term' ? termEditor : definitionEditor;
+    const hasContent = (htmlStr = '') => {
+        return htmlStr.replace(/<[^>]*>/g, '').trim().length > 0 || htmlStr.includes('<img');
+    };
 
     if (!cardToEdit) return null;
     return (
@@ -62,41 +83,32 @@ function EditCardModal({ cardToEdit, cardToEditRef, onClose, onSave }) {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-[var(--layer2)] border border-[var(--layer3)] rounded-2xl shadow-2xl w-full max-w-5xl relative flex flex-col p-6 min-h-[400px]"
+                className="bg-[var(--layer2)] border border-[var(--layer3)] rounded-2xl shadow-2xl w-full max-w-5xl
+                relative flex flex-col p-6 min-h-[400px]"
             >
                 <button
                     onClick={onClose}
                     className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full border
-                    border-[var(--layer3)] text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer"
+                    border-[var(--layer3)] text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)]
+                    transition-colors cursor-pointer z-61"
                 >
                     <X size={16} />
                 </button>
 
-                {/* Toolbar */}
-                <div className="flex justify-center mb-12 mt-2">
-                    <div className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[var(--layer3)] bg-[var(--layer1)]/50 text-[var(--text-muted)]">
-                        <Type size={16} className="cursor-pointer hover:text-[var(--text)]" />
-                        <div className="w-px h-4 bg-[var(--layer3)] mx-1" />
-                        <Bold size={16} className="cursor-pointer hover:text-[var(--text)]" />
-                        <Italic size={16} className="cursor-pointer hover:text-[var(--text)]" />
-                        <Underline size={16} className="cursor-pointer hover:text-[var(--text)]" />
-                        <Strikethrough size={16} className="cursor-pointer hover:text-[var(--text)]" />
-                        <PaintBucket size={16} className="cursor-pointer hover:text-[var(--text)]" />
-                        <Code size={16} className="cursor-pointer hover:text-[var(--text)]" />
-                        <Link size={16} className="cursor-pointer hover:text-[var(--text)]" />
-                        <Subscript size={16} className="cursor-pointer hover:text-[var(--text)]" />
-                        <Superscript size={16} className="cursor-pointer hover:text-[var(--text)]" />
-                        <div className="w-px h-4 bg-[var(--layer3)] mx-1" />
-                        <Undo size={16} className="cursor-pointer hover:text-[var(--text)]" />
-                        <Redo size={16} className="cursor-pointer hover:text-[var(--text)]" />
-                    </div>
+                <div className="border-b p-2 flex justify-center relative z-60">
+                    {activeEditor && (
+                        <NotesToolbar
+                            editor={activeEditor}
+                        />
+                    )}
                 </div>
 
                 {/* Inputs */}
                 <div className="flex flex-col md:flex-row gap-8 items-center flex-1">
                     <div className="flex-1 w-full flex items-center gap-4">
                         <div className="flex flex-col gap-2 shrink-0">
-                            <button className="flex items-center gap-2 px-3 py-1.5 border border-[var(--layer3)] rounded-lg text-xs font-bold
+                            <button className="flex items-center gap-2 px-3 py-1.5 border border-[var(--layer3)]
+                            rounded-lg text-xs font-bold
                                 text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer">
                                 <ImageIcon size={14} /> Image
                             </button>
@@ -134,7 +146,7 @@ function EditCardModal({ cardToEdit, cardToEditRef, onClose, onSave }) {
                 <div className="flex justify-end mt-8">
                     <button
                         onClick={() => onSave(term, definition)}
-                        disabled={!hasChanges}
+                        disabled={!hasChanges || (!hasContent(term) || !hasContent(definition))}
                         className="px-5 py-2 rounded-lg bg-[var(--nice-blue)] text-white text-sm font-semibold transition-all
                         hover:opacity-90 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:opacity-40"
                     >
@@ -161,8 +173,11 @@ export default function FlashcardStudyPage() {
     const [isFlipped, setIsFlipped] = useState(false);
 
     // Modal States
+
+    // edit cards
     const [showEditDeckModal, setShowEditDeckModal] = useState(false);
     const [cardToEdit, setCardToEdit] = useState(null);
+
     const [searchQuery, setSearchQuery] = useState('');
     const [activeDropdown, setActiveDropdown] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
