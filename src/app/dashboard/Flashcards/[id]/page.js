@@ -37,7 +37,7 @@ export function createClient() {
 }
 
 // ─── EDIT CARD MODAL UI ────────────────────────────────────────────────────
-function EditCardModal({ cardToEdit, cardToEditRef, onClose, onSave }) {
+function EditCardModal({ cardToEdit, cardToEditRef, onClose, onSave, isSaving }) {
     const [term, setTerm] = useState(cardToEdit?.term ?? '');
     const [definition, setDefinition] = useState(cardToEdit?.definition ?? '');
     const [activeEditorType, setActiveEditorType] = useState('term');
@@ -146,11 +146,11 @@ function EditCardModal({ cardToEdit, cardToEditRef, onClose, onSave }) {
                 <div className="flex justify-end mt-8">
                     <button
                         onClick={() => onSave(term, definition)}
-                        disabled={!hasChanges || (!hasContent(term) || !hasContent(definition))}
+                        disabled={!hasChanges || (!hasContent(term) || !hasContent(definition)) || isSaving}
                         className="px-5 py-2 rounded-lg bg-[var(--nice-blue)] text-white text-sm font-semibold transition-all
                         hover:opacity-90 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:opacity-40"
                     >
-                        Save
+                        {isSaving ? 'Saving Card...' : 'Save'}
                     </button>
                 </div>
             </motion.div>
@@ -334,14 +334,21 @@ export default function FlashcardStudyPage() {
 
     // ─── 10. EDIT CARD MODAL UI ────────────────────────────────────────────────
     const cardToEditRef = useRef(null);
+    const [isSaving, setIsSaving] = useState(false);
     const handleSaveCard = async (newTerm, newDefinition) => {
-        const { error } = await supabase
-            .from('flashcards')
-            .update({ term: newTerm, definition: newDefinition })
-            .eq('id', cardToEdit.id)
-        if (error) {
-            toast.error(error.message);
-            return;
+        if (isSaving) return;
+        setIsSaving(true);
+        try {
+            const { error } = await supabase
+                .from('flashcards')
+                .update({ term: newTerm, definition: newDefinition })
+                .eq('id', cardToEdit.id)
+            if (error) {
+                toast.error(error.message);
+                return;
+            }
+        } finally {
+            setIsSaving(false);
         }
         setCardToEdit(null);
         setCards(prev => prev.map(f => f.id === cardToEdit.id ? { ...f, term: newTerm, definition: newDefinition} : f));
@@ -702,6 +709,7 @@ export default function FlashcardStudyPage() {
                         cardToEditRef={cardToEditRef}
                         onClose={() => setCardToEdit(null)}
                         onSave={handleSaveCard}
+                        isSaving={isSaving}
                     />
                 )}
                 {itemToDelete && (
