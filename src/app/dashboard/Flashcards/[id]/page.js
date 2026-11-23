@@ -6,6 +6,7 @@ import {useState, useEffect, useRef} from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
+const supabase = createClient();
 import toast from 'react-hot-toast';
 import {
     ChevronRight, MoreHorizontal, Edit, Play, Brain, Settings,
@@ -75,6 +76,37 @@ function EditCardModal({ cardToEdit, cardToEditRef, onClose, onSave, isSaving })
         return htmlStr.replace(/<[^>]*>/g, '').trim().length > 0 || htmlStr.includes('<img');
     };
 
+    const handleImageUpload = async (e, editor) => {
+        const file = e.target.files?.[0];
+        try {
+            if (file && editor) {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) {
+                    toast.error('No User Logged In!')
+                    return;
+                }
+                const path = `${user.id}/${crypto.randomUUID()}-${file.name}`;
+                const { error } = await supabase.storage
+                    .from('flashcard_images')
+                    .upload(path, file)
+
+                if (error) {
+                    toast.error(error.message);
+                    return;
+                }
+
+                const { data } = supabase.storage
+                    .from('flashcard_images')
+                    .getPublicUrl(path);
+
+
+                editor.chain().focus().setImage({ src: data.publicUrl }).run();
+            }
+        } finally {
+            e.target.value = '';
+        }
+    };
+
     if (!cardToEdit) return null;
     return (
         <div className="fixed inset-0 z-[150] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
@@ -88,6 +120,7 @@ function EditCardModal({ cardToEdit, cardToEditRef, onClose, onSave, isSaving })
             >
                 <button
                     onClick={onClose}
+                    aria-label="Close"
                     className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full border
                     border-[var(--layer3)] text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)]
                     transition-colors cursor-pointer z-61"
@@ -99,6 +132,7 @@ function EditCardModal({ cardToEdit, cardToEditRef, onClose, onSave, isSaving })
                     {activeEditor && (
                         <NotesToolbar
                             editor={activeEditor}
+                            onInsertImage={handleImageUpload}
                         />
                     )}
                 </div>
@@ -107,7 +141,9 @@ function EditCardModal({ cardToEdit, cardToEditRef, onClose, onSave, isSaving })
                 <div className="flex flex-col md:flex-row gap-8 items-center flex-1">
                     <div className="flex-1 w-full flex items-center gap-4">
                         <div className="flex flex-col gap-2 shrink-0">
-                            <button className="flex items-center gap-2 px-3 py-1.5 border border-[var(--layer3)]
+                            <button
+                                onClick={(e) => handleImageUpload(e, termEditor)}
+                                className="flex items-center gap-2 px-3 py-1.5 border border-[var(--layer3)]
                             rounded-lg text-xs font-bold
                                 text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer">
                                 <ImageIcon size={14} /> Image

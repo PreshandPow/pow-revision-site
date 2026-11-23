@@ -1,5 +1,6 @@
 'use client';
-
+import { createBrowserClient } from '@supabase/ssr';
+const supabase = createClient();
 import { useState, useRef, useEffect } from 'react';
 import {
     motion,
@@ -22,12 +23,16 @@ import {
     RotateCcw,
     Layers,
 } from 'lucide-react';
-
 import { useEditor, EditorContent } from '@tiptap/react';
 import { extensions, editorClasses } from '@/lib/tiptap/tiptapExports';
 import NotesToolbar from './notesToolbar';
-
-
+import toast from 'react-hot-toast';
+function createClient() {
+    return createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    );
+}
 function FlashcardRow({
                           index,
                           card,
@@ -91,11 +96,34 @@ function FlashcardRow({
         swapCard(card.id);
     };
 
-    const handleImageUpload = (e, editor) => {
+    const handleImageUpload = async (e, editor) => {
         const file = e.target.files?.[0];
-        if (file && editor) {
-            const imageUrl = URL.createObjectURL(file);
-            editor.chain().focus().setImage({ src: imageUrl }).run();
+        try {
+            if (file && editor) {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) {
+                    toast.error('No User Logged In!')
+                    return;
+                }
+                const path = `${user.id}/${crypto.randomUUID()}-${file.name}`;
+                const { error } = await supabase.storage
+                    .from('flashcard_images')
+                    .upload(path, file)
+
+                if (error) {
+                    toast.error(error.message);
+                    return;
+                }
+
+                const { data } = supabase.storage
+                    .from('flashcard_images')
+                    .getPublicUrl(path);
+
+
+                editor.chain().focus().setImage({ src: data.publicUrl }).run();
+            }
+        } finally {
+            e.target.value = '';
         }
     };
 

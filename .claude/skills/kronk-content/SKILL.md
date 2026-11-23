@@ -21,7 +21,7 @@ Framework: **Next.js** | Content dir: `src/app/`
 ```yaml
 ---
 title: "30-60 chars"
-date: 2026-11-19
+date: 2026-11-23
 description: "120-160 chars for SEO"
 draft: false
 ---
