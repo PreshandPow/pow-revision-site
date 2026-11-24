@@ -1,12 +1,9 @@
 'use client';
-
-
 // ─── IMPORTS ───────────────────────────────────────────────────────
 import {useState, useEffect, useRef} from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
-const supabase = createClient();
 import toast from 'react-hot-toast';
 import {
     ChevronRight, MoreHorizontal, Edit, Play, Brain, Settings,
@@ -19,17 +16,15 @@ import {
 import { useEditor, EditorContent } from '@tiptap/react';
 import NotesToolbar from '@/components/notesToolbar';
 import { extensions, editorClasses } from '@/lib/tiptap/tiptapExports';
-
 // ─── MODAL IMPORTS ───────────────────────────────────────────────────────
 import UseItemOptionDropdown from '@/components/itemOptionsDropdown';
 import UseDeleteItemModal from '@/components/deleteItemModal';
 import RenameItemModal from "@/components/RenameItemModal";
 import MoveItemModal from "@/components/MoveItemModal";
-
 // ─── HOOK IMPORTS ───────────────────────────────────────────────────────
 import { useRenameItem, useMoveItem, useDeleteItem, useDuplicateItem } from '@/app/hooks/useItemActions';
-
 // ─── SUPABASE CLIENT ───────────────────────────────────────────────────────
+const supabase = createClient();
 export function createClient() {
     return createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -37,11 +32,13 @@ export function createClient() {
     );
 }
 
-// ─── EDIT CARD MODAL UI ────────────────────────────────────────────────────
+// ─── EDIT CARD MODAL UI ─a
 function EditCardModal({ cardToEdit, cardToEditRef, onClose, onSave, isSaving }) {
     const [term, setTerm] = useState(cardToEdit?.term ?? '');
     const [definition, setDefinition] = useState(cardToEdit?.definition ?? '');
     const [activeEditorType, setActiveEditorType] = useState('term');
+    const termFileInputRef = useRef(null);
+    const defFileInputRef = useRef(null);
 
     const termEditor = useEditor({
         extensions,
@@ -74,6 +71,14 @@ function EditCardModal({ cardToEdit, cardToEditRef, onClose, onSave, isSaving })
     const activeEditor = activeEditorType === 'term' ? termEditor : definitionEditor;
     const hasContent = (htmlStr = '') => {
         return htmlStr.replace(/<[^>]*>/g, '').trim().length > 0 || htmlStr.includes('<img');
+    };
+
+    const handleToolbarImageInsert = () => {
+        if (activeEditorType === 'term') {
+            termFileInputRef.current?.click();
+        } else {
+            defFileInputRef.current?.click();
+        }
     };
 
     const handleImageUpload = async (e, editor) => {
@@ -132,7 +137,7 @@ function EditCardModal({ cardToEdit, cardToEditRef, onClose, onSave, isSaving })
                     {activeEditor && (
                         <NotesToolbar
                             editor={activeEditor}
-                            onInsertImage={handleImageUpload}
+                            onInsertImage={handleToolbarImageInsert}
                         />
                     )}
                 </div>
@@ -141,11 +146,17 @@ function EditCardModal({ cardToEdit, cardToEditRef, onClose, onSave, isSaving })
                 <div className="flex flex-col md:flex-row gap-8 items-center flex-1">
                     <div className="flex-1 w-full flex items-center gap-4">
                         <div className="flex flex-col gap-2 shrink-0">
+                            <input
+                                type="file"
+                                hidden
+                                accept="image/*"
+                                ref={termFileInputRef}
+                                onChange={(e) => handleImageUpload(e, termEditor)}
+                            />
                             <button
-                                onClick={(e) => handleImageUpload(e, termEditor)}
-                                className="flex items-center gap-2 px-3 py-1.5 border border-[var(--layer3)]
-                            rounded-lg text-xs font-bold
-                                text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer">
+                                onClick={() => termFileInputRef.current?.click()}
+                                className="flex items-center gap-2 px-3 py-1.5 border border-[var(--layer3)] rounded-lg text-xs font-bold
+                                       text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer">
                                 <ImageIcon size={14} /> Image
                             </button>
                             <button className="flex items-center gap-2 px-3 py-1.5 border border-[var(--layer3)] rounded-lg text-xs font-bold
@@ -167,8 +178,17 @@ function EditCardModal({ cardToEdit, cardToEditRef, onClose, onSave, isSaving })
                             text-(--text-muted) focus-within:border-(--text) transition-colors"
                         />
                         <div className="flex flex-col gap-2 shrink-0">
-                            <button className="flex items-center gap-2 px-3 py-1.5 border border-[var(--layer3)] rounded-lg text-xs font-bold
-                                text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer">
+                            <input
+                                type="file"
+                                hidden
+                                accept="image/*"
+                                ref={defFileInputRef}
+                                onChange={(e) => handleImageUpload(e, definitionEditor)}
+                            />
+                            <button
+                                onClick={() => defFileInputRef.current?.click()}
+                                className="flex items-center gap-2 px-3 py-1.5 border border-[var(--layer3)] rounded-lg text-xs font-bold
+                                       text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer">
                                 <ImageIcon size={14} /> Image
                             </button>
                             <button className="flex items-center gap-2 px-3 py-1.5 border border-[var(--layer3)] rounded-lg text-xs font-bold
@@ -186,7 +206,7 @@ function EditCardModal({ cardToEdit, cardToEditRef, onClose, onSave, isSaving })
                         className="px-5 py-2 rounded-lg bg-[var(--nice-blue)] text-white text-sm font-semibold transition-all
                         hover:opacity-90 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:opacity-40"
                     >
-                        {isSaving ? 'Saving Card...' : 'Save'}
+                        {isSaving ? 'Saving...' : 'Save'}
                     </button>
                 </div>
             </motion.div>

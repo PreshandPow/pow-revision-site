@@ -1,6 +1,6 @@
 'use client';
+// ─── IMPORTS ───────────────────────────────────────────────────────
 import { createBrowserClient } from '@supabase/ssr';
-const supabase = createClient();
 import { useState, useRef, useEffect } from 'react';
 import {
     motion,
@@ -11,7 +11,7 @@ import {
 import {
     X,
     Check,
-    Globe,
+    ImageIcon,
     Plus,
     Search,
     Sparkles,
@@ -27,6 +27,8 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import { extensions, editorClasses } from '@/lib/tiptap/tiptapExports';
 import NotesToolbar from './notesToolbar';
 import toast from 'react-hot-toast';
+// ─── SUPABASE CLIENT ───────────────────────────────────────────────────────
+const supabase = createClient();
 function createClient() {
     return createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -209,16 +211,23 @@ function FlashcardRow({
                 )}
             </div>
 
+            {/* Inputs */}
             <div className="flex flex-col md:flex-row gap-6 p-6">
                 <div className="flex-1 flex gap-4 min-w-0">
                     <div className="flex flex-col gap-2 shrink-0">
                         <input
                             type="file"
-                            ref={termFileInputRef}
                             hidden
                             accept="image/*"
+                            ref={termFileInputRef}
                             onChange={(e) => handleImageUpload(e, termEditor)}
                         />
+                        <button
+                            onClick={() => termFileInputRef.current?.click()}
+                            className="flex items-center gap-2 px-3 py-1.5 border border-[var(--layer3)] rounded-lg text-xs font-bold
+                                       text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer">
+                            <ImageIcon size={14} /> Image
+                        </button>
                         <button
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--layer3)]
                             text-xs font-bold text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)]
@@ -259,11 +268,17 @@ function FlashcardRow({
                     <div className="flex flex-col gap-2 shrink-0">
                         <input
                             type="file"
-                            ref={defFileInputRef}
                             hidden
                             accept="image/*"
+                            ref={defFileInputRef}
                             onChange={(e) => handleImageUpload(e, defEditor)}
                         />
+                        <button
+                            onClick={() => defFileInputRef.current?.click()}
+                            className="flex items-center gap-2 px-3 py-1.5 border border-[var(--layer3)] rounded-lg text-xs font-bold
+                                       text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer">
+                            <ImageIcon size={14} /> Image
+                        </button>
                         <button
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--layer3)]
                             text-xs font-bold text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)]
