@@ -142,7 +142,7 @@ function FlashcardRow({
             className="bg-[var(--layer2)] rounded-2xl border border-[var(--layer3)] transition-all duration-300 relative z-10
                         hover:z-50 hover:border-[var(--nice-blue)]
                         focus-within:z-50 focus-within:border-[var(--nice-blue)] focus-within:ring-2
-                        focus-within:ring-[var(--nice-blue)] focus-within:scale-[1.02]
+                        focus-within:ring-[var(--nice-blue)] sm:focus-within:scale-[1.02]
                         focus-within:shadow-[0_10px_40px_rgba(var(--blue-rgb),0.15)]"
         >
             <div
@@ -212,9 +212,9 @@ function FlashcardRow({
             </div>
 
             {/* Inputs */}
-            <div className="flex flex-col md:flex-row gap-6 p-6">
-                <div className="flex-1 flex gap-4 min-w-0">
-                    <div className="flex flex-col gap-2 shrink-0">
+            <div className="flex flex-col md:flex-row gap-6 p-4 sm:p-6">
+                <div className="flex-1 flex flex-col sm:flex-row gap-3 sm:gap-4 min-w-0">
+                    <div className="flex flex-row sm:flex-col gap-2 shrink-0">
                         <input
                             type="file"
                             hidden
@@ -264,8 +264,8 @@ function FlashcardRow({
                 <div className="hidden md:block w-px bg-[var(--layer3)] self-stretch mx-2" />
                 <div className="md:hidden h-px w-full bg-[var(--layer3)] my-4" />
 
-                <div className="flex-1 flex gap-4 min-w-0">
-                    <div className="flex flex-col gap-2 shrink-0">
+                <div className="flex-1 flex flex-col sm:flex-row gap-3 sm:gap-4 min-w-0">
+                    <div className="flex flex-row sm:flex-col gap-2 shrink-0">
                         <input
                             type="file"
                             hidden
@@ -547,7 +547,7 @@ export default function CreateFlashcardModal({ setShowCreateFlashcardModal, hand
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto overscroll-contain p-6 sm:p-8 flex flex-col gap-8">
+                <div className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-8 flex flex-col gap-8">
                     <div className="flex flex-col gap-5 max-w-3xl mx-auto w-full">
                         <div>
                             <label className="block text-sm font-bold text-[var(--text)] mb-2">

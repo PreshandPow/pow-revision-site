@@ -45,7 +45,7 @@ export const FontSize = Extension.create({
     },
 });
 
-export const editorClasses = 'max-w w-full break-words whitespace-pre-wrap ' +
+export const editorClasses = 'max-w w-full break-words whitespace-pre-wrap [&_img]:max-h-48 ' +
     'outline-none border-none ring-0 focus:outline-none focus:ring-0 [&_.ProseMirror]:outline-none ' +
     '[&_.ProseMirror:focus]:outline-none [&_.ProseMirror]:border-none [&_.ProseMirror]:ring-0 ' +
     '[&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-2 [&_h1]:mb-1 ' +
@@ -55,6 +55,10 @@ export const editorClasses = 'max-w w-full break-words whitespace-pre-wrap ' +
     '[&_blockquote]:border-l-2 [&_blockquote]:border-[var(--layer3)] [&_blockquote]:pl-3 [&_blockquote]:italic ' +
     '[&_strong]:font-bold [&_em]:italic [&_s]:line-through ' +
     '[&_code]:bg-[var(--layer1)] [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm [&_code]:font-mono';
+
+// For places that show saved card HTML outside the editor (study card, card list).
+// Same image limit as the editor so images look the same everywhere.
+export const cardImageClasses = '[&_img]:max-h-48 [&_img]:rounded-lg ';
 
 export const extensions = [
     StarterKit,

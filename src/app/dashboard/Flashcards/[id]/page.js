@@ -15,7 +15,8 @@ import {
 } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import NotesToolbar from '@/components/notesToolbar';
-import { extensions, editorClasses } from '@/lib/tiptap/tiptapExports';
+import { extensions, editorClasses, cardImageClasses } from '@/lib/tiptap/tiptapExports';
+import { sanitizeHtml } from '@/lib/sanitizeHtml';
 // ─── MODAL IMPORTS ───────────────────────────────────────────────────────
 import UseItemOptionDropdown from '@/components/itemOptionsDropdown';
 import UseDeleteItemModal from '@/components/deleteItemModal';
@@ -114,14 +115,15 @@ function EditCardModal({ cardToEdit, cardToEditRef, onClose, onSave, isSaving })
 
     if (!cardToEdit) return null;
     return (
-        <div className="fixed inset-0 z-[150] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[150] bg-black/60 backdrop-blur-sm flex items-start sm:items-center justify-center
+        p-4 overflow-y-auto">
             <motion.div
                 ref={cardToEditRef}
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 className="bg-[var(--layer2)] border border-[var(--layer3)] rounded-2xl shadow-2xl w-full max-w-5xl
-                relative flex flex-col p-6 min-h-[400px]"
+                relative flex flex-col p-4 pt-14 sm:p-6 sm:min-h-[400px]"
             >
                 <button
                     onClick={onClose}
@@ -143,9 +145,9 @@ function EditCardModal({ cardToEdit, cardToEditRef, onClose, onSave, isSaving })
                 </div>
 
                 {/* Inputs */}
-                <div className="flex flex-col md:flex-row gap-8 items-center flex-1">
-                    <div className="flex-1 w-full flex items-center gap-4">
-                        <div className="flex flex-col gap-2 shrink-0">
+                <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center flex-1 mt-4 sm:mt-0">
+                    <div className="flex-1 w-full min-w-0 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                        <div className="flex flex-row sm:flex-col gap-2 shrink-0">
                             <input
                                 type="file"
                                 hidden
@@ -171,13 +173,13 @@ function EditCardModal({ cardToEdit, cardToEditRef, onClose, onSave, isSaving })
                         />
                     </div>
 
-                    <div className="flex-1 w-full flex items-center gap-4">
+                    <div className="flex-1 w-full min-w-0 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                         <EditorContent
                             editor={definitionEditor}
                             className="w-full bg-transparent border-b-2 border-(--text)/20 pb-2 text-lg
                             text-(--text-muted) focus-within:border-(--text) transition-colors"
                         />
-                        <div className="flex flex-col gap-2 shrink-0">
+                        <div className="flex flex-row sm:flex-col gap-2 shrink-0 order-first sm:order-none">
                             <input
                                 type="file"
                                 hidden
@@ -344,6 +346,7 @@ export default function FlashcardStudyPage() {
     // ─── 7. CLOSE DROPDOWN/MODALS ON OUTSIDE CLICK ─────────────────────────────
     useEffect(() => {
         const handleClickOutside = (e) => {
+            if (!e.target.isConnected) return;
             if (!e.target.closest('.dropdown-container')) setActiveDropdown(null);
             if (renameModalRef.current && !renameModalRef.current.contains(e.target)) {
                 setShowRenameItemModal(false);
@@ -434,11 +437,11 @@ export default function FlashcardStudyPage() {
                     <span className="text-[var(--text-muted)]">{deck.name || deck.title}</span>
                 </div>
 
-                <div className={`bg-[var(--layer2)] border border-[var(--layer3)] rounded-2xl p-5 flex items-center
-                justify-between shadow-sm relative dropdown-container ${activeDropdown === deck.id ? 'z-[100]' : 'z-10'}`}>
-                    <div>
-                        <h1 className="text-2xl font-bold text-[var(--text-muted)] mb-1">{deck.name || deck.title}</h1>
-                        <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-muted)]">
+                <div className={`bg-[var(--layer2)] border border-[var(--layer3)] rounded-2xl p-5 flex flex-col
+                sm:flex-row sm:items-center gap-4 justify-between shadow-sm relative dropdown-container ${activeDropdown === deck.id ? 'z-[100]' : 'z-10'}`}>
+                    <div className="min-w-0">
+                        <h1 className="text-2xl font-bold text-[var(--text-muted)] mb-1 break-words">{deck.name || deck.title}</h1>
+                        <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-[var(--text-muted)]">
                             <span>{(deck.rating || 0.0).toFixed(1)}</span>
                             <div className="flex items-center text-[var(--text-muted)]">
                                 {[...Array(5)].map((_, i) => <Star key={i} size={12} fill="currentColor" />)}
@@ -499,17 +502,17 @@ export default function FlashcardStudyPage() {
                         border-[var(--layer3)] hover:border-[var(--nice-blue)] hover:shadow-[0_0_15px_rgba(var(--blue-rgb),0.1)]
                         transition-all group cursor-pointer"
                     >
-                        <div className="flex items-center gap-3">
-                            <div className={`p-1.5 rounded-lg ${mode.bg} ${mode.color}`}>
+                        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                            <div className={`p-1.5 rounded-lg shrink-0 ${mode.bg} ${mode.color}`}>
                                 <mode.icon size={18} />
                             </div>
-                            <span className="text-sm font-bold text-[var(--text-muted)] group-hover:text-[var(--nice-blue)]
+                            <span className="text-xs sm:text-sm text-left font-bold text-[var(--text-muted)] group-hover:text-[var(--nice-blue)]
                             transition-colors">{mode.name}</span>
                         </div>
                         {mode.hasAdd ? (
-                            <span className="text-[10px] font-bold px-2 py-1 bg-[var(--layer3)] rounded-full text-[var(--text-muted)]">Add +</span>
+                            <span className="hidden sm:inline text-[10px] font-bold px-2 py-1 bg-[var(--layer3)] rounded-full text-[var(--text-muted)]">Add +</span>
                         ) : (
-                            <ArrowRightIcon size={16} className="text-[var(--text-muted)] group-hover:text-[var(--nice-blue)]
+                            <ArrowRightIcon size={16} className="hidden sm:block text-[var(--text-muted)] group-hover:text-[var(--nice-blue)]
                             group-hover:translate-x-1 transition-all" />
                         )}
                     </button>
@@ -518,7 +521,7 @@ export default function FlashcardStudyPage() {
 
             {/* Main Interactive Flashcard Viewer */}
             <div className="max-w-5xl mx-auto px-4 mt-6">
-                <div className="w-full aspect-video sm:h-[450px] relative perspective-1000" style={{ perspective: '1000px' }}>
+                <div className="w-full h-[340px] sm:h-[450px] relative perspective-1000" style={{ perspective: '1000px' }}>
                     <motion.div
                         animate={{ rotateX: isFlipped ? 180 : 0 }}
                         transition={{ duration: 0.4, type: "spring", stiffness: 260, damping: 20 }}
@@ -527,7 +530,7 @@ export default function FlashcardStudyPage() {
                         onClick={() => setIsFlipped(!isFlipped)}
                     >
                         <div className="absolute inset-0 bg-[var(--layer2)] border border-[var(--layer3)] rounded-2xl
-                        shadow-lg flex items-center justify-center p-8" style={{ backfaceVisibility: 'hidden' }}>
+                        shadow-lg flex items-center justify-center p-5 pt-14 sm:p-8" style={{ backfaceVisibility: 'hidden' }}>
 
                             <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
                                 <button className="px-3 py-1.5 rounded-full border border-[var(--layer3)] text-xs
@@ -544,21 +547,23 @@ export default function FlashcardStudyPage() {
                                     <Star size={14} /></button>
                             </div>
 
-                            <h2 className="text-3xl sm:text-4xl font-bold text-[var(--text)] text-center break-words
-                            max-w-2xl" dangerouslySetInnerHTML={{ __html: cards[currentCardIndex].term }} />
+                            <h2 className={`text-2xl sm:text-4xl font-bold text-[var(--text)] text-center break-words
+                            max-w-2xl max-h-full ${cardImageClasses} [&_img]:mx-auto`}
+                                dangerouslySetInnerHTML={{ __html: sanitizeHtml(cards[currentCardIndex].term) }} />
                         </div>
 
                         <div className="absolute inset-0 bg-[var(--layer2)] border border-[var(--nice-blue)] rounded-2xl
-                        shadow-lg flex items-center justify-center p-8" style={{ backfaceVisibility: 'hidden',
+                        shadow-lg flex items-center justify-center p-5 pt-14 sm:p-8" style={{ backfaceVisibility: 'hidden',
                             transform: 'rotateX(180deg)' }}>
-                            <h2 className="text-3xl sm:text-4xl font-bold text-[var(--text)] text-center break-words
-                            max-w-2xl" dangerouslySetInnerHTML={{ __html: cards[currentCardIndex].definition }} />
+                            <h2 className={`text-2xl sm:text-4xl font-bold text-[var(--text)] text-center break-words
+                            max-w-2xl max-h-full ${cardImageClasses} [&_img]:mx-auto`}
+                                dangerouslySetInnerHTML={{ __html: sanitizeHtml(cards[currentCardIndex].definition) }} />
                         </div>
                     </motion.div>
                 </div>
 
                 {/* Viewer Controls */}
-                <div className="flex items-center justify-between mt-4">
+                <div className="flex flex-wrap items-center justify-between gap-y-4 mt-4">
                     <div className="flex items-center gap-3">
                         <span className="text-sm font-bold text-[var(--text)]">Card Sorting</span>
                         <div className="w-10 h-6 bg-[var(--layer3)] rounded-full relative cursor-pointer">
@@ -566,7 +571,7 @@ export default function FlashcardStudyPage() {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center justify-center gap-4 order-first w-full sm:order-none sm:w-auto">
                         <button
                             onClick={() => { setIsFlipped(false); setCurrentCardIndex(prev => Math.max(0, prev - 1)); }}
                             className="w-10 h-10 rounded-full bg-[var(--layer2)] border border-[var(--layer3)] flex
@@ -663,15 +668,15 @@ export default function FlashcardStudyPage() {
                             { name: 'Almost done', count: 0, color: 'text-blue-400', bg: 'bg-blue-500/10', bar: 'bg-transparent', circle: 'border-blue-400 text-blue-400' },
                             { name: 'Mastered', count: 0, color: 'text-green-400', bg: 'bg-green-500/10', bar: 'bg-transparent', circle: 'border-green-400 text-green-400' },
                         ].map((stat, i) => (
-                            <div key={i} className="flex items-center gap-4">
-                                <div className={`flex-1 flex items-center justify-between px-4 py-3 rounded-xl ${stat.bar} ${stat.count === 0 && 'border border-[var(--layer3)]'}`}>
+                            <div key={i} className="flex items-center gap-2 sm:gap-4">
+                                <div className={`flex-1 min-w-0 flex items-center justify-between px-3 sm:px-4 py-3 rounded-xl ${stat.bar} ${stat.count === 0 && 'border border-[var(--layer3)]'}`}>
                                     <div className="flex items-center gap-3">
                                         <div className={`w-4 h-4 rounded-full border-2 ${stat.circle}`} />
                                         <span className={`font-bold ${stat.color}`}>{stat.name}</span>
                                     </div>
                                     <span className="font-bold text-[var(--text)]">{stat.count}</span>
                                 </div>
-                                <button className="px-5 py-3 rounded-xl border border-[var(--layer3)] text-sm font-bold text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer">
+                                <button className="px-3 sm:px-5 py-3 rounded-xl border border-[var(--layer3)] text-sm font-bold text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer">
                                     Study
                                 </button>
                             </div>
@@ -698,7 +703,7 @@ export default function FlashcardStudyPage() {
                     </div>
                 </div>
 
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
                     <button className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[var(--text)] text-[var(--layer1)]
                     font-bold text-sm hover:opacity-90 transition-opacity cursor-pointer">
                         View all ({cards.length})
@@ -743,12 +748,12 @@ export default function FlashcardStudyPage() {
                             <div className="flex flex-col md:flex-row gap-6">
                                 {/* Using dangerouslySetInnerHTML allows the rich-text Tiptap tags (bold, italic, etc) to render correctly! */}
                                 <div
-                                    className="flex-1 text-[var(--text)] font-bold text-lg md:border-r border-[var(--layer3)] md:pr-6 whitespace-pre-wrap"
-                                    dangerouslySetInnerHTML={{ __html: card.term }}
+                                    className={`flex-1 min-w-0 break-words text-[var(--text)] font-bold text-lg md:border-r border-[var(--layer3)] md:pr-6 whitespace-pre-wrap ${cardImageClasses}`}
+                                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(card.term) }}
                                 />
                                 <div
-                                    className="flex-1 text-[var(--text)] font-bold text-lg whitespace-pre-wrap"
-                                    dangerouslySetInnerHTML={{ __html: card.definition }}
+                                    className={`flex-1 min-w-0 break-words text-[var(--text)] font-bold text-lg whitespace-pre-wrap ${cardImageClasses}`}
+                                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(card.definition) }}
                                 />
                             </div>
                         </div>
