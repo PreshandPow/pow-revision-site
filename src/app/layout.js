@@ -60,6 +60,15 @@ export default function RootLayout({ children }) {
                     <Toaster
                         position="top-center"
                         containerStyle={{ zIndex: 99999 }}
+                        toastOptions={{
+                            style: {
+                                border: '1px solid var(--nice-blue)',
+                                padding: '16px',
+                                color: 'var(--text)',
+                                background: 'var(--layer2)',
+                            },
+                            iconTheme: { primary: 'var(--nice-blue)', secondary: '#FFFAEE' },
+                        }}
                     />
                 </ThemeProvider>
             </body>

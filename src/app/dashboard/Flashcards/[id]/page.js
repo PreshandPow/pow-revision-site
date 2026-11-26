@@ -10,7 +10,7 @@ import {
     Gamepad2, Headphones, Shuffle, Search, Star, Volume2,
     ChevronLeft, ChevronRight as ArrowRightIcon, Maximize,
     Type, Bold, Italic, Underline, Strikethrough, PaintBucket,
-    Code, Link, Subscript, Superscript, Undo, Redo, Image as ImageIcon, Mic, X,
+    Code, Link, Subscript, Superscript, Undo, Redo, X,
     FileText
 } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
@@ -146,26 +146,15 @@ function EditCardModal({ cardToEdit, cardToEditRef, onClose, onSave, isSaving })
 
                 {/* Inputs */}
                 <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center flex-1 mt-4 sm:mt-0">
-                    <div className="flex-1 w-full min-w-0 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-                        <div className="flex flex-row sm:flex-col gap-2 shrink-0">
-                            <input
-                                type="file"
-                                hidden
-                                accept="image/*"
-                                ref={termFileInputRef}
-                                onChange={(e) => handleImageUpload(e, termEditor)}
-                            />
-                            <button
-                                onClick={() => termFileInputRef.current?.click()}
-                                className="flex items-center gap-2 px-3 py-1.5 border border-[var(--layer3)] rounded-lg text-xs font-bold
-                                       text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer">
-                                <ImageIcon size={14} /> Image
-                            </button>
-                            <button className="flex items-center gap-2 px-3 py-1.5 border border-[var(--layer3)] rounded-lg text-xs font-bold
-                                text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer">
-                                <Mic size={14} /> Record
-                            </button>
-                        </div>
+                    <div className="flex-1 w-full min-w-0">
+                        {/* Hidden: opened by the toolbar's Image button */}
+                        <input
+                            type="file"
+                            hidden
+                            accept="image/*"
+                            ref={termFileInputRef}
+                            onChange={(e) => handleImageUpload(e, termEditor)}
+                        />
                         <EditorContent
                             editor={termEditor}
                             className="w-full bg-transparent border-b-2 border-(--text)/20 pb-2 text-lg
@@ -173,31 +162,20 @@ function EditCardModal({ cardToEdit, cardToEditRef, onClose, onSave, isSaving })
                         />
                     </div>
 
-                    <div className="flex-1 w-full min-w-0 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                    <div className="flex-1 w-full min-w-0">
+                        {/* Hidden: opened by the toolbar's Image button */}
+                        <input
+                            type="file"
+                            hidden
+                            accept="image/*"
+                            ref={defFileInputRef}
+                            onChange={(e) => handleImageUpload(e, definitionEditor)}
+                        />
                         <EditorContent
                             editor={definitionEditor}
                             className="w-full bg-transparent border-b-2 border-(--text)/20 pb-2 text-lg
                             text-(--text-muted) focus-within:border-(--text) transition-colors"
                         />
-                        <div className="flex flex-row sm:flex-col gap-2 shrink-0 order-first sm:order-none">
-                            <input
-                                type="file"
-                                hidden
-                                accept="image/*"
-                                ref={defFileInputRef}
-                                onChange={(e) => handleImageUpload(e, definitionEditor)}
-                            />
-                            <button
-                                onClick={() => defFileInputRef.current?.click()}
-                                className="flex items-center gap-2 px-3 py-1.5 border border-[var(--layer3)] rounded-lg text-xs font-bold
-                                       text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer">
-                                <ImageIcon size={14} /> Image
-                            </button>
-                            <button className="flex items-center gap-2 px-3 py-1.5 border border-[var(--layer3)] rounded-lg text-xs font-bold
-                                text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer">
-                                <Mic size={14} /> Record
-                            </button>
-                        </div>
                     </div>
                 </div>
 
@@ -240,16 +218,6 @@ export default function FlashcardStudyPage() {
     const [activeDropdown, setActiveDropdown] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
 
-    const toastStyle = {
-        style: {
-            border: '1px solid var(--nice-blue)',
-            padding: '16px',
-            color: 'var(--text)',
-            background: 'var(--layer2)',
-        },
-        iconTheme: { primary: 'var(--nice-blue)', secondary: '#FFFAEE' },
-    };
-
     // ─── 3. FETCH DATA ─────────────────────────────────────────────────────────
     useEffect(() => {
         if (!id) return;
@@ -275,7 +243,7 @@ export default function FlashcardStudyPage() {
 
             } catch (error) {
                 console.error("Error fetching flashcard data:", error);
-                toast.error("Could not load flashcards.", toastStyle);
+                toast.error("Could not load flashcards.");
 
                 router.replace('/dashboard/Flashcards');
             }
@@ -283,6 +251,14 @@ export default function FlashcardStudyPage() {
 
         fetchDeckData();
     }, [id, router]);
+
+    useEffect(() => {
+        if (!cardToEdit) return;
+        toast.success('yopoooo');
+        const previous = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => { document.body.style.overflow = previous; };
+    }, [cardToEdit]);
 
     // ─── 4. KEYBOARD NAVIGATION LOGIC ──────────────────────────────────────────
     useEffect(() => {
@@ -331,14 +307,14 @@ export default function FlashcardStudyPage() {
     const { moveItem, isMoving } = useMoveItem();
 
     const handleDeckMove = async (destinationId) => {
-        const loadingToast = toast.loading('Moving flashcard deck...', toastStyle);
+        const loadingToast = toast.loading('Moving flashcard deck...');
         const success = await moveItem('flashcard', selectedItem.id, destinationId);
         toast.dismiss(loadingToast);
 
         if (success) {
             setShowMoveItemModal(false);
             setDeck(prev => ({ ...prev, folder_id: destinationId === 'root' ? null : destinationId }));
-            toast.success('Deck moved successfully', toastStyle);
+            toast.success('Deck moved successfully');
             setSelectedItem(null);
         }
     };
@@ -369,7 +345,7 @@ export default function FlashcardStudyPage() {
     const { deleteItem, issDeleting } = useDeleteItem();
 
     const handleDeleteConfirm = async () => {
-        const loadingToast = toast.loading('Deleting flashcard deck...', toastStyle);
+        const loadingToast = toast.loading('Deleting flashcard deck...');
         const success = await deleteItem('flashcard', itemToDelete.id);
         toast.dismiss(loadingToast);
 
@@ -381,13 +357,13 @@ export default function FlashcardStudyPage() {
     // ─── 9. DUPLICATE DECK FEATURE ────────────────────────────────────────────────
     const { duplicateItem, isDuplicating } = useDuplicateItem();
     const handleDuplicateDeck = async (deck) => {
-        const loadingToast = toast.loading('Duplicating flashcard deck...', toastStyle);
+        const loadingToast = toast.loading('Duplicating flashcard deck...');
         const newNote = await duplicateItem('flashcard', deck);
         toast.dismiss(loadingToast);
 
         if (newNote) {
             setDeck(prev => [newNote, ...prev]);
-            toast.success('Note duplicated', toastStyle);
+            toast.success('Note duplicated');
         }
     };
 
@@ -629,7 +605,7 @@ export default function FlashcardStudyPage() {
                         </button>
                     </div>
 
-                    <div className="overflow-x-auto">
+                    <div className="overflow-x-auto pb-1">
                         <table className="w-full text-left text-sm font-bold text-[var(--text)] min-w-[600px]">
                             <thead>
                             <tr className="text-[var(--text-muted)] border-b border-[var(--layer3)]">

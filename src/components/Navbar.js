@@ -26,20 +26,6 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
 
     const { theme, setTheme } = useTheme();
 
-    const toastStyle = {
-        style: {
-            border: '1px solid var(--nice-blue)',
-            padding: '16px',
-            color: 'var(--text)',
-            background: 'var(--layer2)',
-            zIndex: '9999',
-        },
-        iconTheme: {
-            primary: 'var(--nice-blue)',
-            secondary: '#FFFAEE',
-        },
-    };
-
     // ─── 3. ACTION HANDLERS ─────────────────────────────────────────────────────
     const handleSignOut = async () => {
         await supabase.auth.signOut();
@@ -70,7 +56,7 @@ export default function Navbar({ setSearchInput, isNavOpen, setIsNavOpen, setAut
 
                 if (error) {
                     console.error(error);
-                    toast.error(error.message, toastStyle);
+                    toast.error(error.message);
                 }
                 setUserProfile(profile);
             } else {

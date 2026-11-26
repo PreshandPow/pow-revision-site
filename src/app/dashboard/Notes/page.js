@@ -32,19 +32,6 @@ export default function NotesPage() {
 
     const [selectedItem, setSelectedItem] = useState(null);
 
-    const toastStyle = {
-        style: {
-            border: '1px solid var(--nice-blue)',
-            padding: '16px',
-            color: 'var(--text)',
-            background: 'var(--layer2)',
-        },
-        iconTheme: {
-            primary: 'var(--nice-blue)',
-            secondary: '#FFFAEE',
-        },
-    };
-
     // ─── 2. CREATE NOTE FEATURE ───────────────────────────────────────────────────
     const handleCreateNote = async () => {
         const { data: { user } } = await supabase.auth.getUser();
@@ -55,7 +42,7 @@ export default function NotesPage() {
             .select()
             .single();
 
-        if (error) { toast.error('Could not create note', toastStyle); return; }
+        if (error) { toast.error('Could not create note'); return; }
         router.push(`/dashboard/Notes/${note.id}`);
     };
 
@@ -86,14 +73,14 @@ export default function NotesPage() {
     const { moveItem, isMoving } = useMoveItem();
 
     const handleMove = async (destinationId) => {
-        const loadingToast = toast.loading('Moving note...', toastStyle);
+        const loadingToast = toast.loading('Moving note...');
         const success = await moveItem('note', selectedItem.id, destinationId);
         toast.dismiss(loadingToast);
 
         if (success) {
             setShowMoveItemModal(false);
             setFolders(prev => prev.filter(n => n.id !== selectedItem.id));
-            toast.success('Folder moved successfully', toastStyle);
+            toast.success('Folder moved successfully');
             setSelectedItem(false);
         }
     }
@@ -105,7 +92,7 @@ export default function NotesPage() {
     const { deleteItem, issDeleting } = useDeleteItem();
 
     const handleDeleteConfirm = async () => {
-        const loadingToast = toast.loading('Deleting note...', toastStyle);
+        const loadingToast = toast.loading('Deleting note...');
         const success = await deleteItem('note', itemToDelete.id);
         toast.dismiss(loadingToast);
 
@@ -119,13 +106,13 @@ export default function NotesPage() {
     const { duplicateItem, isDuplicating } = useDuplicateItem();
 
     const handleDuplicateNote = async (note) => {
-        const loadingToast = toast.loading('Duplicating note...', toastStyle);
+        const loadingToast = toast.loading('Duplicating note...');
         const newNote = await duplicateItem('note', note);
         toast.dismiss(loadingToast);
 
         if (newNote) {
             setNotes(prev => [newNote, ...prev]);
-            toast.success('Note duplicated', toastStyle);
+            toast.success('Note duplicated');
         }
     };
 
@@ -142,13 +129,13 @@ export default function NotesPage() {
             ]);
 
             if (notesResponse.error) {
-                toast.error(notesResponse.error.message, toastStyle);
+                toast.error(notesResponse.error.message);
             } else {
                 setNotes(notesResponse.data || []);
             }
 
             if (foldersResponse.error) {
-                toast.error(foldersResponse.error.message, toastStyle);
+                toast.error(foldersResponse.error.message);
             } else {
                 setFolders(foldersResponse.data || []);
             }

@@ -31,24 +31,10 @@ export default function AuthPage( { authMode, setAuthMode}) {
     const [month, setMonth] = useState("");
     const [year, setYear] = useState("");
 
-    const toastStyle = {
-        style: {
-            border: '1px solid var(--nice-blue)',
-            padding: '16px',
-            color: 'var(--text)',
-            background: 'var(--layer2)',
-            zIndex: '9999',
-        },
-        iconTheme: {
-            primary: 'var(--nice-blue)',
-            secondary: '#FFFAEE',
-        },
-    };
-
     // ─── 2. UTILITIES & CONFIG ────────────────────────────────────────────────────
     const handleError = (error) => {
         console.error('Auth Error:', error);
-        toast.error(error.message, toastStyle);
+        toast.error(error.message);
     };
 
     // ─── 3. LIFECYCLE EFFECTS ─────────────────────────────────────────────────────
@@ -81,7 +67,7 @@ export default function AuthPage( { authMode, setAuthMode}) {
         const allFieldsFilled = email && password && name && day && month && year;
         if (!allFieldsFilled) {
             setPopup(true);
-            toast.error("Please fill in all fields", toastStyle);
+            toast.error("Please fill in all fields");
             return;
         }
 
@@ -91,7 +77,7 @@ export default function AuthPage( { authMode, setAuthMode}) {
         ageLimitDate.setFullYear(ageLimitDate.getFullYear() - 13);
 
         if (birthDate > ageLimitDate) {
-            toast.error("You must be at least 13 years old to join POW.", toastStyle);
+            toast.error("You must be at least 13 years old to join POW.");
             return;
         }
 
@@ -111,7 +97,7 @@ export default function AuthPage( { authMode, setAuthMode}) {
 
         if (signUpError) {
             console.error("Full error:", JSON.stringify(signUpError, null, 2));
-            toast.error(signUpError.message, toastStyle);
+            toast.error(signUpError.message);
             return;
         }
 
@@ -129,7 +115,7 @@ export default function AuthPage( { authMode, setAuthMode}) {
                 console.error("Profile sync error:", profileError.message);
             }
 
-            toast.success('Account created! Please check your email to verify.', toastStyle);
+            toast.success('Account created! Please check your email to verify.');
         }
     };
 
@@ -139,11 +125,11 @@ export default function AuthPage( { authMode, setAuthMode}) {
 
         if (signInError) {
             handleError(signInError);
-            toast.success('Could not login. Incorrect email or password.', toastStyle);
+            toast.success('Could not login. Incorrect email or password.');
         } else {
             const { data: sessionData } = await supabase.auth.getSession();
             if (sessionData.session) {
-                toast.success('Successfully logged in!', toastStyle);
+                toast.success('Successfully logged in!');
                 router.push('/dashboard');
                 router.refresh();
             }
@@ -161,9 +147,9 @@ export default function AuthPage( { authMode, setAuthMode}) {
         });
         if (error) {
             console.error("Error sending reset email:", error.message);
-            toast.error(error.message, toastStyle);
+            toast.error(error.message);
         } else {
-            toast.success('Password reset link sent to email!', toastStyle);
+            toast.success('Password reset link sent to email!');
             setAuthMode('login');
         }
     };

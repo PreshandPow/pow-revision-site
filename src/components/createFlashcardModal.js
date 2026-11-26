@@ -11,7 +11,6 @@ import {
 import {
     X,
     Check,
-    ImageIcon,
     Plus,
     Search,
     Sparkles,
@@ -19,7 +18,6 @@ import {
     ArrowLeftRight,
     GripVertical,
     Trash2,
-    Mic,
     RotateCcw,
     Layers,
 } from 'lucide-react';
@@ -213,29 +211,15 @@ function FlashcardRow({
 
             {/* Inputs */}
             <div className="flex flex-col md:flex-row gap-6 p-4 sm:p-6">
-                <div className="flex-1 flex flex-col sm:flex-row gap-3 sm:gap-4 min-w-0">
-                    <div className="flex flex-row sm:flex-col gap-2 shrink-0">
-                        <input
-                            type="file"
-                            hidden
-                            accept="image/*"
-                            ref={termFileInputRef}
-                            onChange={(e) => handleImageUpload(e, termEditor)}
-                        />
-                        <button
-                            onClick={() => termFileInputRef.current?.click()}
-                            className="flex items-center gap-2 px-3 py-1.5 border border-[var(--layer3)] rounded-lg text-xs font-bold
-                                       text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer">
-                            <ImageIcon size={14} /> Image
-                        </button>
-                        <button
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--layer3)]
-                            text-xs font-bold text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)]
-                            transition-colors cursor-pointer"
-                        >
-                            <Mic size={14} /> Record
-                        </button>
-                    </div>
+                <div className="flex-1 flex min-w-0">
+                    {/* Hidden: opened by the toolbar's Image button */}
+                    <input
+                        type="file"
+                        hidden
+                        accept="image/*"
+                        ref={termFileInputRef}
+                        onChange={(e) => handleImageUpload(e, termEditor)}
+                    />
 
                     <div
                         className="flex-1 min-w-0 relative cursor-text group"
@@ -264,29 +248,15 @@ function FlashcardRow({
                 <div className="hidden md:block w-px bg-[var(--layer3)] self-stretch mx-2" />
                 <div className="md:hidden h-px w-full bg-[var(--layer3)] my-4" />
 
-                <div className="flex-1 flex flex-col sm:flex-row gap-3 sm:gap-4 min-w-0">
-                    <div className="flex flex-row sm:flex-col gap-2 shrink-0">
-                        <input
-                            type="file"
-                            hidden
-                            accept="image/*"
-                            ref={defFileInputRef}
-                            onChange={(e) => handleImageUpload(e, defEditor)}
-                        />
-                        <button
-                            onClick={() => defFileInputRef.current?.click()}
-                            className="flex items-center gap-2 px-3 py-1.5 border border-[var(--layer3)] rounded-lg text-xs font-bold
-                                       text-[var(--text)] hover:bg-[var(--layer3)] transition-colors cursor-pointer">
-                            <ImageIcon size={14} /> Image
-                        </button>
-                        <button
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--layer3)]
-                            text-xs font-bold text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--layer3)]
-                            transition-colors cursor-pointer"
-                        >
-                            <Mic size={14} /> Record
-                        </button>
-                    </div>
+                <div className="flex-1 flex min-w-0">
+                    {/* Hidden: opened by the toolbar's Image button */}
+                    <input
+                        type="file"
+                        hidden
+                        accept="image/*"
+                        ref={defFileInputRef}
+                        onChange={(e) => handleImageUpload(e, defEditor)}
+                    />
 
                     <div
                         className="flex-1 min-w-0 relative cursor-text group"

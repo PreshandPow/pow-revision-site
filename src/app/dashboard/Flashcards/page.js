@@ -51,16 +51,6 @@ export default function FlashcardsMainPage() {
     const moveModalRef = useRef(null);
     const deleteModalRef = useRef(null);
 
-    const toastStyle = {
-        style: {
-            border: '1px solid var(--nice-blue)',
-            padding: '16px',
-            color: 'var(--text)',
-            background: 'var(--layer2)',
-        },
-        iconTheme: { primary: 'var(--nice-blue)', secondary: '#FFFAEE' },
-    };
-
     // ─── 2. ACTION HOOKS ────────────────────────────────────────────────────────
     const { rename } = useRenameItem();
     const { moveItem } = useMoveItem();
@@ -87,13 +77,13 @@ export default function FlashcardsMainPage() {
             ]);
 
             if (flashcardDecksResponse.error) {
-                toast.error(flashcardDecksResponse.error.message, toastStyle);
+                toast.error(flashcardDecksResponse.error.message);
             } else {
                 setFlashcards(flashcardDecksResponse.data || []);
             }
 
             if (foldersResponse.error) {
-                toast.error(foldersResponse.error.message, toastStyle);
+                toast.error(foldersResponse.error.message);
             } else {
                 setFolders(foldersResponse.data || []);
             }
@@ -124,19 +114,19 @@ export default function FlashcardsMainPage() {
     };
 
     const handleMoveConfirm = async (destinationId) => {
-        const loadingToast = toast.loading(`Moving deck...`, toastStyle);
+        const loadingToast = toast.loading(`Moving deck...`);
         const success = await moveItem('flashcard', selectedItem.id, destinationId);
         toast.dismiss(loadingToast);
 
         if (success) {
             setShowMoveItemModal(false);
-            toast.success(`Deck moved successfully`, toastStyle);
+            toast.success(`Deck moved successfully`);
             setSelectedItem(null);
         }
     };
 
     const handleDeleteConfirm = async () => {
-        const loadingToast = toast.loading(`Deleting deck...`, toastStyle);
+        const loadingToast = toast.loading(`Deleting deck...`);
         const success = await deleteItem('flashcard', itemToDelete.id);
         toast.dismiss(loadingToast);
 
@@ -147,13 +137,13 @@ export default function FlashcardsMainPage() {
     };
 
     const handleDuplicateConfirm = async (itemToDuplicate) => {
-        const loadingToast = toast.loading(`Duplicating deck...`, toastStyle);
+        const loadingToast = toast.loading(`Duplicating deck...`);
         const newItem = await duplicateItem('flashcard', itemToDuplicate);
         toast.dismiss(loadingToast);
 
         if (newItem) {
             setFlashcards(prev => [newItem, ...prev]);
-            toast.success(`Deck duplicated`, toastStyle);
+            toast.success(`Deck duplicated`);
         }
     };
 

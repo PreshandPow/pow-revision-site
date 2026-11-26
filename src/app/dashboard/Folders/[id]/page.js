@@ -66,16 +66,6 @@ export default function FolderContentPage() {
     const deleteModalRef = useRef(null);
     const createFolderModalRef = useRef(null);
 
-    const toastStyle = {
-        style: {
-            border: '1px solid var(--nice-blue)',
-            padding: '16px',
-            color: 'var(--text)',
-            background: 'var(--layer2)',
-        },
-        iconTheme: { primary: 'var(--nice-blue)', secondary: '#FFFAEE' },
-    };
-
     // ─── 3. ACTION HOOKS ────────────────────────────────────────────────────────
     const { rename, isRenaming } = useRenameItem();
     const { moveItem, isMoving } = useMoveItem();
@@ -92,7 +82,7 @@ export default function FolderContentPage() {
                 .single();
 
             if (folderError) {
-                toast.error('Could not load folder', toastStyle);
+                toast.error('Could not load folder');
                 router.replace('/dashboard/Folders');
                 return;
             }
@@ -143,7 +133,7 @@ export default function FolderContentPage() {
                 .eq('folder_id', id)
                 .order('updated_at', { ascending: false });
 
-            if (error) toast.error('Error fetching flashcards', toastStyle);
+            if (error) toast.error('Error fetching flashcards');
             else setFlashcards(data || []);
 
             setLoading(false);
@@ -202,7 +192,7 @@ export default function FolderContentPage() {
     const handleMoveConfirm = async (destinationId) => {
         const itemType = getItemType(selectedItem);
 
-        const loadingToast = toast.loading(`Moving ${itemType}...`, toastStyle);
+        const loadingToast = toast.loading(`Moving ${itemType}...`);
         const success = await moveItem(itemType, selectedItem.id, destinationId);
         toast.dismiss(loadingToast);
 
@@ -215,7 +205,7 @@ export default function FolderContentPage() {
             } else {
                 setFolders(prev => prev.filter(f => f.id !== selectedItem.id));
             }
-            toast.success(`${itemType} moved successfully`, toastStyle);
+            toast.success(`${itemType} moved successfully`);
             setSelectedItem(null);
         }
     };
@@ -223,7 +213,7 @@ export default function FolderContentPage() {
     const handleDeleteConfirm = async () => {
         const itemType = getItemType(itemToDelete);
 
-        const loadingToast = toast.loading(`Deleting ${itemType}...`, toastStyle);
+        const loadingToast = toast.loading(`Deleting ${itemType}...`);
         const success = await deleteItem(itemType, itemToDelete.id);
         toast.dismiss(loadingToast);
 
@@ -242,7 +232,7 @@ export default function FolderContentPage() {
     const handleDuplicateConfirm = async (itemToDuplicate) => {
         const itemType = getItemType(itemToDuplicate);
 
-        const loadingToast = toast.loading(`Duplicating ${itemType}...`, toastStyle);
+        const loadingToast = toast.loading(`Duplicating ${itemType}...`);
         const newItem = await duplicateItem(itemType, itemToDuplicate);
         toast.dismiss(loadingToast);
 
@@ -254,7 +244,7 @@ export default function FolderContentPage() {
             } else {
                 setFolders(prev => [newItem, ...prev]);
             }
-            toast.success(`${itemType} duplicated`, toastStyle);
+            toast.success(`${itemType} duplicated`);
         }
     };
 
@@ -276,7 +266,7 @@ export default function FolderContentPage() {
     };
 
     const handleCreateFlashcardInFolder = async (deckData) => {
-        const loadingToast = toast.loading('Creating deck...', toastStyle);
+        const loadingToast = toast.loading('Creating deck...');
         const newDeck = await createFlashcardAction(deckData, id, router);
         toast.dismiss(loadingToast);
 

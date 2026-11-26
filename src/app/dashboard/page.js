@@ -40,20 +40,6 @@ export default function Dashboard() {
     const supabase = createClient();
     const [loading, setLoading] = useState(true);
 
-    const toastStyle = {
-        style: {
-            border: '1px solid var(--nice-blue)',
-            padding: '16px',
-            color: 'var(--text)',
-            background: 'var(--layer2)',
-            zIndex: '9999',
-        },
-        iconTheme: {
-            primary: 'var(--nice-blue)',
-            secondary: '#FFFAEE',
-        },
-    };
-
     const stripHtml = (html) => {
         if (!html) return "";
         return html.replace(/<[^>]*>?/gm, '');
@@ -123,7 +109,7 @@ export default function Dashboard() {
 
                 if (error) {
                     console.error(error);
-                    toast.error(error.message, toastStyle);
+                    toast.error(error.message);
                 }
                 setUserProfile(profile);
             } else {
@@ -180,13 +166,13 @@ export default function Dashboard() {
 
         if (needsDate) {
             if (!day || !month || !year) {
-                toast.error('Please fill in your date of birth', toastStyle);
+                toast.error('Please fill in your date of birth');
                 return;
             }
 
             const calculatedAge = calculateAge(day, month, year);
             if (calculatedAge < 13) {
-                toast.error("You must be at least 13 years old to use POW.", toastStyle);
+                toast.error("You must be at least 13 years old to use POW.");
                 return;
             }
 
@@ -199,7 +185,7 @@ export default function Dashboard() {
         }
 
         if (Object.keys(profileUpdates).length === 0) {
-            toast.error('Nothing to update', toastStyle);
+            toast.error('Nothing to update');
             return;
         }
 
@@ -210,11 +196,11 @@ export default function Dashboard() {
 
         if (error) {
             console.error("Supabase update error:", error.message);
-            toast.error('Error updating profile.', toastStyle);
+            toast.error('Error updating profile.');
         } else {
             if (needsDate) setAge(calculateAge(day, month, year));
             if (needsAvatar) setAvatarUrl(avatarUrl);
-            toast.success('Profile completed!', toastStyle);
+            toast.success('Profile completed!');
             setCompletedProfile(true);
         }
     };
@@ -228,7 +214,7 @@ export default function Dashboard() {
             .select()
             .single();
 
-        if (error) { toast.error('Could not create note', toastStyle); return; }
+        if (error) { toast.error('Could not create note'); return; }
         router.push(`/dashboard/Notes/${note.id}`);
     };
 
@@ -241,7 +227,7 @@ export default function Dashboard() {
             .select()
             .single();
 
-        if (error) { toast.error('Could not create folder', toastStyle); return; }
+        if (error) { toast.error('Could not create folder'); return; }
         router.push(`/dashboard/Folders/${folder.id}`);
         setShowCreateFolderModal(false);
     };

@@ -63,16 +63,6 @@ export default function MaterialsPage() {
     const deleteModalRef = useRef(null);
     const createFolderModalRef = useRef(null);
 
-    const toastStyle = {
-        style: {
-            border: '1px solid var(--nice-blue)',
-            padding: '16px',
-            color: 'var(--text)',
-            background: 'var(--layer2)',
-        },
-        iconTheme: { primary: 'var(--nice-blue)', secondary: '#FFFAEE' },
-    };
-
     // ─── 3. ACTION HOOKS ────────────────────────────────────────────────────────
     const { rename } = useRenameItem();
     const { moveItem } = useMoveItem();
@@ -108,13 +98,13 @@ export default function MaterialsPage() {
                     .order('updated_at', { ascending: false })
             ]);
 
-            if (foldersRes.error) toast.error('Error fetching folders', toastStyle);
+            if (foldersRes.error) toast.error('Error fetching folders');
             else setFolders(foldersRes.data || []);
 
-            if (notesRes.error) toast.error('Error fetching notes', toastStyle);
+            if (notesRes.error) toast.error('Error fetching notes');
             else setNotes(notesRes.data || []);
 
-            if (flashcardsRes.error) toast.error('Error fetching flashcards', toastStyle);
+            if (flashcardsRes.error) toast.error('Error fetching flashcards');
             else setFlashcards(flashcardsRes.data || []);
 
             setLoading(false);
@@ -179,7 +169,7 @@ export default function MaterialsPage() {
 
     const handleMoveConfirm = async (destinationId) => {
         const itemType = getItemType(selectedItem);
-        const loadingToast = toast.loading(`Moving ${itemType}...`, toastStyle);
+        const loadingToast = toast.loading(`Moving ${itemType}...`);
         const success = await moveItem(itemType, selectedItem.id, destinationId);
         toast.dismiss(loadingToast);
 
@@ -191,14 +181,14 @@ export default function MaterialsPage() {
             else if (itemType === 'flashcard') setFlashcards(updateParentId);
             else setFolders(updateParentId);
 
-            toast.success(`${itemType} moved successfully`, toastStyle);
+            toast.success(`${itemType} moved successfully`);
             setSelectedItem(null);
         }
     };
 
     const handleDeleteConfirm = async () => {
         const itemType = getItemType(itemToDelete);
-        const loadingToast = toast.loading(`Deleting ${itemType}...`, toastStyle);
+        const loadingToast = toast.loading(`Deleting ${itemType}...`);
         const success = await deleteItem(itemType, itemToDelete.id);
         toast.dismiss(loadingToast);
 
@@ -213,7 +203,7 @@ export default function MaterialsPage() {
 
     const handleDuplicateConfirm = async (itemToDuplicate) => {
         const itemType = getItemType(itemToDuplicate);
-        const loadingToast = toast.loading(`Duplicating ${itemType}...`, toastStyle);
+        const loadingToast = toast.loading(`Duplicating ${itemType}...`);
         const newItem = await duplicateItem(itemType, itemToDuplicate);
         toast.dismiss(loadingToast);
 
@@ -222,7 +212,7 @@ export default function MaterialsPage() {
             else if (itemType === 'flashcard') setFlashcards(prev => [newItem, ...prev]);
             else setFolders(prev => [newItem, ...prev]);
 
-            toast.success(`${itemType} duplicated`, toastStyle);
+            toast.success(`${itemType} duplicated`);
         }
     };
 
@@ -240,7 +230,7 @@ export default function MaterialsPage() {
     };
 
     const handleCreateFlashcardInRoot = async (deckData) => {
-        const loadingToast = toast.loading('Creating deck...', toastStyle);
+        const loadingToast = toast.loading('Creating deck...');
         const newDeck = await createFlashcardAction(deckData, null, router);
         toast.dismiss(loadingToast);
 

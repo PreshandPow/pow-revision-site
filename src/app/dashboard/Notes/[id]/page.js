@@ -35,19 +35,6 @@ export default function NotePage() {
     const supabase = createClient();
     const [loading, setLoading] = useState(true);
 
-    const toastStyle = {
-        style: {
-            border: '1px solid var(--nice-blue)',
-            padding: '16px',
-            color: 'var(--text)',
-            background: 'var(--layer2)',
-        },
-        iconTheme: {
-            primary: 'var(--nice-blue)',
-            secondary: '#FFFAEE',
-        },
-    };
-
     // ─── 2. NOTE DATA & SAVING STATES ─────────────────────────────────────────────
     const [title, setTitle] = useState('');
     const [tags, setTags] = useState([]);
@@ -83,7 +70,7 @@ export default function NotePage() {
             .eq('id', id);
 
         if (error) {
-            toast.error('Could not save note', toastStyle);
+            toast.error('Could not save note');
             setSaveStatus('unsaved');
         } else {
             setSaveStatus('saved');
@@ -161,7 +148,7 @@ export default function NotePage() {
                 .single();
 
             if (error) {
-                toast.error('Could not load note', toastStyle);
+                toast.error('Could not load note');
                 router.replace('/dashboard/Notes');
                 return;
             }
@@ -272,7 +259,7 @@ export default function NotePage() {
         if (isMod && e.key.toLowerCase() === 's' && !e.shiftKey) {
             e.preventDefault();
             save(title, editor?.getHTML(), tags);
-            toast.success('Note saved!', toastStyle);
+            toast.success('Note saved!');
         }
         if (isMod && e.shiftKey && e.key.toLowerCase() === 'a') {
             e.preventDefault();
@@ -532,7 +519,6 @@ export default function NotePage() {
                                         editor={editor}
                                         hoveredPos={hoveredPos}
                                         toast={toast}
-                                        toastStyle={toastStyle}
                                     />
                                 </div>
                             )}

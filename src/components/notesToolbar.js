@@ -7,7 +7,7 @@ import {
     ChevronDown, Form, Pilcrow, Heading1, Heading2, Heading3,
     List, ListOrdered, ListTodo, Highlighter, Palette, Eraser,
     AlignCenter, AlignRight, AlignLeft, AlignJustify, Image,
-    Undo, Redo
+    Undo, Redo, MicIcon
 } from 'lucide-react';
 import ColorPickerDropdown, { isValidColor } from '../components/coloringTools';
 
@@ -181,9 +181,13 @@ export default function NotesToolbar({ editor, onInsertImage }) {
     }, []);
 
     useEffect(() => {
+        if (!isHighlighterDropdownOpen && !isColourPickerDropdownOpen) return;
         document.body.style.overflow = (isHighlighterDropdownOpen || isColourPickerDropdownOpen) ? 'hidden' : '';
         return () => { document.body.style.overflow = ''; };
     }, [isHighlighterDropdownOpen, isColourPickerDropdownOpen]);
+
+    // Speech To Text
+    const [isRecordingSpeech, setIsRecordingSpeech] = useState(false);
 
     if (!editor) return null;
 
@@ -636,6 +640,24 @@ export default function NotesToolbar({ editor, onInsertImage }) {
                 </button>
             </li>
 
+            {/* speech to text tool */}
+            <li className="md:relative group">
+                <div
+                    className="absolute bottom-full mb-2 hidden group-hover:flex items-center gap-2 px-3 py-1.5
+                    bg-(--layer1) border border-(--layer3) rounded-lg shadow-lg whitespace-nowrap z-50"
+                >
+                    <span className="text-xs font-bold text-(--text)">Speech To Text</span>
+                </div>
+                <button
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={(e) => { e.preventDefault(); setIsRecordingSpeech(!isRecordingSpeech); }}
+                    className={`flex items-center justify-center gap-1 text-sm font-semibold md:hover:text-(--text) 
+                    md:hover:bg-(--layer3) active:bg-red-400 active:scale-95 rounded-sm cursor-pointer transition-all 
+                    px-2 py-2 ${isRecordingSpeech ? 'bg-red-400 text-(--layer1)' : 'bg-(--layer1)'}`}
+                >
+                    <MicIcon size={18} />
+                </button>
+            </li>
         </ul>
     );
 }

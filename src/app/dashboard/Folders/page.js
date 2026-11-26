@@ -37,19 +37,6 @@ export default function FolderContentPage() {
 
     const [selectedItem, setSelectedItem] = useState(null);
 
-    const toastStyle = {
-        style: {
-            border: '1px solid var(--nice-blue)',
-            padding: '16px',
-            color: 'var(--text)',
-            background: 'var(--layer2)',
-        },
-        iconTheme: {
-            primary: 'var(--nice-blue)',
-            secondary: '#FFFAEE',
-        },
-    };
-
     // ─── 2. CREATE FOLDER FEATURE ─────────────────────────────────────────────────
     const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
     const [newFolderName, setNewFolderName] = useState('');
@@ -92,14 +79,14 @@ export default function FolderContentPage() {
     const { moveItem, isMoving } = useMoveItem();
 
     const handleMove = async (destinationId) => {
-        const loadingToast = toast.loading('Moving folder...', toastStyle);
+        const loadingToast = toast.loading('Moving folder...');
         const success = await moveItem('folder', selectedItem.id, destinationId);
         toast.dismiss(loadingToast);
 
         if (success) {
             setShowMoveItemModal(false);
             setFolders(prev => prev.filter(f => f.id !== selectedItem.id));
-            toast.success('Folder moved successfully', toastStyle);
+            toast.success('Folder moved successfully');
             setSelectedItem(null);
         }
     };
@@ -111,7 +98,7 @@ export default function FolderContentPage() {
     const { deleteItem, isDeleting } = useDeleteItem();
 
     const handleDeleteConfirm = async () => {
-        const loadingToast = toast.loading('Deleting folder...', toastStyle);
+        const loadingToast = toast.loading('Deleting folder...');
         const success = await deleteItem('folder', itemToDelete.id);
         toast.dismiss(loadingToast);
 
@@ -125,13 +112,13 @@ export default function FolderContentPage() {
     const { duplicateItem, isDuplicating } = useDuplicateItem();
 
     const handleDuplicateFolder = async (folder) => {
-        const loadingToast = toast.loading('Duplicating folder...', toastStyle);
+        const loadingToast = toast.loading('Duplicating folder...');
         const newFolder = await duplicateItem('folder', folder);
         toast.dismiss(loadingToast);
 
         if (newFolder) {
             setFolders(prev => [newFolder, ...prev]);
-            toast.success('Folder duplicated', toastStyle);
+            toast.success('Folder duplicated');
         }
     };
 
@@ -146,7 +133,7 @@ export default function FolderContentPage() {
             .eq('user_id', user.id)
             .order('updated_at', { ascending: false });
 
-        if (error) toast.error(error.message, toastStyle);
+        if (error) toast.error(error.message);
         else setFolders(data || []);
         setLoading(false);
     };

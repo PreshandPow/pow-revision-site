@@ -2,7 +2,7 @@
 
 import { Clipboard, Copy, Trash2, Type } from 'lucide-react';
 
-export default function CanvasLayoutModal({ editor, hoveredPos, toast, toastStyle }) {
+export default function CanvasLayoutModal({ editor, hoveredPos, toast }) {
 
     // ─── 1. NODE LOOKUP HELPER ──────────────────────────────────────────────────
     // hoveredPos is the document position immediately before the hovered
@@ -53,7 +53,7 @@ export default function CanvasLayoutModal({ editor, hoveredPos, toast, toastStyl
                         if (!hovered) return;
 
                         navigator.clipboard.writeText(hovered.node.textContent)
-                            .then(() => toast.success('Copied to clipboard!', toastStyle))
+                            .then(() => toast.success('Copied to clipboard!'))
                             .catch(err => console.error('Failed to copy:', err));
                     }}
                 >
