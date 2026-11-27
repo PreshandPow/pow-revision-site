@@ -316,7 +316,7 @@ function SortableFlashcardItem({
     );
 }
 
-export default function CreateFlashcardModal({ setShowCreateFlashcardModal, handleSaveDeck }) {
+export default function CreateFlashcardModal({ setShowCreateFlashcardModal, handleSaveDeck, deckToUpdate }) {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [showResetMenu, setShowResetMenu] = useState(false);
@@ -331,12 +331,16 @@ export default function CreateFlashcardModal({ setShowCreateFlashcardModal, hand
     const [isLoaded, setIsLoaded] = useState(false);
 
     useEffect(() => {
-        const draft = localStorage.getItem('pow_flashcard_draft');
-        if (draft) {
-            const parsed = JSON.parse(draft);
-            if (parsed.title) setTitle(parsed.title);
-            if (parsed.description) setDescription(parsed.description);
-            if (parsed.cards && parsed.cards.length > 0) setCards(parsed.cards);
+        if (deckToUpdate) {
+            setCards(deckToUpdate.cards);
+        } else {
+            const draft = localStorage.getItem('pow_flashcard_draft');
+            if (draft) {
+                const parsed = JSON.parse(draft);
+                if (parsed.title) setTitle(parsed.title);
+                if (parsed.description) setDescription(parsed.description);
+                if (parsed.cards && parsed.cards.length > 0) setCards(parsed.cards);
+            }
         }
         setIsLoaded(true);
     }, []);

@@ -24,6 +24,8 @@ import RenameItemModal from "@/components/RenameItemModal";
 import MoveItemModal from "@/components/MoveItemModal";
 // ─── HOOK IMPORTS ───────────────────────────────────────────────────────
 import { useRenameItem, useMoveItem, useDeleteItem, useDuplicateItem } from '@/app/hooks/useItemActions';
+import CreateFlashcardModal from "@/components/createFlashcardModal";
+import {createFlashcardAction} from "@/app/hooks/createItemActions";
 // ─── SUPABASE CLIENT ───────────────────────────────────────────────────────
 const supabase = createClient();
 export function createClient() {
@@ -396,6 +398,19 @@ export default function FlashcardStudyPage() {
             </div>
         );
     }
+
+    const handleUpdateDeck = async (deckData) => {
+        const loadingToast = toast.loading('Creating deck...');
+
+        const newDeck = await createFlashcardAction(deckData, null, router);
+
+        toast.dismiss(loadingToast);
+
+        if (newDeck) {
+            setShowEditDeckModal(false);
+            setDeck(prev => [newDeck, ...prev]);
+        }
+    };
 
     return (
         <div className="min-h-screen bg-[var(--layer1)] text-[var(--text)] font-sans pb-32">
@@ -778,6 +793,13 @@ export default function FlashcardStudyPage() {
                             setSelectedItem(null);
                         }}
                         itemType='flashcard'
+                    />
+                )}
+                {showEditDeckModal && (
+                    <CreateFlashcardModal
+                        setShowCreateFlashcardModal={setShowEditDeckModal}
+                        handleSaveDeck={handleUpdateDeck}
+                        deckToUpdate={{ deck, cards }}
                     />
                 )}
             </AnimatePresence>

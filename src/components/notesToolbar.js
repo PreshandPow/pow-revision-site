@@ -207,11 +207,9 @@ export default function NotesToolbar({ editor, onInsertImage }) {
 
         if (!listening) {
             resetTranscript();
-            toast.success('Microphone is on!');
             startPosRef.current = editor.state.selection.from;
             SpeechRecognition.startListening({ continuous: true, language: 'en-GB' });
         } else {
-            toast.success('Microphone is off!');
             SpeechRecognition.stopListening();
             startPosRef.current = null;
         }

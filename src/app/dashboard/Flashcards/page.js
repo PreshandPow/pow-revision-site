@@ -358,6 +358,7 @@ export default function FlashcardsMainPage() {
                         <CreateFlashcardModal
                             setShowCreateFlashcardModal={setShowCreateFlashcardModal}
                             handleSaveDeck={handleCreateFlashcardDeck}
+                            deckToUpdate={false}
                         />
                     )}
                 </AnimatePresence>
