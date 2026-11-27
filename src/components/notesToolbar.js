@@ -10,6 +10,8 @@ import {
     Undo, Redo, MicIcon
 } from 'lucide-react';
 import ColorPickerDropdown, { isValidColor } from '../components/coloringTools';
+import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
+import toast from "react-hot-toast";
 
 const TEXT_TYPES = [
     { group: 'HIERARCHY', label: 'Paragraph', icon: Pilcrow, value: 'p' },
@@ -187,7 +189,33 @@ export default function NotesToolbar({ editor, onInsertImage }) {
     }, [isHighlighterDropdownOpen, isColourPickerDropdownOpen]);
 
     // Speech To Text
-    const [isRecordingSpeech, setIsRecordingSpeech] = useState(false);
+    const { transcript, listening, resetTranscript, browserSupportsSpeechRecognition } = useSpeechRecognition();
+    const startPosRef = useRef(null);
+
+    useEffect(() => {
+        if (!transcript || !editor || startPosRef.current === null) return;
+        const from = startPosRef.current;
+        const to = editor.state.selection.from;
+        editor.chain().focus().insertContentAt({ from, to }, transcript).run();
+    }, [transcript]);
+
+    const handleMicClick = () => {
+        if (!browserSupportsSpeechRecognition) {
+            toast.error('Browser does not support speech recognition!');
+            return;
+        }
+
+        if (!listening) {
+            resetTranscript();
+            toast.success('Microphone is on!');
+            startPosRef.current = editor.state.selection.from;
+            SpeechRecognition.startListening({ continuous: true, language: 'en-GB' });
+        } else {
+            toast.success('Microphone is off!');
+            SpeechRecognition.stopListening();
+            startPosRef.current = null;
+        }
+    };
 
     if (!editor) return null;
 
@@ -650,10 +678,10 @@ export default function NotesToolbar({ editor, onInsertImage }) {
                 </div>
                 <button
                     onMouseDown={(e) => e.preventDefault()}
-                    onClick={(e) => { e.preventDefault(); setIsRecordingSpeech(!isRecordingSpeech); }}
-                    className={`flex items-center justify-center gap-1 text-sm font-semibold md:hover:text-(--text) 
-                    md:hover:bg-(--layer3) active:bg-red-400 active:scale-95 rounded-sm cursor-pointer transition-all 
-                    px-2 py-2 ${isRecordingSpeech ? 'bg-red-400 text-(--layer1)' : 'bg-(--layer1)'}`}
+                    onClick={(e) => { handleMicClick() }}
+                    className={`flex items-center justify-center gap-1 text-sm font-semibold
+                    active:bg-red-400 active:scale-95 rounded-sm cursor-pointer transition-all px-2 py-2 
+                    ${listening ? 'bg-red-500 text-(--layer1) hover:bg-red-400' : 'bg-(--layer1) hover:bg-(--layer3)'}`}
                 >
                     <MicIcon size={18} />
                 </button>

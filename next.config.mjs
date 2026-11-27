@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    // Lets the dev server accept requests through ngrok tunnels (dev only).
+    allowedDevOrigins: ['*.ngrok-free.app', '*.ngrok-free.dev'],
     images: {
         remotePatterns: [
             {
